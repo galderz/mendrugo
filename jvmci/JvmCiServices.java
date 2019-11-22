@@ -1,4 +1,3 @@
-// JdkVmCiServices.java
 import jdk.vm.ci.services.Services;
 
 public class JvmCiServices
