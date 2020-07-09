@@ -17,7 +17,7 @@ install-jvm:
 	./target/jvm2/bin/cli.sh user create foo -p "bar"
 
 install-native:
-	curl -o target/infinispan-native.tar.gz https://github.com/infinispan/infinispan-quarkus/archive/${INFINISPAN_VERSION}.tar.gz
+	curl -Lo target/infinispan-native.tar.gz https://github.com/infinispan/infinispan-quarkus/archive/${INFINISPAN_VERSION}.tar.gz
 	mkdir -p target/native1 || true
 	mkdir -p target/native2 || true
 	tar -xzvpf target/infinispan-native.tar.gz -C target/native1 --strip-components 1
