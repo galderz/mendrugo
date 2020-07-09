@@ -34,3 +34,6 @@ start-native1:
 
 start-native2:
 	./target/native2/bin/server -o 100
+
+load-data:
+	mvn compile exec:java -Dexec.mainClass="svm.infinispan.LoadData" 
