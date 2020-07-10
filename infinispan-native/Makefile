@@ -18,6 +18,10 @@ install-jvm:
 
 install-native:
 	curl -Lo target/infinispan-native.tar.gz https://github.com/infinispan/infinispan-quarkus/archive/${INFINISPAN_VERSION}.tar.gz
+	mkdir -p target/infinispan-native || true
+	tar -xzvpf target/infinispan-native.tar.gz -C target/infinispan-native --strip-components 1
+	cd target/infinispan-native \
+		&& mvn clean install -Dnative -DskipTests
 	mkdir -p target/native1 || true
 	mkdir -p target/native2 || true
 	tar -xzvpf target/infinispan-native.tar.gz -C target/native1 --strip-components 1
