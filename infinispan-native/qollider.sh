@@ -8,7 +8,7 @@ git pull
 ./qollider.sh \
  graal-build \
  --jdk-tree https://github.com/openjdk/jdk11u-dev/tree/master \
- --graal-tree https://github.com/galderz/mandrel/tree/mandrel/20.1
+ --graal-tree https://github.com/graalvm/mandrel/tree/mandrel/20.1
 
 ./qollider.sh \
  maven-build \
