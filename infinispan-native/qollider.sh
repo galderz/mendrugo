@@ -23,4 +23,4 @@ git pull
 ./qollider.sh \
  maven-build \
  --tree https://github.com/galderz/infinispan-quarkus/tree/t_quarkus16_17 \
-  --additional-build-args -Dnative,-pl,infinispan-quarkus-server-runner
+  --additional-build-args -Dnative,-pl,:infinispan-quarkus-server-runner
