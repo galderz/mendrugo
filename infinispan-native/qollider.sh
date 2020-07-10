@@ -12,7 +12,8 @@ git pull
 
 ./qollider.sh \
  maven-build \
- --tree https://github.com/infinispan/infinispan/tree/11.0.x
+ --tree https://github.com/infinispan/infinispan/tree/11.0.x \
+  --additional-build-args -s,maven-settings.xml
 
 ./qollider.sh \
  maven-build \
