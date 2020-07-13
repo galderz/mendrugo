@@ -7,17 +7,17 @@ INFINISPAN_SERVER_RUNNER = ${Q_HOME}/infinispan-quarkus/server-runner/target/inf
 install-servers: clean install-jvm install-native
 
 clean:
-	rm -drf target
-	mkdir target || true
+	rm -drf servers
+	mkdir servers || true
 
 install-jvm:
 	$(call make-jvm,1)
 	$(call make-jvm,2)
 
 define make-jvm
-mkdir -p target/jvm${1} || true
-cp -r ${INFINISPAN_SERVER_HOME}/* target/jvm${1}
-./target/jvm${1}/bin/cli.sh user create foo -p "bar"
+mkdir -p servers/jvm${1} || true
+cp -r ${INFINISPAN_SERVER_HOME}/* servers/jvm${1}
+./servers/jvm${1}/bin/cli.sh user create foo -p "bar"
 endef
 
 install-native:
@@ -25,25 +25,25 @@ install-native:
 	$(call make-native,2)
 
 define make-native
-mkdir -p target/native${1} || true
-mkdir -p target/native${1}/server || true
-cp ${INFINISPAN_SERVER_RUNNER} target/native${1}/server-runner
-cp -r target/jvm1/server/conf target/native${1}/server
-cp -r target/jvm1/server/conf target/native${1}
+mkdir -p servers/native${1} || true
+mkdir -p servers/native${1}/server || true
+cp ${INFINISPAN_SERVER_RUNNER} servers/native${1}/server-runner
+cp -r servers/jvm1/server/conf servers/native${1}/server
+cp -r servers/jvm1/server/conf servers/native${1}
 endef
 
 start-jvm1:
-	JAVA_HOME=${Q_JAVA_HOME} ./target/jvm1/bin/server.sh
+	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm1/bin/server.sh
 
 start-jvm2:
-	JAVA_HOME=${Q_JAVA_HOME} ./target/jvm2/bin/server.sh -o 100
+	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm2/bin/server.sh -o 100
 
 start-native1:
-	cd target/native1 && ./server-runner \
+	cd servers/native1 && ./server-runner \
 		-Dquarkus.infinispan-server.bind-port=11222
 
 start-native2:
-	cd target/native2 && ./server-runner -o 100 \
+	cd servers/native2 && ./server-runner -o 100 \
 		-Dquarkus.infinispan-server.bind-port=11322
 
 load-data:
