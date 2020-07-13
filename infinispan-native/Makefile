@@ -26,8 +26,9 @@ install-native:
 
 define make-native
 mkdir -p target/native${1} || true
+mkdir -p target/native${1}/server || true
 cp ${INFINISPAN_SERVER_RUNNER} target/native${1}/server-runner
-cp -r ${INFINISPAN_SERVER_HOME}/server/conf target/native${1}
+cp -r ${INFINISPAN_SERVER_HOME}/server/conf target/native${1}/server
 endef
 
 start-jvm1:
