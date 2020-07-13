@@ -37,10 +37,10 @@ start-jvm2:
 	JAVA_HOME=${Q_JAVA_HOME} ./target/jvm2/bin/server.sh -o 100
 
 start-native1:
-	./target/native1/bin/server-runner
+	./target/native1/server-runner
 
 start-native2:
-	./target/native2/bin/server-runner -o 100
+	./target/native2/server-runner -o 100
 
 load-data:
 	mvn compile exec:java -Dexec.mainClass="svm.infinispan.LoadData"
