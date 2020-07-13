@@ -1,7 +1,5 @@
 package svm.infinispan;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
@@ -13,7 +11,7 @@ import java.util.Random;
 public class LoadData
 {
     static final Random R = new Random(System.currentTimeMillis());
-    static final int NUM_ENTRIES = 1_000_000;
+    static final int NUM_ENTRIES = Integer.getInteger("num.entries", 500_000);
     static final int NUM_CHARS = 2_000;
 
     public static void main(String[] args)
