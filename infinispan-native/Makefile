@@ -25,10 +25,9 @@ install-native:
 	$(call make-native,2)
 
 define make-native
-mkdir -p target/native${1}/bin || true
-mkdir -p target/native${1}/server || true
-cp ${INFINISPAN_SERVER_RUNNER} target/native${1}/bin/server-runner
-cp -r ${INFINISPAN_SERVER_HOME}/server/conf target/native${1}/server
+mkdir -p target/native${1} || true
+cp ${INFINISPAN_SERVER_RUNNER} target/native${1}/server-runner
+cp -r ${INFINISPAN_SERVER_HOME}/server/conf target/native${1}
 endef
 
 start-jvm1:
@@ -44,4 +43,4 @@ start-native2:
 	./target/native2/bin/server-runner -o 100
 
 load-data:
-	mvn compile exec:java -Dexec.mainClass="svm.infinispan.LoadData" 
+	mvn compile exec:java -Dexec.mainClass="svm.infinispan.LoadData"
