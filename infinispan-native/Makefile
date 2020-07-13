@@ -2,6 +2,7 @@ INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
 JAVA_HOME ?= ${Q_HOME}/java_home
 INFINISPAN_SERVER_HOME = ${Q_HOME}/infinispan/server/runtime/target/infinispan-server-${INFINISPAN_VERSION}
+INFINISPAN_SERVER_RUNNER = ${Q_HOME}/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${INFINISPAN_VERSION}-runner
 
 install-servers: clean install-jvm install-native
 
@@ -15,7 +16,7 @@ install-jvm:
 
 define make-jvm
 mkdir -p target/jvm${1} || true
-cp -r ${INFINISPAN_SERVER_HOME} target/jvm${1}
+cp -r ${INFINISPAN_SERVER_HOME}/* target/jvm${1}
 ./target/jvm${1}/bin/cli.sh user create foo -p "bar"
 endef
 
@@ -26,7 +27,7 @@ install-native:
 define make-native
 mkdir -p target/native${1}/bin || true
 mkdir -p target/native${1}/server || true
-cp ${Q_HOME}/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${INFINISPAN_VERSION}-runner target/native${1}/bin/server-runner
+cp ${INFINISPAN_SERVER_RUNNER} target/native${1}/bin/server-runner
 cp -r ${INFINISPAN_SERVER_HOME}/server/conf target/native${1}/server
 endef
 
