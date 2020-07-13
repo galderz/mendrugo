@@ -29,6 +29,7 @@ mkdir -p target/native${1} || true
 mkdir -p target/native${1}/server || true
 cp ${INFINISPAN_SERVER_RUNNER} target/native${1}/server-runner
 cp -r ${INFINISPAN_SERVER_HOME}/server/conf target/native${1}/server
+cp -r ${INFINISPAN_SERVER_HOME}/server/conf target/native${1}
 endef
 
 start-jvm1:
@@ -38,10 +39,10 @@ start-jvm2:
 	JAVA_HOME=${Q_JAVA_HOME} ./target/jvm2/bin/server.sh -o 100
 
 start-native1:
-	./target/native1/server-runner
+	cd target/native1 && ./server-runner
 
 start-native2:
-	./target/native2/server-runner -o 100
+	cd target/native2 && ./server-runner -o 100
 
 load-data:
 	mvn compile exec:java -Dexec.mainClass="svm.infinispan.LoadData"
