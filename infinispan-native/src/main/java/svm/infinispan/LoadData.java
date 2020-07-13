@@ -37,6 +37,7 @@ public class LoadData
                 "<cache-container>" +
                     "<distributed-cache name=\"%s\" mode=\"SYNC\" owners=\"1\">" +
                         "<memory storage=\"OFF_HEAP\"/>" +
+                        "<state-transfer enabled=\"true\" timeout=\"120000\" await-initial-transfer=\"true\"/>" +
                     "</distributed-cache>" +
                 "</cache-container>" +
             "</infinispan>"
