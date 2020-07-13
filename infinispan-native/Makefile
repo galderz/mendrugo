@@ -1,5 +1,6 @@
 INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
+JAVA_HOME ?= ${HOME}/.qollider/cache/latest/java_home
 
 install-servers: clean install-jvm install-native
 
@@ -29,10 +30,10 @@ cp -r ${Q_HOME}/cache/latest/infinispan/server/runtime/target/infinispan-server-
 endef
 
 start-jvm1:
-	./target/jvm1/bin/server.sh
+	JAVA_HOME=${JAVA_HOME} ./target/jvm1/bin/server.sh
 
 start-jvm2:
-	./target/jvm2/bin/server.sh -o 100
+	JAVA_HOME=${JAVA_HOME} ./target/jvm2/bin/server.sh -o 100
 
 start-native1:
 	./target/native1/bin/server-runner
