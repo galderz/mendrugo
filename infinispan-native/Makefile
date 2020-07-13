@@ -47,4 +47,4 @@ start-native2:
 		-Dquarkus.infinispan-server.bind-port=11322
 
 load-data:
-	mvn compile exec:java -Dexec.mainClass="svm.infinispan.LoadData"
+	mvn clean compile exec:java -Dexec.mainClass="svm.infinispan.LoadData"
