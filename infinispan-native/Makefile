@@ -1,6 +1,6 @@
 INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
-JAVA_HOME ?= ${Q_HOME}/java_home
+Q_JAVA_HOME ?= ${Q_HOME}/java_home
 INFINISPAN_SERVER_HOME = ${Q_HOME}/infinispan/server/runtime/target/infinispan-server-${INFINISPAN_VERSION}
 INFINISPAN_SERVER_RUNNER = ${Q_HOME}/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${INFINISPAN_VERSION}-runner
 
@@ -32,10 +32,10 @@ cp -r ${INFINISPAN_SERVER_HOME}/server/conf target/native${1}/server
 endef
 
 start-jvm1:
-	JAVA_HOME=${JAVA_HOME} ./target/jvm1/bin/server.sh
+	JAVA_HOME=${Q_JAVA_HOME} ./target/jvm1/bin/server.sh
 
 start-jvm2:
-	JAVA_HOME=${JAVA_HOME} ./target/jvm2/bin/server.sh -o 100
+	JAVA_HOME=${Q_JAVA_HOME} ./target/jvm2/bin/server.sh -o 100
 
 start-native1:
 	./target/native1/bin/server-runner
