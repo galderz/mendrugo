@@ -15,10 +15,15 @@ git pull
  --tree https://github.com/infinispan/infinispan/tree/11.0.x \
   --additional-build-args -s,maven-settings.xml
 
+# Use snapshot Quarkus version that has includes third party to source cache
+./qollider.sh \
+ maven-build \
+ --tree https://github.com/galderz/quarkus/tree/t_debug_symbols_next
+
 ./qollider.sh \
  maven-build \
  --tree https://github.com/galderz/infinispan-quarkus/tree/t_quarkus16_17 \
-  --additional-build-args -pl,'!:infinispan-quarkus-integration-test-server'
+ --additional-build-args -pl,'!:infinispan-quarkus-integration-test-server',-Dquarkus.version=999-SNAPSHOT
 
 ./qollider.sh \
  maven-build \
