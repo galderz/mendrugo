@@ -23,7 +23,7 @@ git pull
 ./qollider.sh \
  maven-build \
  --tree https://github.com/galderz/infinispan-quarkus/tree/t_quarkus16_17 \
- --additional-build-args -pl,'!:infinispan-quarkus-integration-test-server',-Dquarkus.version=999-SNAPSHOT
+ --additional-build-args -pl,'!:infinispan-quarkus-integration-test-server',-Dquarkus.version=999-SNAPSHOT,-Dquarkus.native.debug.enabled=true
 
 ./qollider.sh \
  maven-build \
