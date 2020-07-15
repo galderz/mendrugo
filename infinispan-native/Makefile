@@ -59,21 +59,19 @@ endef
 
 record-native1:
 	cd servers/native1 && \
-		${call record} -- $(call run-native,11222)
+		${call perf-record} -- $(call run-native,11222)
 
 record-native2:
 	cd servers/native2 && \
-		${call record} -- $(call run-native,11322)
+		${call perf-record} -- $(call run-native,11322)
 
-define record
+define perf-record
 perf record -F 99 -a -g
 endef
 
-graph-native1:
+gen-graphs:
 	${call run-graph,1}
-
-graph-native2:
-	${call run-graph,1}
+	${call run-graph,2}
 
 define run-graph
 perf script servers/native${1}/perf.data | ./stackcollapse-perf.pl > out.perf-folded
