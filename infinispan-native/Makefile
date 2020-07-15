@@ -1,4 +1,8 @@
+# Examples:
+# -Xms64m -Xmx512m
+# -XX:+VerboseGC -XX:+PrintGC -XX:+PrintGCSummary -XX:+PrintHeapShape
 EXTRA_ARGS ?= ""
+
 FG_HOME ?= /opt/FlameGraph
 INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
