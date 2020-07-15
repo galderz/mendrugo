@@ -74,7 +74,7 @@ gen-graphs:
 	${call run-graph,2}
 
 define run-graph
-perf script servers/native${1}/perf.data | ./stackcollapse-perf.pl > out.perf-folded
+perf script -i servers/native${1}/perf.data | ./stackcollapse-perf.pl > out.perf-folded
 ${FG_HOME}/flamegraph.pl out.perf-folded > graphs/native${1}-perf-kernel.svg
 endef
 
