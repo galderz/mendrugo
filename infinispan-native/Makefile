@@ -1,3 +1,5 @@
+EXTRA_ARGS ?= ""
+FG_HOME ?= /opt/FlameGraph
 INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
 Q_JAVA_HOME ?= ${Q_HOME}/java_home
@@ -9,6 +11,7 @@ install-servers: clean install-jvm install-native
 clean:
 	rm -drf servers
 	mkdir servers || true
+	mkdir graphs || true
 
 install-jvm:
 	$(call make-jvm,1)
@@ -39,12 +42,42 @@ start-jvm2:
 	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm2/bin/server.sh -o 100
 
 start-native1:
-	cd servers/native1 && ./server-runner \
-		-Dquarkus.infinispan-server.bind-port=11222
+	cd servers/native1 && $(call run-native,11222)
 
 start-native2:
-	cd servers/native2 && ./server-runner -o 100 \
-		-Dquarkus.infinispan-server.bind-port=11322
+	cd servers/native2 && $(call run-native,11322)
+
+define run-native
+./server-runner \
+  ${EXTRA_ARGS} \
+  -Dquarkus.infinispan-server.bind-port=${1}
+endef
+
+record-native1:
+	cd servers/native1 && \
+		${call record} -- $(call run-native,11222)
+
+record-native2:
+	cd servers/native2 && \
+		${call record} -- $(call run-native,11322)
+
+define record
+perf record -F 99 -a -g
+endef
+
+graph-native1:
+	${call run-graph,1}
+
+graph-native2:
+	${call run-graph,1}
+
+define run-graph
+perf script servers/native${1}/perf.data | ./stackcollapse-perf.pl > out.perf-folded
+${FG_HOME}/flamegraph.pl out.perf-folded > graphs/native${1}-perf-kernel.svg
+endef
+
+copy-graphs:
+	scp sheldon:~/1/mendrugo/infinispan-native/graphs .
 
 load-data:
 	mvn clean compile exec:java -Dexec.mainClass="svm.infinispan.LoadData"
