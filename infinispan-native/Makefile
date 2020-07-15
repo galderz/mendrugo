@@ -66,7 +66,7 @@ record-native2:
 		${call perf-record} -- $(call run-native,11322)
 
 define perf-record
-perf record -F 99 -a -g
+perf record -F 99 -a --call-graph dwarf
 endef
 
 gen-graphs:
@@ -77,9 +77,6 @@ define run-graph
 perf script -i servers/native${1}/perf.data | ${FG_HOME}/stackcollapse-perf.pl > out.perf-folded
 ${FG_HOME}/flamegraph.pl out.perf-folded > graphs/native${1}-perf-kernel.svg
 endef
-
-copy-graphs:
-	scp sheldon:~/1/mendrugo/infinispan-native/graphs .
 
 load-data:
 	mvn clean compile exec:java -Dexec.mainClass="svm.infinispan.LoadData"
