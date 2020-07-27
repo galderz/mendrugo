@@ -7,6 +7,8 @@ ADDRESS ?= 127.0.0.1
 NUM_ENTRIES ?= 500000
 
 FG_HOME ?= /opt/FlameGraph
+PERF_HOME ?= /usr/bin
+
 INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
 Q_JAVA_HOME ?= ${Q_HOME}/java_home
@@ -74,7 +76,7 @@ record-native2:
 		${call perf-record} -- $(call run-native,11322)
 
 define perf-record
-perf record -F 99 -a --call-graph dwarf
+${PERF_HOME}/perf record -F 99 -a --call-graph dwarf
 endef
 
 gen-graphs:
@@ -82,7 +84,7 @@ gen-graphs:
 	${call run-graph,2}
 
 define run-graph
-perf script -i servers/native${1}/perf.data | ${FG_HOME}/stackcollapse-perf.pl > graphs/out.perf-folded
+${PERF_HOME}/perf script -i servers/native${1}/perf.data | ${FG_HOME}/stackcollapse-perf.pl > graphs/out.perf-folded
 ${FG_HOME}/flamegraph.pl graphs/out.perf-folded > graphs/native${1}-perf-kernel.svg
 endef
 
