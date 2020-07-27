@@ -3,6 +3,8 @@
 # -XX:+VerboseGC -XX:+PrintGC -XX:+PrintGCSummary -XX:+PrintHeapShape
 EXTRA_ARGS ?= ""
 
+ADDRESS ?= 127.0.0.1
+
 FG_HOME ?= /opt/FlameGraph
 INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
@@ -44,10 +46,10 @@ cp -r servers/jvm1/server/conf servers/native${1}
 endef
 
 start-jvm1:
-	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm1/bin/server.sh
+	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm1/bin/server.sh -Dinfinispan.bind.address=${ADDRESS}
 
 start-jvm2:
-	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm2/bin/server.sh -o 100
+	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm2/bin/server.sh -o 100 -Dinfinispan.bind.address=${ADDRESS}
 
 start-native1:
 	cd servers/native1 && $(call run-native,11222)
@@ -58,7 +60,8 @@ start-native2:
 define run-native
 ./${RUNNER_NAME} \
   ${EXTRA_ARGS} \
-  -Dquarkus.infinispan-server.bind-port=${1}
+  -Dquarkus.infinispan-server.bind-port=${1} \
+  -Dinfinispan.bind.address=${ADDRESS}
 endef
 
 record-native1:
@@ -83,4 +86,4 @@ ${FG_HOME}/flamegraph.pl graphs/out.perf-folded > graphs/native${1}-perf-kernel.
 endef
 
 load-data:
-	mvn clean compile exec:java -Dexec.mainClass="svm.infinispan.LoadData"
+	mvn clean compile exec:java -Dexec.mainClass="svm.infinispan.LoadData" -Daddress=${ADDRESS}

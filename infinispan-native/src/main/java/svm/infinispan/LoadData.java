@@ -10,16 +10,17 @@ import java.util.Random;
 
 public class LoadData
 {
-    static final Random R = new Random(System.currentTimeMillis());
+    static final String ADDRESS = System.getProperty("address", "127.0.0.1");
     static final int NUM_ENTRIES = Integer.getInteger("num.entries", 500_000);
     static final int NUM_CHARS = 2_000;
+    static final Random R = new Random(System.currentTimeMillis());
 
     public static void main(String[] args)
     {
         // Create a configuration for a locally-running server
         var builder = new ConfigurationBuilder();
         builder.addServer()
-            .host("127.0.0.1")
+            .host(ADDRESS)
             .port(ConfigurationProperties.DEFAULT_HOTROD_PORT)
             .security().authentication()
                 // Add user credentials.
