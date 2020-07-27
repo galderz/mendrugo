@@ -78,8 +78,8 @@ gen-graphs:
 	${call run-graph,2}
 
 define run-graph
-perf script -i servers/native${1}/perf.data | ${FG_HOME}/stackcollapse-perf.pl > out.perf-folded
-${FG_HOME}/flamegraph.pl out.perf-folded > graphs/native${1}-perf-kernel.svg
+perf script -i servers/native${1}/perf.data | ${FG_HOME}/stackcollapse-perf.pl > graphs/out.perf-folded
+${FG_HOME}/flamegraph.pl graphs/out.perf-folded > graphs/native${1}-perf-kernel.svg
 endef
 
 load-data:
