@@ -48,7 +48,7 @@ public class LoadData
                 .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
                 .getOrCreateCache("test", new XMLStringConfiguration(xml));
 
-            for (int i = 0; i < NUM_ENTRIES; i++)
+            for (int i = 1; i <= NUM_ENTRIES; i++)
             {
                 if (i % 10000 == 0)
                 {
