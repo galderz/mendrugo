@@ -7,8 +7,11 @@ FG_HOME ?= /opt/FlameGraph
 INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
 Q_JAVA_HOME ?= ${Q_HOME}/java_home
-INFINISPAN_SERVER_HOME = ${Q_HOME}/infinispan/server/runtime/target/infinispan-server-${INFINISPAN_VERSION}
-INFINISPAN_SERVER_RUNNER = ${Q_HOME}/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${INFINISPAN_VERSION}-runner
+SERVER_HOME = ${Q_HOME}/infinispan/server/runtime/target/infinispan-server-${INFINISPAN_VERSION}
+RUNNER_NAME = infinispan-quarkus-server-runner-${INFINISPAN_VERSION}-runner
+DEBUG_NAME = ${RUNNER_NAME}.debug
+RUNNER_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${RUNNER_NAME}
+DEBUG_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${DEBUG_NAME}
 
 install-servers: clean install-jvm install-native
 
@@ -23,7 +26,7 @@ install-jvm:
 
 define make-jvm
 mkdir -p servers/jvm${1} || true
-cp -r ${INFINISPAN_SERVER_HOME}/* servers/jvm${1}
+cp -r ${SERVER_HOME}/* servers/jvm${1}
 ./servers/jvm${1}/bin/cli.sh user create foo -p "bar"
 endef
 
@@ -34,7 +37,8 @@ install-native:
 define make-native
 mkdir -p servers/native${1} || true
 mkdir -p servers/native${1}/server || true
-cp ${INFINISPAN_SERVER_RUNNER} servers/native${1}/server-runner
+cp ${RUNNER_PATH} servers/native${1}/${RUNNER_NAME}
+cp ${DEBUG_PATH} servers/native${1}/${DEBUG_NAME}
 cp -r servers/jvm1/server/conf servers/native${1}/server
 cp -r servers/jvm1/server/conf servers/native${1}
 endef
@@ -52,7 +56,7 @@ start-native2:
 	cd servers/native2 && $(call run-native,11322)
 
 define run-native
-./server-runner \
+./${RUNNER_NAME} \
   ${EXTRA_ARGS} \
   -Dquarkus.infinispan-server.bind-port=${1}
 endef
