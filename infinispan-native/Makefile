@@ -1,4 +1,4 @@
-# Examples:
+Examples# Examples:
 # -Xms64m -Xmx512m
 # -XX:+VerboseGC -XX:+PrintGC -XX:+PrintGCSummary -XX:+PrintHeapShape
 EXTRA_ARGS ?= ""
@@ -88,6 +88,6 @@ endef
 
 load-data:
 	mvn clean compile exec:java \
-		-Dexec.mainClass="svm.infinispan.LoadData"
+		-Dexec.mainClass="svm.infinispan.LoadData" \
 		-Daddress=${ADDRESS} \
 		-Dnum.entries=${NUM_ENTRIES}
