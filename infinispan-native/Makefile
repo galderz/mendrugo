@@ -1,4 +1,4 @@
-Examples# Examples:
+# Examples:
 # -Xms64m -Xmx512m
 # -XX:+VerboseGC -XX:+PrintGC -XX:+PrintGCSummary -XX:+PrintHeapShape
 EXTRA_ARGS ?= ""
