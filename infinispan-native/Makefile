@@ -4,6 +4,7 @@
 EXTRA_ARGS ?= ""
 
 ADDRESS ?= 127.0.0.1
+NUM_ENTRIES ?= 500000
 
 FG_HOME ?= /opt/FlameGraph
 INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
@@ -86,4 +87,7 @@ ${FG_HOME}/flamegraph.pl graphs/out.perf-folded > graphs/native${1}-perf-kernel.
 endef
 
 load-data:
-	mvn clean compile exec:java -Dexec.mainClass="svm.infinispan.LoadData" -Daddress=${ADDRESS}
+	mvn clean compile exec:java \
+		-Dexec.mainClass="svm.infinispan.LoadData"
+		-Daddress=${ADDRESS} \
+		-Dnum.entries=${NUM_ENTRIES}
