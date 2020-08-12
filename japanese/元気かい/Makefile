@@ -27,3 +27,9 @@ call-tree:
 
 method-histogram:
 	native-image -H:+PrintMethodHistogram HelloWorld
+
+build-container:
+	docker build -t graalvm .
+
+run-container:
+	docker run --rm -it -v $$(pwd):/data graalvm
