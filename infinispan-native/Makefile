@@ -9,7 +9,7 @@ NUM_ENTRIES ?= 500000
 FG_HOME ?= /opt/FlameGraph
 PERF_HOME ?= /usr/bin
 
-INFINISPAN_VERSION ?= 11.0.2-SNAPSHOT
+INFINISPAN_VERSION ?= 11.0.4-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
 Q_JAVA_HOME ?= ${Q_HOME}/java_home
 SERVER_HOME = ${Q_HOME}/infinispan/server/runtime/target/infinispan-server-${INFINISPAN_VERSION}
