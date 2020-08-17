@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+ISPN_QUARKUS=https://github.com/galderz/infinispan-quarkus/tree/t_quarkus16_17
+
 set -x -e
 pushd ~/1/qollider
 
@@ -15,7 +17,7 @@ git pull
 
 ./qollider.sh \
     maven-build \
-    --tree https://github.com/infinispan/infinispan/tree/master \
+    --tree https://github.com/infinispan/infinispan/tree/11.0.x \
     --additional-build-args \
         -s \
         maven-settings.xml
@@ -26,7 +28,7 @@ git pull
 
 ./qollider.sh \
     maven-build \
-    --tree https://github.com/infinispan/infinispan-quarkus/tree/master \
+    --tree ${ISPN_QUARKUS} \
     --additional-build-args \
         -pl \
         '!:infinispan-quarkus-integration-test-server' \
@@ -34,7 +36,7 @@ git pull
 
 ./qollider.sh \
     maven-build \
-    --tree https://github.com/infinispan/infinispan-quarkus/tree/master \
+    --tree ${ISPN_QUARKUS} \
     --additional-build-args \
         -Dnative \
         -pl \
