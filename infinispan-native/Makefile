@@ -79,6 +79,10 @@ define perf-record
 ${PERF_HOME}/perf record -F 99 -a --call-graph dwarf
 endef
 
+report-native1:
+	cd servers/native1 && \
+		perf report --stdio
+
 gen-graphs:
 	${call run-graph,1}
 	${call run-graph,2}
