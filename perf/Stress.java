@@ -1,3 +1,8 @@
+import javax.swing.plaf.basic.BasicTreeUI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
@@ -5,91 +10,205 @@ import java.util.stream.*;
 public class Stress
 {
     static final int NUM_ITERATIONS = Integer.getInteger("num.iterations", 500_000);
-    static final int NUM_SUB_ITERATIONS = Integer.getInteger("num.sub.iterations", 1_000);
+    static final int NUM_IMPLS = 6;
     static final Random R = new Random();
 
     public static void main(String[] args)
     {
-        IntStream.range(0, NUM_ITERATIONS).forEach(runIteration());
+        final var impls = new Expensive[NUM_IMPLS];
+        impls[0] = new Md5();
+        impls[1] = new Md5Salt();
+        impls[2] = new Sha1();
+        impls[3] = new Sha256();
+        impls[4] = new Sha384();
+        impls[5] = new Sha512();
+
+        IntStream.range(1, NUM_ITERATIONS).forEach(runIteration(impls));
     }
 
-    private static IntConsumer runIteration()
+    private static IntConsumer runIteration(Expensive[] impls)
     {
         return i ->
         {
-            if (i < 1000 || i % 10000 == 0)
-                System.out.printf("Iteration %d%n", i);
+            System.out.printf("Iteration %d%n", i);
 
-            final var length = R.nextInt(i + 1) + 1;
-            final var text = generateRandomString(length);
+            final var index = R.nextInt(NUM_IMPLS);
             String message = null;
-            if (length % 2 == 0)
+            try
             {
-                final var encoded = cipher1(text, text.length() % 26);
-                message = String.format(
-                    "hello %s - %tc - %s"
-                    , text
-                    , new Date()
-                    , encoded
-                );
+                message = impls[index].spend(i);
+                if (message.hashCode() == System.nanoTime())
+                    System.out.print(" ");
             }
-            else
+            catch (Throwable t)
             {
-                final var encoded = cipher2(text, "this is only a test");
-                message = String.format(
-                    "hola %s - %tc - %s"
-                    , text
-                    , new Date()
-                    , encoded
-                );
+                throw new RuntimeException(t);
             }
-
-            if (message.hashCode() == System.nanoTime())
-                System.out.print(" ");
         };
     }
 
-    static String cipher1(String msg, int shift)
-    {
-        StringBuilder result = new StringBuilder();
-        for (int y = 0; y < NUM_SUB_ITERATIONS; y++)
-        {
-            int len = msg.length();
-            for (int x = 0; x < len; x++)
-            {
-                char c = (char) (msg.charAt(x) + shift);
-                if (c > 'z')
-                    result.append((char) (msg.charAt(x) - (26 - shift)));
-                else
-                    result.append((char) (msg.charAt(x) + shift));
-            }
-        }
-        return result.toString();
-    }
-
-    static String cipher2(String text, final String key)
-    {
-        StringBuilder result = new StringBuilder();
-        for (int y = 0; y < NUM_SUB_ITERATIONS; y++)
-        {
-            text = text.toUpperCase();
-            for (int i = 0, j = 0; i < text.length(); i++)
-            {
-                char c = text.charAt(i);
-                if (c < 'A' || c > 'Z')
-                    continue;
-                result.append((char) ((c + key.charAt(j) - 2 * 'A') % 26 + 'A'));
-                j = ++j % key.length();
-            }
-        }
-        return result.toString().toLowerCase();
-    }
-
-    public static String generateRandomString(int numberOfChars)
+    static String generateRandomString(int numberOfChars)
     {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < numberOfChars; i++)
             sb.append((char) (64 + R.nextInt(26)));
         return sb.toString();
+    }
+
+    interface Expensive
+    {
+        String spend(int i) throws Throwable;
+    }
+
+    static class Md5 implements Expensive
+    {
+        final Random R = new Random();
+
+        @Override
+        public String spend(int i) throws Throwable
+        {
+            final String msg = generateRandomString(R.nextInt(i) + 1);
+
+            // Digest
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(msg.getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = md.digest();
+
+            // Hexadecimal
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < bytes.length; j++)
+            {
+                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        }
+    }
+
+    static class Md5Salt implements Expensive
+    {
+        final Random R = new Random();
+
+        @Override
+        public String spend(int i) throws Throwable
+        {
+            final String msg = generateRandomString(R.nextInt(i) + 1);
+
+            // Digest
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(getSalt());
+            byte[] bytes = md.digest(msg.getBytes(StandardCharsets.UTF_8));
+
+            // Hexadecimal
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < bytes.length; j++)
+            {
+                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        }
+
+        private static byte[] getSalt() throws Throwable
+        {
+            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG", "SUN");
+            byte[] salt = new byte[16];
+            sr.nextBytes(salt);
+            return salt;
+        }
+    }
+
+    static class Sha1 implements Expensive
+    {
+        final Random R = new Random();
+
+        @Override
+        public String spend(int i) throws Throwable
+        {
+            final String msg = generateRandomString(R.nextInt(i) + 1);
+
+            // Digest
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(msg.getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = md.digest();
+
+            // Hexadecimal
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < bytes.length; j++)
+            {
+                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        }
+    }
+
+    static class Sha256 implements Expensive
+    {
+        final Random R = new Random();
+
+        @Override
+        public String spend(int i) throws Throwable
+        {
+            final String msg = generateRandomString(R.nextInt(i) + 1);
+
+            // Digest
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(msg.getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = md.digest();
+
+            // Hexadecimal
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < bytes.length; j++)
+            {
+                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        }
+    }
+
+    static class Sha384 implements Expensive
+    {
+        final Random R = new Random();
+
+        @Override
+        public String spend(int i) throws Throwable
+        {
+            final String msg = generateRandomString(R.nextInt(i) + 1);
+
+            // Digest
+            MessageDigest md = MessageDigest.getInstance("SHA-384");
+            md.update(msg.getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = md.digest();
+
+            // Hexadecimal
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < bytes.length; j++)
+            {
+                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        }
+    }
+
+    static class Sha512 implements Expensive
+    {
+        final Random R = new Random();
+
+        @Override
+        public String spend(int i) throws Throwable
+        {
+            final String msg = generateRandomString(R.nextInt(i) + 1);
+
+            // Digest
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            md.update(msg.getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = md.digest();
+
+            // Hexadecimal
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < bytes.length; j++)
+            {
+                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        }
     }
 }
