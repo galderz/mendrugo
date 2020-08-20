@@ -18,5 +18,11 @@ run-jvm:
 native:
 	native-image -g Stress
 
+record:
+	perf record ./stress
+
+report:
+	perf report --stdio
+
 run:
 	./stress
