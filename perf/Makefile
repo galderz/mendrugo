@@ -19,7 +19,7 @@ native:
 	native-image -g Stress
 
 record:
-	perf record ./stress
+	perf record -F 99 -a --call-graph dwarf -- ./stress
 
 report:
 	perf report --stdio
