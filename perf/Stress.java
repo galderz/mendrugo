@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 public class Stress
 {
     static final int NUM_ITERATIONS = Integer.getInteger("num.iterations", 500_000);
-    static final int NUM_IMPLS = 6;
+    static final int NUM_IMPLS = 7;
     static final Random R = new Random();
 
     public static void main(String[] args)
@@ -22,6 +22,7 @@ public class Stress
         impls[3] = new Sha256();
         impls[4] = new Sha384();
         impls[5] = new Sha512();
+        impls[6] = new All();
 
         IntStream.range(1, NUM_ITERATIONS).forEach(runIteration(impls));
     }
@@ -80,9 +81,9 @@ public class Stress
 
             // Hexadecimal
             StringBuilder sb = new StringBuilder();
-            for (int j = 0; j < bytes.length; j++)
+            for (byte aByte : bytes)
             {
-                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();
         }
@@ -100,7 +101,12 @@ public class Stress
 
             // Digest
             MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(getSalt());
+
+            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG", "SUN");
+            byte[] salt = new byte[16];
+            sr.nextBytes(salt);
+            md.update(salt);
+
             byte[] bytes = md.digest(msg.getBytes(StandardCharsets.UTF_8));
 
             // Hexadecimal
@@ -110,14 +116,6 @@ public class Stress
                 sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();
-        }
-
-        private static byte[] getSalt() throws Throwable
-        {
-            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG", "SUN");
-            byte[] salt = new byte[16];
-            sr.nextBytes(salt);
-            return salt;
         }
     }
 
@@ -138,9 +136,9 @@ public class Stress
 
             // Hexadecimal
             StringBuilder sb = new StringBuilder();
-            for (int j = 0; j < bytes.length; j++)
+            for (byte aByte : bytes)
             {
-                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();
         }
@@ -188,9 +186,9 @@ public class Stress
 
             // Hexadecimal
             StringBuilder sb = new StringBuilder();
-            for (int j = 0; j < bytes.length; j++)
+            for (byte aByte : bytes)
             {
-                sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();
         }
@@ -218,6 +216,106 @@ public class Stress
                 sb.append(Integer.toString((bytes[j] & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();
+        }
+    }
+
+    static class All implements Expensive
+    {
+        final Random R = new Random();
+
+        @Override
+        @NeverInline("On purpose")
+        public String spend(int i) throws Throwable
+        {
+            final String msg = generateRandomString(R.nextInt(i) + 1);
+
+            // Digest
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            md5.update(msg.getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = md5.digest();
+
+            // Hexadecimal
+            StringBuilder sb = new StringBuilder();
+            for (byte aByte : bytes)
+            {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+            String md5Result = sb.toString();
+
+            // Digest
+            MessageDigest md5Salt = MessageDigest.getInstance("MD5");
+
+            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG", "SUN");
+            byte[] salt = new byte[16];
+            sr.nextBytes(salt);
+            md5Salt.update(salt);
+
+            bytes = md5Salt.digest(md5Result.getBytes(StandardCharsets.UTF_8));
+
+            // Hexadecimal
+            sb = new StringBuilder();
+            for (byte aByte : bytes)
+            {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+            String md5SaltResult = sb.toString();
+
+            // Digest
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(md5SaltResult.getBytes(StandardCharsets.UTF_8));
+            bytes = md.digest();
+
+            // Hexadecimal
+            sb = new StringBuilder();
+            for (byte aByte : bytes)
+            {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+
+            final var sha1Result = sb.toString();
+
+            // Digest
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            sha256.update(sha1Result.getBytes(StandardCharsets.UTF_8));
+            bytes = sha256.digest();
+
+            // Hexadecimal
+            sb = new StringBuilder();
+            for (byte aByte : bytes)
+            {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+
+            final var sha256Result = sb.toString();
+
+            // Digest
+            MessageDigest sha384 = MessageDigest.getInstance("SHA-384");
+            sha384.update(sha256Result.getBytes(StandardCharsets.UTF_8));
+            bytes = sha384.digest();
+
+            // Hexadecimal
+            sb = new StringBuilder();
+            for (byte aByte : bytes)
+            {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+
+            final var sha384Result = sb.toString();
+
+            MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
+            sha512.update(sha384Result.getBytes(StandardCharsets.UTF_8));
+            bytes = sha512.digest();
+
+            // Hexadecimal
+            sb = new StringBuilder();
+            for (byte aByte : bytes)
+            {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+
+            final var sha512Result = sb.toString();
+
+            return sha512Result;
         }
     }
 }
