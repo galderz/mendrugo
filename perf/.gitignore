@@ -1,3 +1,4 @@
 *.class
 *.jar
 stress
+lib

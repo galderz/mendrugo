@@ -1,11 +1,11 @@
-import javax.swing.plaf.basic.BasicTreeUI;
-import java.nio.charset.Charset;
+import com.oracle.svm.core.annotate.NeverInline;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.Random;
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
 
 public class Stress
 {
@@ -65,6 +65,7 @@ public class Stress
         final Random R = new Random();
 
         @Override
+        @NeverInline("On purpose")
         public String spend(int i) throws Throwable
         {
             final String msg = generateRandomString(R.nextInt(i) + 1);
@@ -89,6 +90,7 @@ public class Stress
         final Random R = new Random();
 
         @Override
+        @NeverInline("On purpose")
         public String spend(int i) throws Throwable
         {
             final String msg = generateRandomString(R.nextInt(i) + 1);
@@ -121,6 +123,7 @@ public class Stress
         final Random R = new Random();
 
         @Override
+        @NeverInline("On purpose")
         public String spend(int i) throws Throwable
         {
             final String msg = generateRandomString(R.nextInt(i) + 1);
@@ -145,6 +148,7 @@ public class Stress
         final Random R = new Random();
 
         @Override
+        @NeverInline("On purpose")
         public String spend(int i) throws Throwable
         {
             final String msg = generateRandomString(R.nextInt(i) + 1);
@@ -169,6 +173,7 @@ public class Stress
         final Random R = new Random();
 
         @Override
+        @NeverInline("On purpose")
         public String spend(int i) throws Throwable
         {
             final String msg = generateRandomString(R.nextInt(i) + 1);
@@ -193,6 +198,7 @@ public class Stress
         final Random R = new Random();
 
         @Override
+        @NeverInline("On purpose")
         public String spend(int i) throws Throwable
         {
             final String msg = generateRandomString(R.nextInt(i) + 1);
