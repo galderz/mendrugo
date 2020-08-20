@@ -5,6 +5,7 @@ import java.util.stream.*;
 public class Stress
 {
     static final int NUM_ITERATIONS = Integer.getInteger("num.iterations", 500_000);
+    static final int NUM_SUB_ITERATIONS = Integer.getInteger("num.sub.iterations", 1_000);
     static final Random R = new Random();
 
     public static void main(String[] args)
@@ -51,14 +52,17 @@ public class Stress
     static String cipher1(String msg, int shift)
     {
         StringBuilder result = new StringBuilder();
-        int len = msg.length();
-        for (int x = 0; x < len; x++)
+        for (int y = 0; y < NUM_SUB_ITERATIONS; y++)
         {
-            char c = (char) (msg.charAt(x) + shift);
-            if (c > 'z')
-                result.append((char) (msg.charAt(x) - (26 - shift)));
-            else
-                result.append((char) (msg.charAt(x) + shift));
+            int len = msg.length();
+            for (int x = 0; x < len; x++)
+            {
+                char c = (char) (msg.charAt(x) + shift);
+                if (c > 'z')
+                    result.append((char) (msg.charAt(x) - (26 - shift)));
+                else
+                    result.append((char) (msg.charAt(x) + shift));
+            }
         }
         return result.toString();
     }
@@ -66,14 +70,17 @@ public class Stress
     static String cipher2(String text, final String key)
     {
         StringBuilder result = new StringBuilder();
-        text = text.toUpperCase();
-        for (int i = 0, j = 0; i < text.length(); i++)
+        for (int y = 0; y < NUM_SUB_ITERATIONS; y++)
         {
-            char c = text.charAt(i);
-            if (c < 'A' || c > 'Z')
-                continue;
-            result.append((char) ((c + key.charAt(j) - 2 * 'A') % 26 + 'A'));
-            j = ++j % key.length();
+            text = text.toUpperCase();
+            for (int i = 0, j = 0; i < text.length(); i++)
+            {
+                char c = text.charAt(i);
+                if (c < 'A' || c > 'Z')
+                    continue;
+                result.append((char) ((c + key.charAt(j) - 2 * 'A') % 26 + 'A'));
+                j = ++j % key.length();
+            }
         }
         return result.toString().toLowerCase();
     }
