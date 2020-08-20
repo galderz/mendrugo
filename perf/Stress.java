@@ -26,6 +26,7 @@ public class Stress
         IntStream.range(1, NUM_ITERATIONS).forEach(runIteration(impls));
     }
 
+    @NeverInline("On purpose")
     private static IntConsumer runIteration(Expensive[] impls)
     {
         return i ->
@@ -47,6 +48,7 @@ public class Stress
         };
     }
 
+    @NeverInline("On purpose")
     static String generateRandomString(int numberOfChars)
     {
         StringBuilder sb = new StringBuilder();
@@ -57,6 +59,7 @@ public class Stress
 
     interface Expensive
     {
+        @NeverInline("On purpose")
         String spend(int i) throws Throwable;
     }
 
