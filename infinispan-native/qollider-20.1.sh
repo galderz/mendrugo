@@ -8,8 +8,8 @@ pushd ~/1/qollider
 git pull
 
 ./qollider.sh \
-    jdk-build \
-    --tree https://github.com/openjdk/jdk11u-dev/tree/jdk-11.0.8%2B10
+    jdk-get \
+    --url https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u265-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u265b01.tar.gz
 
 ./qollider.sh \
     graal-build \
