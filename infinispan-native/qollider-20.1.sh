@@ -17,7 +17,7 @@ qollider \
     --tree https://github.com/openjdk/jdk11u-dev/tree/jdk-11.0.8%2B10
 
 qollider \
-    graal-build \
+    mandrel-build \
     --tree https://github.com/graalvm/mandrel/tree/mandrel/20.1
 
 qollider \
