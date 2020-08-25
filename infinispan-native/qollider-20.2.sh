@@ -5,6 +5,7 @@ ISPN_QUARKUS=https://github.com/galderz/infinispan-quarkus/tree/t_quarkus16_17
 set -e
 
 source ${HOME}/.dotfiles/qollider/qollider.sh
+git pull
 
 qollider \
     jdk-build \

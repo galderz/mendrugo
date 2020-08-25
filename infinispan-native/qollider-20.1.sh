@@ -3,8 +3,8 @@
 ISPN_QUARKUS=https://github.com/galderz/infinispan-quarkus/tree/t_quarkus16_17
 
 set -x -e
-pushd ~/1/qollider
 
+source ${HOME}/.dotfiles/qollider/qollider.sh
 git pull
 
 qollider \
