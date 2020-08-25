@@ -7,9 +7,14 @@ set -x -e
 source ${HOME}/.dotfiles/qollider/qollider.sh
 git pull
 
+# TODO needs downloading static symbols (abstract away?)
+#qollider \
+#    jdk-get \
+#    --url https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.8%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.8_10.tar.gz
+
 qollider \
-    jdk-get \
-    --url https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.8%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.8_10.tar.gz
+    jdk-build \
+    --tree https://github.com/openjdk/jdk11u-dev/tree/jdk-11.0.8%2B10
 
 qollider \
     graal-build \
