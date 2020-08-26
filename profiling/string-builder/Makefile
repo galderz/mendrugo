@@ -9,7 +9,7 @@ classfiles  = $(sourcefiles:.java=.class)
 all: $(classfiles)
 
 %.class: %.java
-	javac -d . -classpath .:lib/svm.jar $<
+	javac -d . -classpath . $<
 
 clean:
 	rm -f *.class
