@@ -43,7 +43,7 @@ define make-native
 mkdir -p servers/native${1} || true
 mkdir -p servers/native${1}/server || true
 cp ${RUNNER_PATH} servers/native${1}/${RUNNER_NAME}
-cp ${DEBUG_PATH} servers/native${1}/${DEBUG_NAME}
+cp ${DEBUG_PATH} servers/native${1}/${DEBUG_NAME} || true
 cp -r servers/jvm1/server/conf servers/native${1}/server
 cp -r servers/jvm1/server/conf servers/native${1}
 endef
