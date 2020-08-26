@@ -1,0 +1,8 @@
+*
+!*.*
+!*/
+!Makefile
+*.class
+*.iml
+perf.data
+sources
