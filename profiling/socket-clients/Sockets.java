@@ -1,5 +1,3 @@
-// https://github.com/apangin/codeone2019-java-profiling/blob/master/src/demo2/SocketTest.java
-
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,6 +11,10 @@ import java.util.concurrent.ThreadLocalRandom;
  * <p>
  * Most sampling profilers will not make difference between BusyClient and IdleClient,
  * because JVM does not know whether a native method consumes CPU or just waits inside a blocking call.
+ *
+ * @see <a href="https://github.com/apangin/codeone2019-java-profiling/blob/master/src/demo2/SocketTest.java">
+ *     Based on Andrei Pangin's example
+ *     </a>
  */
 public class Sockets
 {
@@ -72,6 +74,7 @@ public class Sockets
 
     static class BusyClient extends Thread
     {
+
         @Override
         public void run()
         {
