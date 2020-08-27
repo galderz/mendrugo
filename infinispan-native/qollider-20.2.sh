@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-ISPN_QUARKUS=https://github.com/galderz/infinispan-quarkus/tree/t_quarkus16_17
+# Avoid MBean server issue with 20.2
+ISPN_QUARKUS=https://github.com/galderz/infinispan-quarkus/tree/t_quarkus17
 
 set -e
 
@@ -22,9 +23,11 @@ qollider \
         -s \
         maven-settings.xml
 
+# Avoid object copy (ease of debug)
+# https://github.com/quarkusio/quarkus/tree/master
 qollider \
     maven-build \
-    --tree https://github.com/quarkusio/quarkus/tree/master
+    --tree https://github.com/galderz/quarkus/tree/t_no_obj_copy
 
 qollider \
     maven-build \
