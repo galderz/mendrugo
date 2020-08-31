@@ -24,3 +24,6 @@ native-include-timezones:
 
 run:
 	./timezones
+
+run-jvm:
+	java Timezones
