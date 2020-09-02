@@ -30,13 +30,13 @@
             <artifactId>svm</artifactId>
             <version>${graal-sdk.version}</version>
             <scope>provided</scope>
-            <!-- We only want the included annotations -->
-            <exclusions>
-                <exclusion>
-                    <artifactId>*</artifactId>
-                    <groupId>*</groupId>
-                </exclusion>
-            </exclusions>
+<!--            &lt;!&ndash; We only want the included annotations &ndash;&gt;-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>*</artifactId>-->
+<!--                    <groupId>*</groupId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
     </dependencies>
 
