@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>native-epoll</groupId>
-    <artifactId>native-epoll</artifactId>
+    <groupId>epoll</groupId>
+    <artifactId>epoll</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -41,7 +41,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>nat.epoll.CheckEpoll</mainClass>
+                            <mainClass>epoll.CheckEpoll</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

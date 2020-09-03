@@ -1,4 +1,4 @@
-package nat.epoll;
+package epoll;
 
 import io.netty.channel.epoll.Epoll;
 
