@@ -1,3 +1,4 @@
+netty = 4.1.52.Final-SNAPSHOT
 project = native-epoll
 
 all: build native run
@@ -11,11 +12,12 @@ build: clean
 native: clean build
 	native-image \
 	-jar target/$(project)-1.0-SNAPSHOT.jar \
-	-cp target/dependency/netty-transport-native-epoll-4.1.49.Final-linux-x86_64.jar:target/dependency/netty-native-epoll-1.0-SNAPSHOT.jar:target/dependency/netty-common-4.1.49.Final.jar:target/dependency/netty-transport-native-unix-common-4.1.49.Final.jar:target/dependency/netty-transport-4.1.49.Final.jar \
+	-cp target/dependency/netty-transport-native-epoll-$(netty)-linux-x86_64.jar:target/dependency/netty-native-epoll-$(netty).jar:target/dependency/netty-common-$(netty).jar:target/dependency/netty-transport-native-unix-common-$(netty).jar:target/dependency/netty-transport-$(netty).jar:target/dependency/netty-buffer-$(netty).jar \
 	--initialize-at-build-time= \
 	--enable-all-security-services \
 	--no-fallback \
 	--no-server \
+	--verbose \
 	-J-Dfile.encoding=UTF-8 \
 	-J-Dio.netty.allocator.maxOrder=1 \
 	-J-Dio.netty.leakDetection.level=DISABLED \
@@ -26,6 +28,7 @@ native: clean build
 	-H:+JNI \
 	-H:+ReportExceptionStackTraces \
 	-H:+StackTrace \
+	-H:+TraceClassInitialization \
 	-H:-AddAllCharsets \
 	-H:-UseServiceLoaderFeature \
 	target/$(project)

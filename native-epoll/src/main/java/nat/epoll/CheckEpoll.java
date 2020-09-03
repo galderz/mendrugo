@@ -6,7 +6,9 @@ public class CheckEpoll
 {
     public static void main(String[] args)
     {
-        System.out.println(Epoll.isAvailable());
-        Epoll.unavailabilityCause().printStackTrace();
+        final var epollAvailable = Epoll.isAvailable();
+        System.out.println(epollAvailable);
+        if (!epollAvailable)
+            Epoll.unavailabilityCause().printStackTrace();
     }
 }
