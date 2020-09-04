@@ -22,3 +22,5 @@ reports
 # built modules
 mods
 mlib
+# output folder
+out
