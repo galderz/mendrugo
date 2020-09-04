@@ -34,5 +34,8 @@ record:
 report:
 	perf report --stdio
 
+report-log:
+	rm -f verbose-perf-report.log && perf report --verbose --stdio > verbose-perf-report.log 2>&1
+
 run:
 	./$(exec)
