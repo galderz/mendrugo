@@ -6,10 +6,12 @@ import org.graalvm.nativeimage.hosted.RuntimeReflection;
 import org.openjdk.jmh.runner.options.TimeValue;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
 @AutomaticFeature
-public class Reflections implements Feature
+public class BenchmarkFeatures implements Feature
 {
     public void beforeAnalysis(BeforeAnalysisAccess access)
     {
@@ -20,11 +22,17 @@ public class Reflections implements Feature
             registerConverter(Boolean.class);
             registerConverter(TimeValue.class);
 
-            registerL0();
-            registerL1();
-            registerL2();
-            registerL3();
-            registerL4();
+            reflectionAndUnsafe("markerBegin", "IterationParamsL0", access);
+            registerIterationParamsL1();
+            registerIterationParamsL2(access);
+            registerIterationParamsL3();
+            reflectionAndUnsafe("markerEnd", "IterationParamsL4", access);
+
+            reflectionAndUnsafe("markerBegin", "BenchmarkParamsL0", access);
+            registerBenchmarkParamsL1();
+            registerBenchmarkParamsL2(access);
+            registerBenchmarkParamsL3();
+            reflectionAndUnsafe("markerEnd", "BenchmarkParamsL4", access);
         }
         catch (NoSuchMethodException e)
         {
@@ -32,20 +40,51 @@ public class Reflections implements Feature
         }
     }
 
-    private void registerL4()
+    private void registerBenchmarkParamsL3()
     {
-        final Consumer<String> l4 = registerField(
-            classForName("org.openjdk.jmh.infra.IterationParamsL4")
-        );
+        final Consumer<String> l3 = reflection(jmhForName(
+            "BenchmarkParamsL3"
+        ));
 
-        l4.accept("markerEnd");
+        registerPaddingL3(l3);
     }
 
-    private void registerL3()
+    private void registerBenchmarkParamsL2(BeforeAnalysisAccess access)
     {
-        final Consumer<String> l3 = registerField(
-            classForName("org.openjdk.jmh.infra.IterationParamsL3")
+        final List<String> fieldNames = Arrays.asList(
+            "benchmark", "generatedTarget", "synchIterations"
+            , "threads", "threadGroups", "forks", "warmupForks"
+            , "warmup", "measurement"
+            , "mode", "params"
+            , "timeUnit", "opsPerInvocation"
+            , "jvm", "jvmArgs"
         );
+
+        final Class<?> jmhClass = jmhForName("BenchmarkParamsL2");
+        final Consumer<String> reflection = reflection(jmhClass);
+        final Consumer<String> unsafe = unsafe(jmhClass, access);
+
+        fieldNames.forEach(fieldName ->
+        {
+            reflection.accept(fieldName);
+            unsafe.accept(fieldName);
+        });
+    }
+
+    private void registerBenchmarkParamsL1()
+    {
+        final Consumer<String> l1 = reflection(jmhForName(
+            "BenchmarkParamsL1"
+        ));
+
+        registerPaddingL1(l1);
+    }
+
+    private void registerIterationParamsL3()
+    {
+        final Consumer<String> l3 = reflection(jmhForName(
+            "IterationParamsL3"
+        ));
 
         registerPaddingL3(l3);
     }
@@ -70,23 +109,31 @@ public class Reflections implements Feature
         l3.accept("q171"); l3.accept("q172"); l3.accept("q173"); l3.accept("q174"); l3.accept("q175"); l3.accept("q176"); l3.accept("q177"); l3.accept("q178");
     }
 
-    private void registerL2()
+    private void registerIterationParamsL2(BeforeAnalysisAccess access)
     {
-        final Consumer<String> l2 = registerField(
-            classForName("org.openjdk.jmh.infra.IterationParamsL2")
+        final List<String> fieldNames = Arrays.asList(
+            "type"
+            , "count"
+            , "timeValue"
+            , "batchSize"
         );
 
-        l2.accept("type");
-        l2.accept("count");
-        l2.accept("timeValue");
-        l2.accept("batchSize");
+        final Class<?> jmhClass = jmhForName("IterationParamsL2");
+        final Consumer<String> reflection = reflection(jmhClass);
+        final Consumer<String> unsafe = unsafe(jmhClass, access);
+
+        fieldNames.forEach(fieldName ->
+        {
+            reflection.accept(fieldName);
+            unsafe.accept(fieldName);
+        });
     }
 
-    private void registerL1()
+    private void registerIterationParamsL1()
     {
-        final Consumer<String> l1 = registerField(
-            classForName("org.openjdk.jmh.infra.IterationParamsL1")
-        );
+        final Consumer<String> l1 = reflection(jmhForName(
+            "IterationParamsL1"
+        ));
 
         registerPaddingL1(l1);
     }
@@ -111,23 +158,26 @@ public class Reflections implements Feature
         l1.accept("p171"); l1.accept("p172"); l1.accept("p173"); l1.accept("p174"); l1.accept("p175"); l1.accept("p176"); l1.accept("p177"); l1.accept("p178");
     }
 
-    private void registerL0()
+    static void reflectionAndUnsafe(String fieldName, String jmhName, BeforeAnalysisAccess access)
     {
-        final Consumer<String> l0 = registerField(
-            classForName("org.openjdk.jmh.infra.IterationParamsL0")
-        );
-
-        l0.accept("markerBegin");
+        final Class<?> jmhClass = jmhForName(jmhName);
+        reflection(jmhClass).accept(fieldName);
+        unsafe(jmhClass, access).accept(fieldName);
     }
 
-    static Consumer<String> registerField(Class<?> argumentType)
+    static Consumer<String> reflection(Class<?> argumentType)
     {
         return fieldName ->
-        {
-            RuntimeReflection.register(getDeclaredField(argumentType, fieldName));
-        };
+            RuntimeReflection.register(field(argumentType, fieldName));
     }
-    static Field getDeclaredField(Class<?> argumentType, String fieldName)
+
+    static Consumer<String> unsafe(Class<?> argumentType, BeforeAnalysisAccess before)
+    {
+        return fieldName ->
+            before.registerAsUnsafeAccessed(field(argumentType, fieldName));
+    }
+
+    static Field field(Class<?> argumentType, String fieldName)
     {
         try
         {
@@ -139,11 +189,14 @@ public class Reflections implements Feature
         }
     }
 
-    static Class<?> classForName(String className)
+    static Class<?> jmhForName(String className)
     {
         try
         {
-            return Class.forName(className);
+            return Class.forName(String.format(
+                "org.openjdk.jmh.infra.%s"
+                , className
+            ));
         }
         catch (ClassNotFoundException e)
         {
