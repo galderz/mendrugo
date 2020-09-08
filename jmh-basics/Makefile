@@ -1,7 +1,7 @@
 all: build native bench
 
 build:
-	mvn clean install
+	mvn clean install -DskipTests
 
 native:
 	$(call make-native)
