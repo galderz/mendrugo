@@ -1,8 +1,8 @@
-package svm.recompute;
+package recompute;
 
 import java.nio.ByteBuffer;
 
-public class RecomputeAlias
+public class RecomputeReset
 {
     private static final ByteBuffer BUFFER = ByteBuffer.allocateDirect(0);
 

@@ -1,4 +1,4 @@
-package svm.recompute;
+package recompute;
 
 public class Recompute
 {

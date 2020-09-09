@@ -1,4 +1,4 @@
-package svm.recompute.graal;
+package recompute.graal;
 
 import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.RecomputeFieldValue;
@@ -6,8 +6,8 @@ import com.oracle.svm.core.annotate.TargetClass;
 
 import java.nio.ByteBuffer;
 
-@TargetClass(className = "svm.recompute.RecomputeAlias")
-final class Target_svm_recompute_RecomputeAlias {
+@TargetClass(className = "recompute.RecomputeAlias")
+final class Target_recompute_RecomputeAlias {
 
     @Alias
     @RecomputeFieldValue(kind = RecomputeFieldValue.Kind.FromAlias)
@@ -15,8 +15,8 @@ final class Target_svm_recompute_RecomputeAlias {
 
 }
 
-@TargetClass(className = "svm.recompute.RecomputeReset")
-final class Target_svm_recompute_RecomputeReset {
+@TargetClass(className = "recompute.RecomputeReset")
+final class Target_recompute_RecomputeReset {
 
     @Alias
     @RecomputeFieldValue(kind = RecomputeFieldValue.Kind.Reset)
