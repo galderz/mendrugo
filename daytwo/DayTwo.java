@@ -13,8 +13,13 @@ public class DayTwo
         );
 
         System.out.printf(
-            "VM name: %s"
+            "VM name: %s%n"
             , ManagementFactory.getRuntimeMXBean().getName()
+        );
+
+        System.out.printf(
+            "Inheritable thread local %s"
+            , new InheritableThreadLocal<>()
         );
     }
 }
