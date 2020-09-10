@@ -1,23 +1,39 @@
-all: clean build run native run-native
+sourcefiles = \
+DayTwo.java
+
+main = DayTwo
+exec = $(shell echo $(main) | tr A-Z a-z)
+
+classfiles  = $(sourcefiles:.java=.class)
+
+all: $(classfiles) native run
+
+%.class: %.java
+	javac -d . -classpath . $<
 
 clean:
-	rm -f daytwo
 	rm -f *.class
+	rm -f *.jar
+	rm -f ${exec}
 
-build:
-	javac DayTwo.java
-
-run:
-	java DayTwo
+run-jvm:
+	java $(main)
 
 native:
-	native-image DayTwo
+	$(call make-native)
 
-run-native:
-	./daytwo
+native-debug:
+	$(call make-native,-g)
 
-call-tree:
-	native-image -H:+PrintAnalysisCallTree DayTwo
+native-tree:
+	$(call make-native,-H:+PrintAnalysisCallTree)
+
+define make-native
+native-image ${1} $(main)
+endef
+
+run:
+	./$(exec)
 
 jar:
 	jar cvfm daytwo.jar Manifest.txt DayTwo.class

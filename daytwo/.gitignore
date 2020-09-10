@@ -1,3 +1,8 @@
+*
+!*.*
+!*/
+!Makefile
 *.class
 *.jar
-daytwo
+perf.data
+sources
