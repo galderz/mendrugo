@@ -1,7 +1,7 @@
 all: build native bench
 
 build:
-	mvn clean install -DskipTests
+	mvn clean package -DskipTests
 
 native:
 	$(call make-native)
@@ -21,7 +21,9 @@ native-image \
 endef
 
 bench-jvm:
-	java -jar target/benchmarks.jar
+	java -jar target/benchmarks.jar -v EXTRA
 
 bench:
-	target/benchmarks
+	target/benchmarks \
+	-v EXTRA \
+	--jvm target/benchmarks
