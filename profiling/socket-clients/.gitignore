@@ -3,5 +3,7 @@
 !*/
 !Makefile
 *.class
-perf.data
+perf.data*
+*.log
 sources
+graphs
