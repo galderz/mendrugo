@@ -47,8 +47,8 @@ verbose-report-log:
 	rm -f verbose-perf-report.log && perf report --verbose --stdio > verbose-perf-report.log 2>&1
 
 gen-graph:
-	perf script -i perf.data | $(FG_HOME)/stackcollapse-perf.pl > graphs/out.perf-folded
-	$(FG_HOME)/flamegraph.pl graphs/out.perf-folded > graphs/profile.svg
+	perf script -i perf.data | $(FG_HOME)/stackcollapse-perf.pl > out.perf-folded
+	$(FG_HOME)/flamegraph.pl out.perf-folded > profile.svg
 
 run:
 	./$(exec)
