@@ -25,7 +25,11 @@ native-nodebug:
 	$(call make-native)
 
 define make-native
-native-image ${1} $(main)
+native-image \
+    ${1} \
+    -H:-DeleteLocalSymbols \
+    -H:+PreserveFramePointer \
+    $(main)
 endef
 
 record:
