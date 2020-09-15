@@ -11,19 +11,20 @@ native-verbose:
 
 define make-native
 native-image \
-    -jar target/benchmarks.jar \
+    -jar target/forked-benchmarks.jar \
     --no-fallback \
     --no-server \
     -H:IncludeResources=META-INF/BenchmarkList \
     -H:+ReportExceptionStackTraces \
     ${1} \
-    target/benchmarks
+    target/forked-benchmarks
 endef
 
 bench-jvm:
-	java -jar target/benchmarks.jar -v EXTRA
+	java -jar target/benchmarks.jar \
+	-v EXTRA
 
 bench:
-	target/benchmarks \
+	java -jar target/benchmarks.jar \
 	-v EXTRA \
-	--jvm target/benchmarks
+	--jvm target/forked-benchmarks
