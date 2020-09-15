@@ -1,5 +1,10 @@
 package jmh.basics;
 
+import org.openjdk.jmh.infra.BenchmarkParams;
+import org.openjdk.jmh.infra.IterationParams;
+import org.openjdk.jmh.results.BenchmarkResult;
+import org.openjdk.jmh.results.IterationResult;
+import org.openjdk.jmh.runner.format.OutputFormat;
 import org.openjdk.jmh.runner.options.TimeValue;
 
 import java.lang.reflect.Constructor;
@@ -7,6 +12,7 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -38,12 +44,24 @@ public class BenchmarkBeforeAnalysis
         registerBenchmarkParamsL3();
         reflectionAndUnsafe("markerEnd", "BenchmarkParamsL4");
 
-        registerSecurityReflection();
+        registerFormatReflection();
     }
 
-    private void registerSecurityReflection()
+    private void registerFormatReflection()
     {
-        // TODO: Customise this generated block
+        effects.registerMethod.accept(method(OutputFormat.class, "iteration", BenchmarkParams.class, IterationParams.class, int.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "iterationResult", BenchmarkParams.class, IterationParams.class, int.class, IterationResult.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "startBenchmark", BenchmarkParams.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "endBenchmark", BenchmarkResult.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "startRun"));
+        effects.registerMethod.accept(method(OutputFormat.class, "endRun", Collection.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "print", String.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "println", String.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "flush"));
+        effects.registerMethod.accept(method(OutputFormat.class, "close"));
+        effects.registerMethod.accept(method(OutputFormat.class, "verbosePrintln", String.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "write", int.class));
+        effects.registerMethod.accept(method(OutputFormat.class, "write", byte[].class));
     }
 
     private void registerBenchmarkParamsL3()
