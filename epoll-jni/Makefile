@@ -1,6 +1,12 @@
 netty = 4.1.52.Final-SNAPSHOT
 project = epoll-jni
 
+classpath=target/dependency/netty-transport-native-epoll-$(netty)-linux-x86_64.jar:$\
+	target/dependency/netty-common-$(netty).jar:$\
+	target/dependency/netty-transport-native-unix-common-$(netty).jar:$\
+	target/dependency/netty-transport-$(netty).jar:$\
+	target/dependency/netty-buffer-$(netty).jar
+
 all: build native run
 
 clean:
@@ -12,7 +18,7 @@ build: clean
 native: clean build
 	native-image \
 	-jar target/$(project)-1.0-SNAPSHOT.jar \
-	-cp target/dependency/netty-transport-native-epoll-$(netty)-linux-x86_64.jar:target/dependency/netty-native-epoll-$(netty).jar:target/dependency/netty-common-$(netty).jar:target/dependency/netty-transport-native-unix-common-$(netty).jar:target/dependency/netty-transport-$(netty).jar:target/dependency/netty-buffer-$(netty).jar \
+	-cp $(classpath) \
 	--initialize-at-build-time= \
 	--enable-all-security-services \
 	--no-fallback \
