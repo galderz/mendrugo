@@ -1,4 +1,4 @@
-package epoll;
+package epoll.jni;
 
 import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.RecomputeFieldValue;

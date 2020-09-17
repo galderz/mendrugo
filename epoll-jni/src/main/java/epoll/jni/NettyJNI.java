@@ -1,4 +1,4 @@
-package epoll;
+package epoll.jni;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;

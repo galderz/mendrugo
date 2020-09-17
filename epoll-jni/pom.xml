@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>epoll</groupId>
-    <artifactId>epoll</artifactId>
+    <groupId>epoll-jni</groupId>
+    <artifactId>epoll-jni</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -17,6 +17,7 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.netty</groupId>
@@ -41,7 +42,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>epoll.CheckEpoll</mainClass>
+                            <mainClass>epoll.jni.CheckEpoll</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

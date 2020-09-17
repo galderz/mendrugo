@@ -1,4 +1,4 @@
-package epoll;
+package epoll.jni;
 
 import com.oracle.svm.core.annotate.AutomaticFeature;
 import com.oracle.svm.core.jni.JNIRuntimeAccess;

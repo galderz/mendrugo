@@ -1,5 +1,5 @@
 netty = 4.1.52.Final-SNAPSHOT
-project = epoll
+project = epoll-jni
 
 all: build native run
 
