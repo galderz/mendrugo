@@ -18,61 +18,62 @@ rm -drf reports || true
 mvn clean package dependency:copy-dependencies -DskipTests
 [INFO] Scanning for projects...
 [INFO]
-[INFO] ----------------------------< epoll:epoll >-----------------------------
-[INFO] Building epoll 1.0-SNAPSHOT
+[INFO] ------------------------< epoll-jni:epoll-jni >-------------------------
+[INFO] Building epoll-jni 1.0-SNAPSHOT
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO]
-[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ epoll ---
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ epoll-jni ---
+[INFO] Deleting /home/g/1/mendrugo/epoll-jni/target
 [INFO]
-[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ epoll ---
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ epoll-jni ---
 [INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] skip non existing resourceDirectory /home/g/1/mendrugo/epoll/src/main/resources
+[INFO] skip non existing resourceDirectory /home/g/1/mendrugo/epoll-jni/src/main/resources
 [INFO]
-[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ epoll ---
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ epoll-jni ---
 [INFO] Changes detected - recompiling the module!
-[INFO] Compiling 4 source files to /home/g/1/mendrugo/epoll/target/classes
+[INFO] Compiling 4 source files to /home/g/1/mendrugo/epoll-jni/target/classes
 [INFO]
-[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ epoll ---
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ epoll-jni ---
 [INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] skip non existing resourceDirectory /home/g/1/mendrugo/epoll/src/test/resources
+[INFO] skip non existing resourceDirectory /home/g/1/mendrugo/epoll-jni/src/test/resources
 [INFO]
-[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ epoll ---
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ epoll-jni ---
 [INFO] No sources to compile
 [INFO]
-[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ epoll ---
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ epoll-jni ---
 [INFO] Tests are skipped.
 [INFO]
-[INFO] --- maven-jar-plugin:3.1.0:jar (default-jar) @ epoll ---
-[INFO] Building jar: /home/g/1/mendrugo/epoll/target/epoll-1.0-SNAPSHOT.jar
+[INFO] --- maven-jar-plugin:3.1.0:jar (default-jar) @ epoll-jni ---
+[INFO] Building jar: /home/g/1/mendrugo/epoll-jni/target/epoll-jni-1.0-SNAPSHOT.jar
 [INFO]
-[INFO] --- maven-dependency-plugin:2.8:copy-dependencies (default-cli) @ epoll ---
-[INFO] Copying compiler-20.1.0.jar to /home/g/1/mendrugo/epoll/target/dependency/compiler-20.1.0.jar
-[INFO] Copying netty-transport-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll/target/dependency/netty-transport-4.1.52.Final-SNAPSHOT.jar
-[INFO] Copying pointsto-20.1.0.jar to /home/g/1/mendrugo/epoll/target/dependency/pointsto-20.1.0.jar
-[INFO] Copying truffle-api-20.1.0.jar to /home/g/1/mendrugo/epoll/target/dependency/truffle-api-20.1.0.jar
-[INFO] Copying svm-20.1.0.jar to /home/g/1/mendrugo/epoll/target/dependency/svm-20.1.0.jar
-[INFO] Copying graal-sdk-20.1.0.jar to /home/g/1/mendrugo/epoll/target/dependency/graal-sdk-20.1.0.jar
-[INFO] Copying truffle-nfi-native-linux-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll/target/dependency/truffle-nfi-native-linux-amd64-20.1.0.tar.gz
-[INFO] Copying netty-resolver-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll/target/dependency/netty-resolver-4.1.52.Final-SNAPSHOT.jar
-[INFO] Copying svm-hosted-native-darwin-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll/target/dependency/svm-hosted-native-darwin-amd64-20.1.0.tar.gz
-[INFO] Copying objectfile-20.1.0.jar to /home/g/1/mendrugo/epoll/target/dependency/objectfile-20.1.0.jar
-[INFO] Copying svm-hosted-native-linux-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll/target/dependency/svm-hosted-native-linux-amd64-20.1.0.tar.gz
-[INFO] Copying truffle-nfi-20.1.0.jar to /home/g/1/mendrugo/epoll/target/dependency/truffle-nfi-20.1.0.jar
-[INFO] Copying truffle-nfi-native-linux-aarch64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll/target/dependency/truffle-nfi-native-linux-aarch64-20.1.0.tar.gz
-[INFO] Copying truffle-nfi-native-darwin-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll/target/dependency/truffle-nfi-native-darwin-amd64-20.1.0.tar.gz
-[INFO] Copying netty-transport-native-epoll-4.1.52.Final-SNAPSHOT-linux-x86_64.jar to /home/g/1/mendrugo/epoll/target/dependency/netty-transport-native-epoll-4.1.52.Final-SNAPSHOT-linux-x86_64.jar
-[INFO] Copying netty-buffer-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll/target/dependency/netty-buffer-4.1.52.Final-SNAPSHOT.jar
-[INFO] Copying svm-hosted-native-windows-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll/target/dependency/svm-hosted-native-windows-amd64-20.1.0.tar.gz
-[INFO] Copying netty-common-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll/target/dependency/netty-common-4.1.52.Final-SNAPSHOT.jar
-[INFO] Copying netty-transport-native-unix-common-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll/target/dependency/netty-transport-native-unix-common-4.1.52.Final-SNAPSHOT.jar
+[INFO] --- maven-dependency-plugin:2.8:copy-dependencies (default-cli) @ epoll-jni ---
+[INFO] Copying compiler-20.1.0.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/compiler-20.1.0.jar
+[INFO] Copying netty-transport-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/netty-transport-4.1.52.Final-SNAPSHOT.jar
+[INFO] Copying pointsto-20.1.0.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/pointsto-20.1.0.jar
+[INFO] Copying truffle-api-20.1.0.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/truffle-api-20.1.0.jar
+[INFO] Copying svm-20.1.0.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/svm-20.1.0.jar
+[INFO] Copying graal-sdk-20.1.0.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/graal-sdk-20.1.0.jar
+[INFO] Copying truffle-nfi-native-linux-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll-jni/target/dependency/truffle-nfi-native-linux-amd64-20.1.0.tar.gz
+[INFO] Copying netty-resolver-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/netty-resolver-4.1.52.Final-SNAPSHOT.jar
+[INFO] Copying svm-hosted-native-darwin-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll-jni/target/dependency/svm-hosted-native-darwin-amd64-20.1.0.tar.gz
+[INFO] Copying objectfile-20.1.0.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/objectfile-20.1.0.jar
+[INFO] Copying svm-hosted-native-linux-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll-jni/target/dependency/svm-hosted-native-linux-amd64-20.1.0.tar.gz
+[INFO] Copying truffle-nfi-20.1.0.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/truffle-nfi-20.1.0.jar
+[INFO] Copying truffle-nfi-native-linux-aarch64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll-jni/target/dependency/truffle-nfi-native-linux-aarch64-20.1.0.tar.gz
+[INFO] Copying truffle-nfi-native-darwin-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll-jni/target/dependency/truffle-nfi-native-darwin-amd64-20.1.0.tar.gz
+[INFO] Copying netty-transport-native-epoll-4.1.52.Final-SNAPSHOT-linux-x86_64.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/netty-transport-native-epoll-4.1.52.Final-SNAPSHOT-linux-x86_64.jar
+[INFO] Copying netty-buffer-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/netty-buffer-4.1.52.Final-SNAPSHOT.jar
+[INFO] Copying svm-hosted-native-windows-amd64-20.1.0.tar.gz to /home/g/1/mendrugo/epoll-jni/target/dependency/svm-hosted-native-windows-amd64-20.1.0.tar.gz
+[INFO] Copying netty-common-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/netty-common-4.1.52.Final-SNAPSHOT.jar
+[INFO] Copying netty-transport-native-unix-common-4.1.52.Final-SNAPSHOT.jar to /home/g/1/mendrugo/epoll-jni/target/dependency/netty-transport-native-unix-common-4.1.52.Final-SNAPSHOT.jar
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time: 3.903 s
-[INFO] Finished at: 2020-09-03T11:00:04+01:00
+[INFO] Total time:  3.847 s
+[INFO] Finished at: 2020-09-17T09:01:31+01:00
 [INFO] ------------------------------------------------------------------------
 native-image \
--jar target/epoll-1.0-SNAPSHOT.jar \
+-jar target/epoll-jni-1.0-SNAPSHOT.jar \
 -cp target/dependency/netty-transport-native-epoll-4.1.52.Final-SNAPSHOT-linux-x86_64.jar:target/dependency/netty-native-epoll-4.1.52.Final-SNAPSHOT.jar:target/dependency/netty-common-4.1.52.Final-SNAPSHOT.jar:target/dependency/netty-transport-native-unix-common-4.1.52.Final-SNAPSHOT.jar:target/dependency/netty-transport-4.1.52.Final-SNAPSHOT.jar:target/dependency/netty-buffer-4.1.52.Final-SNAPSHOT.jar \
 --initialize-at-build-time= \
 --enable-all-security-services \
@@ -92,10 +93,10 @@ native-image \
 -H:+TraceClassInitialization \
 -H:-AddAllCharsets \
 -H:-UseServiceLoaderFeature \
-target/epoll
+target/epoll-jni
 Warning: Ignoring server-mode native-image argument --no-server.
 Executing [
-/home/g/.qollider/cache/0209/graalvm_home/bin/java \
+/home/g/.qollider/cache/0309/graalvm_home/bin/java \
 -XX:+UseParallelGC \
 -XX:+UnlockExperimentalVMOptions \
 -XX:+EnableJVMCI \
@@ -151,16 +152,16 @@ Executing [
 -Duser.country=US \
 -Duser.language=en \
 -Djava.awt.headless=true \
--Dorg.graalvm.version=d60078b \
+-Dorg.graalvm.version=9e29645 \
 '-Dorg.graalvm.config=(Mandrel Distribution)' \
 -Dcom.oracle.graalvm.isaot=true \
 -Djava.system.class.loader=com.oracle.svm.hosted.NativeImageSystemClassLoader \
 -Xshare:off \
 --module-path \
-/home/g/.qollider/cache/0209/graalvm_home/lib/jvmci/graal-sdk.jar:/home/g/.qollider/cache/0209/graalvm_home/lib/truffle/truffle-api.jar \
+/home/g/.qollider/cache/0309/graalvm_home/lib/jvmci/graal-sdk.jar:/home/g/.qollider/cache/0309/graalvm_home/lib/truffle/truffle-api.jar \
 --upgrade-module-path \
-/home/g/.qollider/cache/0209/graalvm_home/lib/jvmci/graal.jar \
--javaagent:/home/g/.qollider/cache/0209/graalvm_home/lib/svm/builder/svm.jar=traceInitialization \
+/home/g/.qollider/cache/0309/graalvm_home/lib/jvmci/graal.jar \
+-javaagent:/home/g/.qollider/cache/0309/graalvm_home/lib/svm/builder/svm.jar=traceInitialization \
 -Djdk.internal.lambda.disableEagerInitialization=true \
 -Djdk.internal.lambda.eagerlyInitialize=false \
 -Djava.lang.invoke.InnerClassLambdaMetafactory.initializeLambdas=false \
@@ -171,12 +172,12 @@ Executing [
 -Dsun.nio.ch.maxUpdateArraySize=100 \
 -Duser.language=en \
 -cp \
-/home/g/.qollider/cache/0209/graalvm_home/lib/jvmci/graal-sdk.jar:/home/g/.qollider/cache/0209/graalvm_home/lib/jvmci/graal.jar:/home/g/.qollider/cache/0209/graalvm_home/lib/svm/builder/svm.jar:/home/g/.qollider/cache/0209/graalvm_home/lib/svm/builder/pointsto.jar:/home/g/.qollider/cache/0209/graalvm_home/lib/svm/builder/objectfile.jar \
+/home/g/.qollider/cache/0309/graalvm_home/lib/jvmci/graal-sdk.jar:/home/g/.qollider/cache/0309/graalvm_home/lib/jvmci/graal.jar:/home/g/.qollider/cache/0309/graalvm_home/lib/svm/builder/svm.jar:/home/g/.qollider/cache/0309/graalvm_home/lib/svm/builder/pointsto.jar:/home/g/.qollider/cache/0309/graalvm_home/lib/svm/builder/objectfile.jar \
 'com.oracle.svm.hosted.NativeImageGeneratorRunner$JDK9Plus' \
 -imagecp \
-/home/g/1/mendrugo/epoll/target/epoll-1.0-SNAPSHOT.jar:/home/g/1/mendrugo/epoll/target/dependency/netty-transport-native-epoll-4.1.52.Final-SNAPSHOT-linux-x86_64.jar:/home/g/1/mendrugo/epoll/target/dependency/netty-native-epoll-4.1.52.Final-SNAPSHOT.jar:/home/g/1/mendrugo/epoll/target/dependency/netty-common-4.1.52.Final-SNAPSHOT.jar:/home/g/1/mendrugo/epoll/target/dependency/netty-transport-native-unix-common-4.1.52.Final-SNAPSHOT.jar:/home/g/1/mendrugo/epoll/target/dependency/netty-transport-4.1.52.Final-SNAPSHOT.jar:/home/g/1/mendrugo/epoll/target/dependency/netty-buffer-4.1.52.Final-SNAPSHOT.jar \
--H:Path=/home/g/1/mendrugo/epoll \
--H:Class=epoll.CheckEpoll \
+/home/g/1/mendrugo/epoll-jni/target/epoll-jni-1.0-SNAPSHOT.jar:/home/g/1/mendrugo/epoll-jni/target/dependency/netty-transport-native-epoll-4.1.52.Final-SNAPSHOT-linux-x86_64.jar:/home/g/1/mendrugo/epoll-jni/target/dependency/netty-native-epoll-4.1.52.Final-SNAPSHOT.jar:/home/g/1/mendrugo/epoll-jni/target/dependency/netty-common-4.1.52.Final-SNAPSHOT.jar:/home/g/1/mendrugo/epoll-jni/target/dependency/netty-transport-native-unix-common-4.1.52.Final-SNAPSHOT.jar:/home/g/1/mendrugo/epoll-jni/target/dependency/netty-transport-4.1.52.Final-SNAPSHOT.jar:/home/g/1/mendrugo/epoll-jni/target/dependency/netty-buffer-4.1.52.Final-SNAPSHOT.jar \
+-H:Path=/home/g/1/mendrugo/epoll-jni \
+-H:Class=epoll.jni.CheckEpoll \
 -H:ClassInitialization=io.netty.util.concurrent.GlobalEventExecutor:run_time,io.netty.util.concurrent.ImmediateEventExecutor:run_time,io.netty.util.concurrent.ScheduledFutureTask:run_time,io.netty.util.internal.ThreadLocalRandom:run_time \
 -H:ReflectionConfigurationResources=META-INF/native-image/io.netty/transport/reflection-config.json \
 -H:ClassInitialization=io.netty.buffer.PooledByteBufAllocator:run_time,io.netty.buffer.ByteBufAllocator:run_time,io.netty.buffer.ByteBufUtil:run_time \
@@ -190,27 +191,27 @@ Executing [
 -H:+TraceClassInitialization \
 -H:-AddAllCharsets \
 -H:-UseServiceLoaderFeature \
--H:CLibraryPath=/home/g/.qollider/cache/0209/graalvm_home/lib/svm/clibraries/linux-amd64 \
--H:Name=target/epoll \
+-H:CLibraryPath=/home/g/.qollider/cache/0309/graalvm_home/lib/svm/clibraries/linux-amd64 \
+-H:Name=target/epoll-jni \
 
 ]
-[target/epoll:23590]    classlist:   4,067.66 ms,  0.96 GB
+[target/epoll-jni:10592]    classlist:   3,916.08 ms,  0.96 GB
 WARNING: Using an older version of the labsjdk-11.
-[target/epoll:23590]        (cap):   1,319.32 ms,  0.96 GB
-[target/epoll:23590]        setup:   4,141.81 ms,  0.96 GB
-[target/epoll:23590]     (clinit):     363.36 ms,  3.19 GB
-[target/epoll:23590]   (typeflow):  15,966.87 ms,  3.19 GB
-[target/epoll:23590]    (objects):  22,263.00 ms,  3.19 GB
-[target/epoll:23590]   (features):     935.19 ms,  3.19 GB
-[target/epoll:23590]     analysis:  40,355.33 ms,  3.19 GB
-[target/epoll:23590]     universe:   1,083.52 ms,  3.19 GB
-[target/epoll:23590]      (parse):   5,143.57 ms,  3.19 GB
-[target/epoll:23590]     (inline):   3,580.06 ms,  3.19 GB
-[target/epoll:23590]    (compile):  25,039.94 ms,  4.98 GB
-[target/epoll:23590]      compile:  36,678.34 ms,  4.98 GB
-[target/epoll:23590]        image:   6,667.61 ms,  4.98 GB
-[target/epoll:23590]        write:     829.05 ms,  4.98 GB
-[target/epoll:23590]      [total]:  94,311.87 ms,  4.98 GB
-./target/epoll
+[target/epoll-jni:10592]        (cap):   1,327.62 ms,  0.96 GB
+[target/epoll-jni:10592]        setup:   4,120.17 ms,  0.96 GB
+[target/epoll-jni:10592]     (clinit):     384.46 ms,  3.19 GB
+[target/epoll-jni:10592]   (typeflow):  17,011.65 ms,  3.19 GB
+[target/epoll-jni:10592]    (objects):  24,781.41 ms,  3.19 GB
+[target/epoll-jni:10592]   (features):   1,023.74 ms,  3.19 GB
+[target/epoll-jni:10592]     analysis:  44,067.17 ms,  3.19 GB
+[target/epoll-jni:10592]     universe:   1,033.46 ms,  3.19 GB
+[target/epoll-jni:10592]      (parse):   4,904.11 ms,  3.19 GB
+[target/epoll-jni:10592]     (inline):   4,596.93 ms,  3.19 GB
+[target/epoll-jni:10592]    (compile):  30,046.73 ms,  5.00 GB
+[target/epoll-jni:10592]      compile:  42,062.14 ms,  5.00 GB
+[target/epoll-jni:10592]        image:   6,186.89 ms,  5.00 GB
+[target/epoll-jni:10592]        write:     877.08 ms,  5.00 GB
+[target/epoll-jni:10592]      [total]: 102,733.19 ms,  5.00 GB
+./target/epoll-jni
 true
 ```
