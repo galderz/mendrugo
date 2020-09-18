@@ -1,12 +1,15 @@
 # SNAPSHOT required to make AbstractReferenceCounted available at build time
-netty = 4.1.52.Final-SNAPSHOT
+# This is needed because in this case the JNI library,
+# and related classes, are loaded at build time.
+NETTY ?= 4.1.52.Final-SNAPSHOT
+
 project = epoll-jni-buildtime
 
-classpath=target/dependency/netty-transport-native-epoll-$(netty)-linux-x86_64.jar:$\
-	target/dependency/netty-common-$(netty).jar:$\
-	target/dependency/netty-transport-native-unix-common-$(netty).jar:$\
-	target/dependency/netty-transport-$(netty).jar:$\
-	target/dependency/netty-buffer-$(netty).jar
+classpath=target/dependency/netty-transport-native-epoll-$(NETTY)-linux-x86_64.jar:$\
+	target/dependency/netty-common-$(NETTY).jar:$\
+	target/dependency/netty-transport-native-unix-common-$(NETTY).jar:$\
+	target/dependency/netty-transport-$(NETTY).jar:$\
+	target/dependency/netty-buffer-$(NETTY).jar
 
 all: build native run
 
@@ -15,7 +18,7 @@ clean:
 	mvn clean
 
 build:
-	mvn clean package dependency:copy-dependencies -DskipTests
+	mvn clean package dependency:copy-dependencies -DskipTests -Dnetty.version=$(NETTY)
 
 native:
 	native-image \
