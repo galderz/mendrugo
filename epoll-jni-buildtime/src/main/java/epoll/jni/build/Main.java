@@ -1,4 +1,4 @@
-package epoll.jni;
+package epoll.jni.build;
 
 import io.netty.channel.epoll.Epoll;
 

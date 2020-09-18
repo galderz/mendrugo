@@ -12,11 +12,12 @@ all: build native run
 
 clean:
 	rm -drf reports || true
+	mvn clean
 
-build: clean
+build:
 	mvn clean package dependency:copy-dependencies -DskipTests
 
-native: clean build
+native:
 	native-image \
 	-jar target/$(project)-1.0-SNAPSHOT.jar \
 	-cp $(classpath) \
