@@ -1,4 +1,4 @@
-all: clean build native
+all: clean build native run
 
 clean:
 	rm -drf reports
