@@ -2,7 +2,7 @@ package epoll.jni;
 
 import io.netty.channel.epoll.Epoll;
 
-public class CheckEpoll
+public class Main
 {
     public static void main(String[] args)
     {

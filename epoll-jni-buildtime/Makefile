@@ -1,5 +1,6 @@
+# SNAPSHOT required to make AbstractReferenceCounted available at build time
 netty = 4.1.52.Final-SNAPSHOT
-project = epoll-jni
+project = epoll-jni-buildtime
 
 classpath=target/dependency/netty-transport-native-epoll-$(netty)-linux-x86_64.jar:$\
 	target/dependency/netty-common-$(netty).jar:$\

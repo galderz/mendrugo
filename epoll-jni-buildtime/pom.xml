@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>epoll-jni</groupId>
-    <artifactId>epoll-jni</artifactId>
+    <groupId>org.example</groupId>
+    <artifactId>epoll-jni-buildtime</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <graal-sdk.version>20.1.0</graal-sdk.version>
+        <graal-sdk.version>20.2.0</graal-sdk.version>
         <netty.version>4.1.52.Final-SNAPSHOT</netty.version>
 
         <maven.compiler.source>11</maven.compiler.source>
@@ -42,7 +42,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>epoll.jni.CheckEpoll</mainClass>
+                            <mainClass>epoll.jni.build.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
