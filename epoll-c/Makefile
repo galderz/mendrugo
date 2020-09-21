@@ -1,4 +1,5 @@
-NETTY ?= 4.1.51.Final
+# SNAPSHOT required to access non-static native method definitions
+NETTY ?= 4.1.52.Final-SNAPSHOT
 
 project = epoll-c
 
