@@ -1,8 +1,10 @@
+import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
 public class DayTwo
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws IOException
     {
         System.out.println("Day two!");
 
@@ -18,8 +20,15 @@ public class DayTwo
         );
 
         System.out.printf(
-            "Inheritable thread local %s"
+            "Inheritable thread local %s%n"
             , new InheritableThreadLocal<>()
+        );
+
+        File file = File.createTempFile("daytwo", "test");
+        file.deleteOnExit();
+        System.out.printf(
+            "Temp file %s%n"
+            , file
         );
     }
 }
