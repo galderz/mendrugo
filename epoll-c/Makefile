@@ -33,9 +33,11 @@ native: build
 	-J-Dio.netty.leakDetection.level=DISABLED \
 	-J-Dsun.nio.ch.maxUpdateArraySize=100 \
 	-J-Duser.language=en \
+	-H:CLibraryPath=/home/g/1/netty/transport-native-epoll/target/native-build/.libs \
 	-H:EnableURLProtocols=http,https \
 	-H:FallbackThreshold=0 \
 	-H:IncludeResources=META-INF/native/libnetty_transport_native_epoll_x86_64.so \
+	-H:+DumpTargetInfo \
 	-H:+ReportExceptionStackTraces \
 	-H:+StackTrace \
 	-H:+TraceClassInitialization \
