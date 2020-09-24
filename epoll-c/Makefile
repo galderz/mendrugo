@@ -6,6 +6,7 @@ project = epoll-c
 
 classpath=target/dependency/netty-buffer-$(NETTY).jar:$\
 	target/dependency/netty-common-$(NETTY).jar:$\
+	target/dependency/netty-resolver-$(NETTY).jar:$\
 	target/dependency/netty-transport-$(NETTY).jar:$\
 	target/dependency/netty-transport-native-epoll-$(NETTY)-linux-x86_64.jar:$\
 	target/dependency/netty-transport-native-unix-common-$(NETTY).jar
@@ -16,6 +17,8 @@ runtime=io.netty.channel.epoll.Epoll,$\
 	io.netty.channel.unix.Socket
 
 all: build native run
+
+all-jvm: build run-jvm
 
 build:
 	mvn clean package dependency:copy-dependencies -DskipTests -Dnetty.version=$(NETTY)
@@ -48,3 +51,6 @@ native: build
 
 run:
 	./target/$(project)
+
+run-jvm:
+	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar epoll.c.Main

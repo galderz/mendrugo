@@ -1,8 +1,16 @@
 package epoll.c;
 
+import epoll.c.example.EpollClient;
+import epoll.c.example.EpollServer;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.Native;
 import io.netty.util.Version;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Main
 {
@@ -20,5 +28,42 @@ public class Main
         {
             throw Epoll.unavailabilityCause();
         }
+
+        System.out.println("Run echo");
+        runEcho();
     }
+
+    static void runEcho() throws Exception
+    {
+        final var executor = Executors.newSingleThreadExecutor();
+        try (var server = new RunEpollServer(); var client = new EpollClient())
+        {
+            executor.submit(server).get();
+            client.run();
+            client.waitForEcho();
+        }
+        finally
+        {
+            executor.shutdown();
+        }
+    }
+
+    static class RunEpollServer implements Callable<Void>, AutoCloseable
+    {
+        EpollServer epollServer = new EpollServer();
+
+        @Override
+        public Void call() throws Exception
+        {
+            epollServer.run();
+            return null;
+        }
+
+        @Override
+        public void close() throws Exception
+        {
+            epollServer.close();
+        }
+    }
+
 }
