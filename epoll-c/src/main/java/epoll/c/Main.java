@@ -6,7 +6,7 @@ import io.netty.util.Version;
 
 public class Main
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws Throwable
     {
         // TODO Fix versions (add META-INF/io.netty.versions.properties ?)
         System.out.printf("Netty version %s%n", Version.identify());
@@ -14,9 +14,11 @@ public class Main
         System.out.printf("TCP MD5 signature maximum length %d%n", Native.TCP_MD5SIG_MAXKEYLEN);
         System.out.printf("Kernel version %s%n", Native.KERNEL_VERSION);
 
-//        final boolean epollAvailable = Epoll.isAvailable();
-//        System.out.printf("Epoll available: %b%n", epollAvailable);
-//        if (!epollAvailable)
-//            Epoll.unavailabilityCause().printStackTrace();
+        final boolean epollAvailable = Epoll.isAvailable();
+        System.out.printf("Epoll available: %b%n", epollAvailable);
+        if (!epollAvailable)
+        {
+            throw Epoll.unavailabilityCause();
+        }
     }
 }
