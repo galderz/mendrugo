@@ -42,6 +42,7 @@ native: build
 	-H:EnableURLProtocols=http,https \
 	-H:FallbackThreshold=0 \
 	-H:+DumpTargetInfo \
+	-H:+PrintAnalysisCallTree \
 	-H:+ReportExceptionStackTraces \
 	-H:+StackTrace \
 	-H:+TraceClassInitialization \
