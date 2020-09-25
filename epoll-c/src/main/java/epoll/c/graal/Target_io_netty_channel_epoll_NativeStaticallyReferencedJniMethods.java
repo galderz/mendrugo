@@ -67,8 +67,6 @@ final class Target_io_netty_channel_epoll_NativeStaticallyReferencedJniMethods
     @Substitute
     static String kernelVersion()
     {
-        System.out.println("kernelVersion() begin");
-
         return JNIObjectHandles.getObject(
             NettyEpollNative.kernelVersion(JNIThreadLocalEnvironment.getAddress(), WordFactory.nullPointer())
         );

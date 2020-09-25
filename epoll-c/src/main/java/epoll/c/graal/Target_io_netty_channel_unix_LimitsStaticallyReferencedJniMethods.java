@@ -9,7 +9,31 @@ import org.graalvm.word.WordFactory;
 final class Target_io_netty_channel_unix_LimitsStaticallyReferencedJniMethods
 {
     @Substitute
-    static int udsSunPathSize()
+    private static long ssizeMax()
+    {
+        return NettyUnixLimits.ssizeMax(WordFactory.nullPointer(), WordFactory.nullPointer());
+    }
+
+    @Substitute
+    private static int iovMax()
+    {
+        return NettyUnixLimits.iovMax(WordFactory.nullPointer(), WordFactory.nullPointer());
+    }
+
+    @Substitute
+    private static int uioMaxIov()
+    {
+        return NettyUnixLimits.uioMaxIov(WordFactory.nullPointer(), WordFactory.nullPointer());
+    }
+
+    @Substitute
+    private static int sizeOfjlong()
+    {
+        return NettyUnixLimits.sizeOfjlong(WordFactory.nullPointer(), WordFactory.nullPointer());
+    }
+
+    @Substitute
+    private static int udsSunPathSize()
     {
         return NettyUnixLimits.udsSunPathSize(WordFactory.nullPointer(), WordFactory.nullPointer());
     }
