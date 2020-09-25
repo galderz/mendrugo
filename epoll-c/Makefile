@@ -12,8 +12,12 @@ classpath=target/dependency/netty-buffer-$(NETTY).jar:$\
 	target/dependency/netty-transport-native-unix-common-$(NETTY).jar
 
 runtime=io.netty.channel.epoll.Epoll,$\
+	io.netty.channel.epoll.EpollEventArray,$\
+	io.netty.channel.epoll.EpollEventLoop,$\
 	io.netty.channel.epoll.Native,$\
 	io.netty.channel.unix.Errors,$\
+	io.netty.channel.unix.IovArray,$\
+	io.netty.channel.unix.Limits,$\
 	io.netty.channel.unix.Socket
 
 all: build native run
