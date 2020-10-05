@@ -1,6 +1,8 @@
 # SNAPSHOT required to access non-static native method definitions
 NETTY ?= 4.1.52.Final-SNAPSHOT
-NETTY_LIB_PATH ?= $(HOME)/1/netty/transport-native-epoll/target/static-libs
+NETTY_HOME = $(HOME)/shared/netty
+
+nettylibs ?= $(NETTY_HOME)/transport-native-epoll/target/static-libs
 
 project = epoll-c
 
@@ -22,7 +24,17 @@ runtime=io.netty.channel.epoll.Epoll,$\
 
 all: build native run
 
+all-netty: build-netty build native run
+
 all-jvm: build run-jvm
+
+build-netty:
+	pushd $(NETTY_HOME) && \
+	mvn -DskipTests=true clean install -pl :netty-transport-native-epoll,:netty-transport-native-unix-common
+
+build-netty-all:
+	pushd $(NETTY_HOME) && \
+	mvn -DskipTests=true clean install
 
 build:
 	mvn clean package dependency:copy-dependencies -DskipTests -Dnetty.version=$(NETTY)
@@ -42,7 +54,7 @@ native: build
 	-J-Dio.netty.leakDetection.level=DISABLED \
 	-J-Dsun.nio.ch.maxUpdateArraySize=100 \
 	-J-Duser.language=en \
-	-H:CLibraryPath=$(NETTY_LIB_PATH) \
+	-H:CLibraryPath=$(nettylibs) \
 	-H:EnableURLProtocols=http,https \
 	-H:FallbackThreshold=0 \
 	-H:+DumpTargetInfo \

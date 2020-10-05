@@ -12,11 +12,17 @@ public class NettyUnixFileDescriptor
     @CFunction(value = "io_netty_unix_filedescriptor_close", transition = CFunction.Transition.NO_TRANSITION)
     public static native int close(WordBase jnienv, WordBase clazz, int fd);
 
-//    private static native int write(int fd, ByteBuffer buf, int pos, int limit);
-//    private static native int writeAddress(int fd, long address, int pos, int limit);
-//    private static native long writev(int fd, ByteBuffer[] buffers, int offset, int length, long maxBytesToWrite);
-//    private static native long writevAddresses(int fd, long memoryAddress, int length);
-//    private static native int read(int fd, ByteBuffer buf, int pos, int limit);
-//    private static native int readAddress(int fd, long address, int pos, int limit);
-//    private static native long newPipe();
+//  @CFunction(value = "io_netty_unix_filedescriptor_", transition = CFunction.Transition.NO_TRANSITION) public static native int write(WordBase jnienv, WordBase clazz, int fd, ByteBuffer buf, int pos, int limit);
+
+    @CFunction(value = "io_netty_unix_filedescriptor_writeAddress", transition = CFunction.Transition.NO_TRANSITION)
+    public static native int writeAddress(WordBase jnienv, WordBase clazz, int fd, long address, int pos, int limit);
+
+//  @CFunction(value = "io_netty_unix_filedescriptor_", transition = CFunction.Transition.NO_TRANSITION) public static native long writev(WordBase jnienv, WordBase clazz, int fd, ByteBuffer[] buffers, int offset, int length, long maxBytesToWrite);
+//  @CFunction(value = "io_netty_unix_filedescriptor_", transition = CFunction.Transition.NO_TRANSITION) public static native long writevAddresses(WordBase jnienv, WordBase clazz, int fd, long memoryAddress, int length);
+//  @CFunction(value = "io_netty_unix_filedescriptor_", transition = CFunction.Transition.NO_TRANSITION) public static native int read(WordBase jnienv, WordBase clazz, int fd, ByteBuffer buf, int pos, int limit);
+
+    @CFunction(value = "io_netty_unix_filedescriptor_readAddress", transition = CFunction.Transition.NO_TRANSITION)
+    public static native int readAddress(WordBase jnienv, WordBase clazz, int fd, long address, int pos, int limit);
+
+//  @CFunction(value = "io_netty_unix_filedescriptor_", transition = CFunction.Transition.NO_TRANSITION) public static native long newPipe(WordBase jnienv, WordBase clazz);
 }

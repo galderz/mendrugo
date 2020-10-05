@@ -69,10 +69,13 @@ public class EpollClient implements AutoCloseable
         }
 
         @Override
-        public void channelActive(ChannelHandlerContext ctx) {
+        public void channelActive(ChannelHandlerContext ctx)
+        {
+            out.println("Channel active, send some data...");
             final var buf = Unpooled.buffer(16);
             buf.writeCharSequence("this is only a test", StandardCharsets.UTF_8);
             ctx.writeAndFlush(buf);
+            out.println("Data written and flushed");
         }
 
         @Override

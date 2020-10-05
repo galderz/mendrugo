@@ -5,6 +5,8 @@ import org.graalvm.nativeimage.c.function.CFunction;
 import org.graalvm.nativeimage.c.function.CLibrary;
 import org.graalvm.word.WordBase;
 
+import java.io.IOException;
+
 @CLibrary(value = "netty-unix-common", requireStatic = true)
 public class NettyUnixSocket
 {
@@ -14,10 +16,17 @@ public class NettyUnixSocket
     @CFunction(value = "io_netty_unix_socket_isIPv6", transition = CFunction.Transition.NO_TRANSITION)
     public static native boolean isIPv6(WordBase jnienv, WordBase clazz, int fd);
 
-//    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int shutdown(WordBase jnienv, WordBase clazz, int fd, boolean read, boolean write);
-//    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int connect(WordBase jnienv, WordBase clazz, int fd, boolean ipv6, byte[] address, int scopeId, int port);
+    @CFunction(value = "io_netty_unix_socket_shutdown", transition = CFunction.Transition.NO_TRANSITION)
+    public static native int shutdown(WordBase jnienv, WordBase clazz, int fd, boolean read, boolean write);
+
+    @CFunction(value = "io_netty_unix_socket_connect", transition = CFunction.Transition.TO_NATIVE)
+    public static native int connect(WordBase jnienv, WordBase clazz, int fd, boolean ipv6, JNIObjectHandle address, int scopeId, int port);
+
 //    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int connectDomainSocket(WordBase jnienv, WordBase clazz, int fd, byte[] path);
-//    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int finishConnect(WordBase jnienv, WordBase clazz, int fd);
+
+    @CFunction(value = "io_netty_unix_socket_finishConnect", transition = CFunction.Transition.NO_TRANSITION)
+    public static native int finishConnect(WordBase jnienv, WordBase clazz, int fd);
+
 //    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int disconnect(WordBase jnienv, WordBase clazz, int fd, boolean ipv6);
 
     @CFunction(value = "io_netty_unix_socket_bind", transition = CFunction.Transition.TO_NATIVE)
@@ -28,8 +37,11 @@ public class NettyUnixSocket
     @CFunction(value = "io_netty_unix_socket_listen", transition = CFunction.Transition.NO_TRANSITION)
     public static native int listen(WordBase jnienv, WordBase clazz, int fd, int backlog);
 
-//    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int accept(WordBase jnienv, WordBase clazz, int fd, byte[] addr);
-//    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native byte[] remoteAddressWordBase jnienv, WordBase clazz, (int fd);
+    @CFunction(value = "io_netty_unix_socket_accept", transition = CFunction.Transition.TO_NATIVE)
+    public static native int accept(WordBase jnienv, WordBase clazz, int fd, JNIObjectHandle addr);
+
+    @CFunction(value = "io_netty_unix_socket_remoteAddress", transition = CFunction.Transition.TO_NATIVE)
+    public static native JNIObjectHandle remoteAddress(WordBase jnienv, WordBase clazz, int fd);
 
     @CFunction(value = "io_netty_unix_socket_localAddress", transition = CFunction.Transition.TO_NATIVE)
     public static native JNIObjectHandle localAddress(WordBase jnienv, WordBase clazz, int fd);
@@ -57,7 +69,10 @@ public class NettyUnixSocket
 //    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int isKeepAlive(WordBase jnienv, WordBase clazz, int fd) throws IOException;
 //    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int isTcpNoDelay(WordBase jnienv, WordBase clazz, int fd) throws IOException;
 //    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int isBroadcast(WordBase jnienv, WordBase clazz, int fd) throws IOException;
-//    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int getSoLinger(WordBase jnienv, WordBase clazz, int fd) throws IOException;
+
+    @CFunction(value = "io_netty_unix_socket_getSoLinger", transition = CFunction.Transition.NO_TRANSITION)
+    public static native int getSoLinger(WordBase jnienv, WordBase clazz, int fd) throws IOException;
+
 //    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int getSoError(WordBase jnienv, WordBase clazz, int fd) throws IOException;
 //    @CFunction(value = "io_netty_unix_socket_", transition = CFunction.Transition.NO_TRANSITION) public static native int getTrafficClass(WordBase jnienv, WordBase clazz, int fd, boolean ipv6) throws IOException;
 

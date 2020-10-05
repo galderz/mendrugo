@@ -7,6 +7,8 @@ import com.oracle.svm.jni.JNIThreadLocalEnvironment;
 import epoll.c.graal.c.NettyUnixSocket;
 import org.graalvm.word.WordFactory;
 
+import java.io.IOException;
+
 @TargetClass(className = "io.netty.channel.unix.Socket")
 final class Target_io_netty_channel_unix_Socket
 {
@@ -22,10 +24,34 @@ final class Target_io_netty_channel_unix_Socket
         return NettyUnixSocket.isIPv6(WordFactory.nullPointer(), WordFactory.nullPointer(), fd);
     }
 
-//    @Substitute private static int shutdown(int fd, boolean read, boolean write) {}
-//    @Substitute private static int connect(int fd, boolean ipv6, byte[] address, int scopeId, int port) {}
+    @Substitute
+    private static int shutdown(int fd, boolean read, boolean write)
+    {
+        return NettyUnixSocket.shutdown(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, read, write);
+    }
+
+    @Substitute
+    private static int connect(int fd, boolean ipv6, byte[] address, int scopeId, int port)
+    {
+        return NettyUnixSocket.connect(
+            JNIThreadLocalEnvironment.getAddress()
+            , WordFactory.nullPointer()
+            , fd
+            , ipv6
+            , JNIObjectHandles.createLocal(address)
+            , scopeId
+            , port
+        );
+    }
+
 //    @Substitute private static int connectDomainSocket(int fd, byte[] path) {}
-//    @Substitute private static int finishConnect(int fd) {}
+
+    @Substitute
+    private static int finishConnect(int fd)
+    {
+        return NettyUnixSocket.finishConnect(WordFactory.nullPointer(), WordFactory.nullPointer(), fd);
+    }
+
 //    @Substitute private static int disconnect(int fd, boolean ipv6) {}
 
     @Substitute
@@ -50,8 +76,24 @@ final class Target_io_netty_channel_unix_Socket
         return NettyUnixSocket.listen(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, backlog);
     }
 
-//    @Substitute private static int accept(int fd, byte[] addr) {}
-//    @Substitute private static byte[] remoteAddress(int fd) {}
+    @Substitute
+    private static int accept(int fd, byte[] addr)
+    {
+        return NettyUnixSocket.accept(
+            JNIThreadLocalEnvironment.getAddress()
+            , WordFactory.nullPointer()
+            , fd
+            , JNIObjectHandles.createLocal(addr)
+        );
+    }
+
+    @Substitute
+    private static byte[] remoteAddress(int fd)
+    {
+        return JNIObjectHandles.getObject(
+            NettyUnixSocket.remoteAddress(JNIThreadLocalEnvironment.getAddress(), WordFactory.nullPointer(), fd)
+        );
+    }
 
     @Substitute
     private static byte[] localAddress(int fd)
@@ -90,7 +132,13 @@ final class Target_io_netty_channel_unix_Socket
 //    @Substitute private static int isKeepAlive(int fd) throws IOException {}
 //    @Substitute private static int isTcpNoDelay(int fd) throws IOException {}
 //    @Substitute private static int isBroadcast(int fd) throws IOException {}
-//    @Substitute private static int getSoLinger(int fd) throws IOException {}
+
+    @Substitute
+    private static int getSoLinger(int fd) throws IOException
+    {
+        return NettyUnixSocket.getSoLinger(WordFactory.nullPointer(), WordFactory.nullPointer(), fd);
+    }
+
 //    @Substitute private static int getSoError(int fd) throws IOException {}
 //    @Substitute private static int getTrafficClass(int fd, boolean ipv6) throws IOException {}
 

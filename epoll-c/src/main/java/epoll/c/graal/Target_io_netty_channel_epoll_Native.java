@@ -26,8 +26,12 @@ final class Target_io_netty_channel_epoll_Native
         return NettyEpollNative.timerFd(WordFactory.nullPointer(), WordFactory.nullPointer());
     }
 
-//    @Substitute
-//    private static void eventFdWrite(int fd, long value) {}
+    @Substitute
+    private static void eventFdWrite(int fd, long value)
+    {
+        NettyEpollNative.eventFdWrite(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, value);
+    }
+
 //    @Substitute
 //    private static void eventFdRead(int fd) {}
 //    @Substitute
@@ -41,7 +45,11 @@ final class Target_io_netty_channel_epoll_Native
         return NettyEpollNative.epollCreate(WordFactory.nullPointer(), WordFactory.nullPointer());
     }
 
-//    @Substitute private static int epollWait0(int efd, long address, int len, int timerFd, int timeoutSec, int timeoutNs) {}
+    @Substitute
+    private static int epollWait0(int efd, long address, int len, int timerFd, int timeoutSec, int timeoutNs)
+    {
+        return NettyEpollNative.epollWait0(WordFactory.nullPointer(), WordFactory.nullPointer(), efd, address, len, timerFd, timeoutSec, timeoutNs);
+    }
 
     @Substitute
     private static int epollWait(int efd, long address, int len, int timeout)
@@ -67,8 +75,12 @@ final class Target_io_netty_channel_epoll_Native
         return NettyEpollNative.epollCtlMod0(WordFactory.nullPointer(), WordFactory.nullPointer(), efd, fd, flags);
     }
 
-//    @Substitute
-//    private static int epollCtlDel0(int efd, int fd) {}
+    @Substitute
+    private static int epollCtlDel0(int efd, int fd)
+    {
+        return NettyEpollNative.epollCtlDel0(WordFactory.nullPointer(), WordFactory.nullPointer(), efd, fd);
+    }
+
 //    @Substitute
 //    private static int splice0(int fd, long offIn, int fdOut, long offOut, long len) {}
 //    @Substitute

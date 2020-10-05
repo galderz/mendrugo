@@ -14,6 +14,13 @@ public class NettyReflectionFeature implements Feature
         final var effects = Reflection.of(
             RuntimeReflection::register
         );
-        NettyReflection.register(effects);
+        try
+        {
+            NettyReflection.register(effects);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }

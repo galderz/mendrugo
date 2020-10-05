@@ -17,11 +17,23 @@ final class Target_io_netty_channel_unix_FileDescriptor
         return NettyUnixFileDescriptor.close(WordFactory.nullPointer(), WordFactory.nullPointer(), fd);
     }
 
-//    private static native int write(int fd, ByteBuffer buf, int pos, int limit);
-//    private static native int writeAddress(int fd, long address, int pos, int limit);
-//    private static native long writev(int fd, ByteBuffer[] buffers, int offset, int length, long maxBytesToWrite);
-//    private static native long writevAddresses(int fd, long memoryAddress, int length);
-//    private static native int read(int fd, ByteBuffer buf, int pos, int limit);
-//    private static native int readAddress(int fd, long address, int pos, int limit);
-//    private static native long newPipe();
+//    @Substitute private static int write(int fd, ByteBuffer buf, int pos, int limit) {return NettyUnixFileDescriptor.(WordFactory.nullPointer(), WordFactory.nullPointer())}
+
+    @Substitute
+    private static int writeAddress(int fd, long address, int pos, int limit)
+    {
+        return NettyUnixFileDescriptor.writeAddress(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, address, pos, limit);
+    }
+
+//    @Substitute private static long writev(int fd, ByteBuffer[] buffers, int offset, int length, long maxBytesToWrite) {return NettyUnixFileDescriptor.(WordFactory.nullPointer(), WordFactory.nullPointer())}
+//    @Substitute private static long writevAddresses(int fd, long memoryAddress, int length) {return NettyUnixFileDescriptor.(WordFactory.nullPointer(), WordFactory.nullPointer())}
+//    @Substitute private static int read(int fd, ByteBuffer buf, int pos, int limit) {return NettyUnixFileDescriptor.(WordFactory.nullPointer(), WordFactory.nullPointer())}
+
+    @Substitute
+    private static int readAddress(int fd, long address, int pos, int limit)
+    {
+        return NettyUnixFileDescriptor.readAddress(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, address, pos, limit);
+    }
+
+//    @Substitute private static native long newPipe() {return NettyUnixFileDescriptor.(WordFactory.nullPointer(), WordFactory.nullPointer())}
 }
