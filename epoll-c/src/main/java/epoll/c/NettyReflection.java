@@ -20,8 +20,26 @@ public class NettyReflection
         registerServerBootstrapAcceptor(reflection);
 
         // User-defined
-        registerEchoClientHandler(reflection);
+        registerExampleEpollClientHandler(reflection);
+        registerExampleEpollServerHandler(reflection);
 
+        final Class<?> clazz = Class.forName("epoll.c.perf.EchoEpollServer$EchoServerHandler");
+        reflection.registerMethod.accept(() ->
+            clazz.getDeclaredMethod("channelRead", ChannelHandlerContext.class, Object.class)
+        );
+        reflection.registerMethod.accept(() ->
+            clazz.getDeclaredMethod("channelReadComplete", ChannelHandlerContext.class)
+        );
+        reflection.registerMethod.accept(() ->
+            clazz.getDeclaredMethod("exceptionCaught", ChannelHandlerContext.class, Throwable.class)
+        );
+        reflection.registerMethod.accept(() ->
+            clazz.getDeclaredMethod("channelWritabilityChanged", ChannelHandlerContext.class)
+        );
+    }
+
+    private static void registerExampleEpollServerHandler(Reflection reflection) throws ClassNotFoundException
+    {
         final Class<?> clazz = Class.forName("epoll.c.example.EpollServer$EchoServerHandler");
         reflection.registerMethod.accept(() ->
             clazz.getDeclaredMethod("channelRead", ChannelHandlerContext.class, Object.class)
@@ -34,7 +52,7 @@ public class NettyReflection
         );
     }
 
-    private static void registerEchoClientHandler(Reflection reflection) throws ClassNotFoundException
+    private static void registerExampleEpollClientHandler(Reflection reflection) throws ClassNotFoundException
     {
         final Class<?> clazz = Class.forName("epoll.c.example.EpollClient$EchoClientHandler");
         reflection.registerMethod.accept(() ->

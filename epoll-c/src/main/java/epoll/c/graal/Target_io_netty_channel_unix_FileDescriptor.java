@@ -26,7 +26,13 @@ final class Target_io_netty_channel_unix_FileDescriptor
     }
 
 //    @Substitute private static long writev(int fd, ByteBuffer[] buffers, int offset, int length, long maxBytesToWrite) {return NettyUnixFileDescriptor.(WordFactory.nullPointer(), WordFactory.nullPointer())}
-//    @Substitute private static long writevAddresses(int fd, long memoryAddress, int length) {return NettyUnixFileDescriptor.(WordFactory.nullPointer(), WordFactory.nullPointer())}
+
+    @Substitute
+    private static long writevAddresses(int fd, long memoryAddress, int length)
+    {
+        return NettyUnixFileDescriptor.writevAddresses(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, memoryAddress, length);
+    }
+
 //    @Substitute private static int read(int fd, ByteBuffer buf, int pos, int limit) {return NettyUnixFileDescriptor.(WordFactory.nullPointer(), WordFactory.nullPointer())}
 
     @Substitute

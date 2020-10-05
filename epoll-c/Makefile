@@ -28,6 +28,8 @@ all-netty: build-netty build native run
 
 all-jvm: build run-jvm
 
+epoll-server: build-netty build native run-epoll-server
+
 build-netty:
 	pushd $(NETTY_HOME) && \
 	mvn -DskipTests=true clean install -pl :netty-transport-native-epoll,:netty-transport-native-unix-common
@@ -69,5 +71,16 @@ native: build
 run:
 	./target/$(project)
 
+run-epoll-server:
+	./target/$(project) -Drun=epoll-server
+
 run-jvm:
 	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar epoll.c.Main
+
+perf-tcpkali:
+	tcpkali \
+	-m xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+	--connect-rate=200 \
+	-c 500 \
+	-T 30 \
+	127.0.0.1:8081

@@ -62,7 +62,19 @@ final class Target_java_lang_Throwable
             , "NoSuchMethodException: epoll.c.example.EpollServer$EchoServerHandler.channelInactive"
             , "NoSuchMethodException: epoll.c.example.EpollServer$EchoServerHandler.channelWritabilityChanged"
             , "NoSuchMethodException: epoll.c.example.EpollServer$EchoServerHandler.userEventTriggered"
+            , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$1"
+            , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.channelRegistered"
+            , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.channelUnregistered"
+            , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.channelActive"
+            , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.channelInactive"
+            , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.userEventTriggered"
+            , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$"
             , "FileNotFoundException: /sys/fs/cgroup/memory/memory.limit_in_bytes"
+
+            // TODO: are these valid errors?
+            , "NativeIoException: epoll_ctl(..) failed: No such file or directory"
+            , "NativeIoException: epoll_ctl(..) failed: Bad file descriptor"
+            , "NativeIoException: writeAddress(..) failed: Connection reset by peer"
         );
 
         String header = String.format("%s: %s", this.getClass().getSimpleName(), message);

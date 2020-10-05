@@ -4,17 +4,14 @@
 * Build [this Netty branch](https://github.com/galderz/netty/tree/t_nonstatic_v2).
 * GraalVM or Mandrel.
 
-# Run
+
+# Epoll Example
 
 ```bash
 $ make build-netty-all
+...
+
 $ make
-```
-
-# Example Output
-
-```bash
-❯ make
 mvn clean package dependency:copy-dependencies -DskipTests -Dnetty.version=4.1.52.Final-SNAPSHOT
 [INFO] Scanning for projects...
 
@@ -255,4 +252,37 @@ Server is up!
 Channel active, send some data...
 Data written and flushed
 <- this is only a test
-``
+```
+
+# Epoll Perf
+
+In one terminal:
+
+```bash
+$ make epoll-server
+...
+./target/epoll-c -Drun=epoll-server
+Server is up!
+```
+
+In another terminal:
+
+```bash
+$ make perf-tcpkali
+tcpkali \
+-m xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+--connect-rate=200 \
+-c 500 \
+-T 30 \
+127.0.0.1:8081
+Destination: [127.0.0.1]:8081
+Interface lo address [127.0.0.1]:0
+Using interface lo to connect to [127.0.0.1]:8081
+Ramped up to 500 connections.
+Total data sent:     70210.0 MiB (73620520960 bytes)
+Total data received: 70004.0 MiB (73404543540 bytes)
+Bandwidth per channel: 78.412⇅ Mbps (9801.5 kBps)
+Aggregate bandwidth: 19574.293↓, 19631.887↑ Mbps
+Packet rate estimate: 1792184.2↓, 1685018.3↑ (12↓, 45↑ TCP MSS/op)
+Test duration: 30.0004 s.
+```
