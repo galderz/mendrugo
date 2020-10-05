@@ -2,6 +2,9 @@
 NETTY ?= 4.1.52.Final-SNAPSHOT
 NETTY_HOME = $(HOME)/shared/netty
 
+TCPKALI = /opt/tcpkali/src/tcpkali
+ECHO_BENCH = /opt/rust_echo_bench/target/release/echo_bench
+
 nettylibs ?= $(NETTY_HOME)/transport-native-epoll/target/static-libs
 
 project = epoll-c
@@ -78,9 +81,12 @@ run-jvm:
 	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar epoll.c.Main
 
 perf-tcpkali:
-	tcpkali \
+	$(TCPKALI) \
 	-m xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 	--connect-rate=200 \
 	-c 500 \
 	-T 30 \
 	127.0.0.1:8081
+
+perf-echo-bench:
+	$(ECHO_BENCH) --address 'localhost:8081' --number 500 --duration 30 --length 128
