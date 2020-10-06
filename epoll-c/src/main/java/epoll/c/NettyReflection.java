@@ -14,9 +14,14 @@ public class NettyReflection
     public static void register(Reflection reflection) throws Exception
     {
         registerEpoll(reflection);
+        registerNio(reflection);
+    }
 
+    private static void registerNio(Reflection reflection) throws ClassNotFoundException
+    {
         reflection.registerMethod.accept(NioServerSocketChannel.class::getConstructor);
         reflection.registerMethod.accept(NioSocketChannel.class::getConstructor);
+        registerEchoServer(Class.forName("epoll.c.perf.EchoNioServer$EchoServerHandler"), reflection);
     }
 
     private static void registerEpoll(Reflection reflection) throws ClassNotFoundException
@@ -33,7 +38,11 @@ public class NettyReflection
         registerExampleEpollClientHandler(reflection);
         registerExampleEpollServerHandler(reflection);
 
-        final Class<?> clazz = Class.forName("epoll.c.perf.EchoEpollServer$EchoServerHandler");
+        registerEchoServer(Class.forName("epoll.c.perf.EchoEpollServer$EchoServerHandler"), reflection);
+    }
+
+    private static void registerEchoServer(Class<?> clazz, Reflection reflection) throws ClassNotFoundException
+    {
         reflection.registerMethod.accept(() ->
             clazz.getDeclaredMethod("channelRead", ChannelHandlerContext.class, Object.class)
         );

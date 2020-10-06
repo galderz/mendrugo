@@ -35,6 +35,8 @@ all-jvm: build run-jvm-epoll-example run-jvm-nio-example
 
 epoll-server: build-netty build native run-epoll-server
 
+nio-server: build native run-nio-server
+
 build-netty:
 	pushd $(NETTY_HOME) && \
 	mvn -DskipTests=true clean install -pl :netty-transport-native-epoll,:netty-transport-native-unix-common
@@ -82,6 +84,9 @@ run-nio-example:
 run-epoll-server:
 	./target/$(project) -Drun=epoll-server
 
+run-nio-server:
+	./target/$(project) -Drun=nio-server
+
 run-jvm-epoll-example:
 	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar -Drun=epoll-example epoll.c.Main
 
@@ -89,6 +94,7 @@ run-jvm-nio-example:
 	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar -Drun=nio-example epoll.c.Main
 
 perf-tcpkali:
+	sudo sysctl -w net.ipv4.tcp_tw_reuse=1
 	$(TCPKALI) \
 	-m xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 	--connect-rate=200 \

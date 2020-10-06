@@ -5,6 +5,7 @@ import epoll.c.example.EpollServer;
 import epoll.c.example.NioClient;
 import epoll.c.example.NioServer;
 import epoll.c.perf.EchoEpollServer;
+import epoll.c.perf.EchoNioServer;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.Native;
 import io.netty.util.Version;
@@ -28,6 +29,9 @@ public class Main
             case "epoll-server":
                 runEpollServer();
                 break;
+            case "nio-server":
+                runNioServer();
+                break;
         }
     }
 
@@ -50,6 +54,11 @@ public class Main
     private static void runEpollServer()
     {
         EchoEpollServer.main();
+    }
+
+    private static void runNioServer()
+    {
+        EchoNioServer.main();
     }
 
     private static void runEpollExample() throws Throwable

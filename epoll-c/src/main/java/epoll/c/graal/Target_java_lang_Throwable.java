@@ -68,7 +68,6 @@ final class Target_java_lang_Throwable
             , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.channelActive"
             , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.channelInactive"
             , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.userEventTriggered"
-            , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$"
             , "FileNotFoundException: /sys/fs/cgroup/memory/memory.limit_in_bytes"
 
             // TODO: are these valid errors?
@@ -78,6 +77,15 @@ final class Target_java_lang_Throwable
 
             , "NoSuchMethodException: epoll.c.example.NioClient$1"
             , "NoSuchMethodException: epoll.c.example.NioServer$1"
+            , "NoSuchMethodException: epoll.c.perf.EchoNioServer$1"
+            , "NoSuchMethodException: epoll.c.perf.EchoNioServer$EchoServerHandler.channelRegistered"
+            , "NoSuchMethodException: epoll.c.perf.EchoNioServer$EchoServerHandler.channelUnregistered"
+            , "NoSuchMethodException: epoll.c.perf.EchoNioServer$EchoServerHandler.channelActive"
+            , "NoSuchMethodException: epoll.c.perf.EchoNioServer$EchoServerHandler.channelInactive"
+            , "NoSuchMethodException: epoll.c.perf.EchoNioServer$EchoServerHandler.userEventTriggered"
+
+            // TODO: are these valid errors?
+            , "IOException: Connection reset by peer"
         );
 
         String header = String.format("%s: %s", this.getClass().getSimpleName(), message);

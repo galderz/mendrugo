@@ -2,7 +2,6 @@ package epoll.c.perf;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -10,29 +9,29 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 import java.nio.channels.ClosedChannelException;
 
 import static java.lang.System.out;
 
-public class EchoEpollServer
+public class EchoNioServer
 {
     private static final int PORT = Integer.parseInt(System.getProperty("port", "8081"));
 
     public static void main()
     {
-        out.println("Run echo epoll server");
-        final EventLoopGroup group = new EpollEventLoopGroup(1);
+        out.println("Run echo nio server");
+        final EventLoopGroup group = new NioEventLoopGroup(1);
         final EchoServerHandler serverHandler = new EchoServerHandler();
         try
         {
             ServerBootstrap b = new ServerBootstrap();
             b.group(group)
                 .option(ChannelOption.SO_REUSEADDR, true)
-                .channel(EpollServerSocketChannel.class)
+                .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>()
                 {
                     @Override

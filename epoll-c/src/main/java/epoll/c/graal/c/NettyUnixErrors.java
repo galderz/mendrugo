@@ -2,8 +2,10 @@ package epoll.c.graal.c;
 
 import com.oracle.svm.jni.nativeapi.JNIObjectHandle;
 import org.graalvm.nativeimage.c.function.CFunction;
+import org.graalvm.nativeimage.c.function.CLibrary;
 import org.graalvm.word.WordBase;
 
+@CLibrary(value = "netty-unix-common", requireStatic = true)
 public class NettyUnixErrors
 {
     @CFunction(value = "io_netty_unix_errors_errnoENOENT", transition = CFunction.Transition.NO_TRANSITION)
