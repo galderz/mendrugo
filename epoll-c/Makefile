@@ -29,7 +29,7 @@ all: build native run
 
 all-netty: build-netty build native run
 
-all-jvm: build run-jvm
+all-jvm: build run-jvm-epoll-example run-jvm-nio-example
 
 epoll-server: build-netty build native run-epoll-server
 
@@ -77,8 +77,11 @@ run:
 run-epoll-server:
 	./target/$(project) -Drun=epoll-server
 
-run-jvm:
-	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar epoll.c.Main
+run-jvm-epoll-example:
+	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar -Drun=epoll-example epoll.c.Main
+
+run-jvm-nio-example:
+	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar -Drun=nio-example epoll.c.Main
 
 perf-tcpkali:
 	$(TCPKALI) \

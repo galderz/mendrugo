@@ -2,6 +2,8 @@ package epoll.c;
 
 import epoll.c.example.EpollClient;
 import epoll.c.example.EpollServer;
+import epoll.c.example.NioClient;
+import epoll.c.example.NioServer;
 import epoll.c.perf.EchoEpollServer;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.Native;
@@ -14,15 +16,34 @@ public class Main
 {
     public static void main(String[] args) throws Throwable
     {
-        final var run = System.getProperty("run", "example");
+        final var run = System.getProperty("run", "epoll-example");
         switch (run)
         {
-            case "example":
-                runExample();
+            case "epoll-example":
+                runEpollExample();
+                break;
+            case "nio-example":
+                runNioExample();
                 break;
             case "epoll-server":
                 runEpollServer();
                 break;
+        }
+    }
+
+    private static void runNioExample() throws Throwable
+    {
+        System.out.println("Run nio example");
+        final var executor = Executors.newSingleThreadExecutor();
+        try (var server = new RunNioServer(); var client = new NioClient())
+        {
+            executor.submit(server).get();
+            client.run();
+            client.waitForEcho();
+        }
+        finally
+        {
+            executor.shutdown();
         }
     }
 
@@ -31,7 +52,7 @@ public class Main
         EchoEpollServer.main();
     }
 
-    private static void runExample() throws Throwable
+    private static void runEpollExample() throws Throwable
     {
         // TODO Fix versions (add META-INF/io.netty.versions.properties ?)
         System.out.printf("Netty version %s%n", Version.identify());
@@ -46,12 +67,7 @@ public class Main
             throw Epoll.unavailabilityCause();
         }
 
-        System.out.println("Run echo");
-        runEcho();
-    }
-
-    static void runEcho() throws Exception
-    {
+        System.out.println("Run epoll example");
         final var executor = Executors.newSingleThreadExecutor();
         try (var server = new RunEpollServer(); var client = new EpollClient())
         {
@@ -67,20 +83,37 @@ public class Main
 
     static class RunEpollServer implements Callable<Void>, AutoCloseable
     {
-        EpollServer epollServer = new EpollServer();
+        final EpollServer server = new EpollServer();
 
         @Override
         public Void call() throws Exception
         {
-            epollServer.run();
+            server.run();
             return null;
         }
 
         @Override
         public void close() throws Exception
         {
-            epollServer.close();
+            server.close();
         }
     }
 
+    static class RunNioServer implements Callable<Void>, AutoCloseable
+    {
+        final NioServer server = new NioServer();
+
+        @Override
+        public Void call() throws Exception
+        {
+            server.run();
+            return null;
+        }
+
+        @Override
+        public void close() throws Exception
+        {
+            server.close();
+        }
+    }
 }
