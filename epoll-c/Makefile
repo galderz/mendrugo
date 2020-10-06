@@ -25,9 +25,11 @@ runtime=io.netty.channel.epoll.Epoll,$\
 	io.netty.channel.unix.Limits,$\
 	io.netty.channel.unix.Socket
 
-all: build native run
+all: build native run-epoll-example
 
-all-netty: build-netty build native run
+all-nio: build native run-nio-example
+
+all-netty: build-netty build native run-epoll-example
 
 all-jvm: build run-jvm-epoll-example run-jvm-nio-example
 
@@ -71,8 +73,11 @@ native: build
 	-H:-UseServiceLoaderFeature \
 	target/$(project)
 
-run:
-	./target/$(project)
+run-epoll-example:
+	./target/$(project) -Drun=epoll-example
+
+run-nio-example:
+	./target/$(project) -Drun=nio-example
 
 run-epoll-server:
 	./target/$(project) -Drun=epoll-server

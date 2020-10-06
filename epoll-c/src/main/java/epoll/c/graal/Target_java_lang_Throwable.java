@@ -75,6 +75,9 @@ final class Target_java_lang_Throwable
             , "NativeIoException: epoll_ctl(..) failed: No such file or directory"
             , "NativeIoException: epoll_ctl(..) failed: Bad file descriptor"
             , "NativeIoException: writeAddress(..) failed: Connection reset by peer"
+
+            , "NoSuchMethodException: epoll.c.example.NioClient$1"
+            , "NoSuchMethodException: epoll.c.example.NioServer$1"
         );
 
         String header = String.format("%s: %s", this.getClass().getSimpleName(), message);

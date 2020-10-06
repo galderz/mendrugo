@@ -4,12 +4,22 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.SocketAddress;
 
 public class NettyReflection
 {
     public static void register(Reflection reflection) throws Exception
+    {
+        registerEpoll(reflection);
+
+        reflection.registerMethod.accept(NioServerSocketChannel.class::getConstructor);
+        reflection.registerMethod.accept(NioSocketChannel.class::getConstructor);
+    }
+
+    private static void registerEpoll(Reflection reflection) throws ClassNotFoundException
     {
         reflection.registerMethod.accept(EpollServerSocketChannel.class::getConstructor);
         reflection.registerMethod.accept(EpollSocketChannel.class::getConstructor);
