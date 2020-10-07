@@ -138,7 +138,7 @@ final class Target_io_netty_channel_unix_Socket
     @Substitute
     private static DatagramSocketAddress recvFrom(int fd, ByteBuffer buf, int pos, int limit) throws IOException
     {
-        return JNIObjectHandles.getObject(NettyUnixSocket.recvFrom(JNIThreadLocalEnvironment.getAddress(), WordFactory.nullPointer(), fd, buf, pos, limit));
+        return JNIObjectHandles.getObject(NettyUnixSocket.recvFrom(JNIThreadLocalEnvironment.getAddress(), WordFactory.nullPointer(), fd, JNIObjectHandles.createLocal(buf), pos, limit));
     }
 
     @Substitute

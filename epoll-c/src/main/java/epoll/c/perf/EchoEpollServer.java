@@ -2,7 +2,6 @@ package epoll.c.perf;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -39,7 +38,7 @@ public class EchoEpollServer
                     public void initChannel(SocketChannel ch) throws Exception
                     {
                         ChannelPipeline p = ch.pipeline();
-                        //p.addLast(new LoggingHandler(LogLevel.INFO));
+                        // p.addLast(new LoggingHandler(LogLevel.INFO));
                         p.addLast(serverHandler);
                     }
                 });
@@ -88,6 +87,7 @@ public class EchoEpollServer
             }
             else
             {
+                out.println("Exception caught:");
                 cause.printStackTrace();
                 // Close the connection when an exception is raised.
                 ctx.close();

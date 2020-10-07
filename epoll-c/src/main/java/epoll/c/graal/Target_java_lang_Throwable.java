@@ -41,7 +41,9 @@ final class Target_java_lang_Throwable
     public Target_java_lang_Throwable(String message)
     {
         List<String> skipHeaders = Arrays.asList(
-            "NoSuchMethodException: io.netty.bootstrap.ServerBootstrap$1"
+            "FileNotFoundException: /sys/fs/cgroup/memory/memory.limit_in_bytes"
+
+            , "NoSuchMethodException: io.netty.bootstrap.ServerBootstrap$1"
             , "NoSuchMethodException: io.netty.bootstrap.ServerBootstrap$ServerBootstrapAcceptor.channelRegistered"
             , "NoSuchMethodException: io.netty.bootstrap.ServerBootstrap$ServerBootstrapAcceptor.channelUnregistered"
             , "NoSuchMethodException: io.netty.bootstrap.ServerBootstrap$ServerBootstrapAcceptor.channelActive"
@@ -68,7 +70,6 @@ final class Target_java_lang_Throwable
             , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.channelActive"
             , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.channelInactive"
             , "NoSuchMethodException: epoll.c.perf.EchoEpollServer$EchoServerHandler.userEventTriggered"
-            , "FileNotFoundException: /sys/fs/cgroup/memory/memory.limit_in_bytes"
 
             // TODO: are these valid errors?
             , "NativeIoException: epoll_ctl(..) failed: No such file or directory"

@@ -90,8 +90,14 @@ run-nio-server:
 run-jvm-epoll-example:
 	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar -Drun=epoll-example epoll.c.Main
 
+run-jvm-epoll-server:
+	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar -Drun=epoll-server epoll.c.Main
+
 run-jvm-nio-example:
 	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar -Drun=nio-example epoll.c.Main
+
+run-jvm-nio-server:
+	java -cp $(classpath):target/$(project)-1.0-SNAPSHOT.jar -Drun=nio-server epoll.c.Main
 
 perf-tcpkali:
 	sudo sysctl -w net.ipv4.tcp_tw_reuse=1

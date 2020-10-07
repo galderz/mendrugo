@@ -60,7 +60,7 @@ public class NettyUnixSocket
     public static native int sendToAddresses(WordBase jnienv, WordBase clazz, int fd, boolean ipv6, long memoryAddress, int length, JNIObjectHandle address, int scopeId, int port);
 
     @CFunction(value = "io_netty_unix_socket_recvFrom", transition = CFunction.Transition.TO_NATIVE)
-    public static native JNIObjectHandle recvFrom(WordBase jnienv, WordBase clazz, int fd, ByteBuffer buf, int pos, int limit) throws IOException;
+    public static native JNIObjectHandle recvFrom(WordBase jnienv, WordBase clazz, int fd, JNIObjectHandle buf, int pos, int limit) throws IOException;
 
     @CFunction(value = "io_netty_unix_socket_recvFromAddress", transition = CFunction.Transition.TO_NATIVE)
     public static native JNIObjectHandle recvFromAddress(WordBase jnienv, WordBase clazz, int fd, long memoryAddress, int pos, int limit) throws IOException;
