@@ -58,12 +58,14 @@ public class NettyEpollNative
     @CFunction(value = "io_netty_epoll_native_eventFdWrite", transition = CFunction.Transition.NO_TRANSITION)
     public static native void eventFdWrite(WordBase jnienv, WordBase clazz, int fd, long value);
 
-//    @CFunction(value = "io_netty_epoll_native_", transition = CFunction.Transition.NO_TRANSITION)
-//    public static native void eventFdRead(WordBase jnienv, WordBase clazz, int fd);
-//    @CFunction(value = "io_netty_epoll_native_", transition = CFunction.Transition.NO_TRANSITION)
-//    public static native void timerFdRead(WordBase jnienv, WordBase clazz, int fd);
-//    @CFunction(value = "io_netty_epoll_native_", transition = CFunction.Transition.NO_TRANSITION)
-//    public static native void timerFdSetTime(WordBase jnienv, WordBase clazz, int fd, int sec, int nsec) throws IOException;
+    @CFunction(value = "io_netty_epoll_native_eventFdRead", transition = CFunction.Transition.NO_TRANSITION)
+    public static native void eventFdRead(WordBase jnienv, WordBase clazz, int fd);
+
+    @CFunction(value = "io_netty_epoll_native_timerFdRead", transition = CFunction.Transition.NO_TRANSITION)
+    public static native void timerFdRead(WordBase jnienv, WordBase clazz, int fd);
+
+    @CFunction(value = "io_netty_epoll_native_timerFdSetTime", transition = CFunction.Transition.NO_TRANSITION)
+    public static native void timerFdSetTime(WordBase jnienv, WordBase clazz, int fd, int sec, int nsec);
 
     @CFunction(value = "io_netty_epoll_native_epollCreate", transition = CFunction.Transition.NO_TRANSITION)
     public static native int epollCreate(WordBase jnienv, WordBase clazz);
@@ -87,12 +89,14 @@ public class NettyEpollNative
     @CFunction(value = "io_netty_epoll_native_epollCtlDel0", transition = CFunction.Transition.NO_TRANSITION)
     public static native int epollCtlDel0(WordBase jnienv, WordBase clazz, int efd, int fd);
 
+    @CFunction(value = "io_netty_epoll_native_splice0", transition = CFunction.Transition.NO_TRANSITION)
+    public static native int splice0(WordBase jnienv, WordBase clazz, int fd, long offIn, int fdOut, long offOut, long len);
+
+//    @CFunction(value = "io_netty_epoll_native_sendmmsg0", transition = CFunction.Transition.NO_TRANSITION)
+//    public static native int sendmmsg0(WordBase jnienv, WordBase clazz, int fd, boolean ipv6, JNIObjectHandle msgs, int offset, int len);
+//
 //    @CFunction(value = "io_netty_epoll_native_", transition = CFunction.Transition.NO_TRANSITION)
-//    public static native int splice0(WordBase jnienv, WordBase clazz, int fd, long offIn, int fdOut, long offOut, long len);
-//    @CFunction(value = "io_netty_epoll_native_", transition = CFunction.Transition.NO_TRANSITION)
-//    public static native int sendmmsg0(WordBase jnienv, WordBase clazz,...
-//    @CFunction(value = "io_netty_epoll_native_", transition = CFunction.Transition.NO_TRANSITION)
-//    public static native int recvmmsg0(WordBase jnienv, WordBase clazz,...
+//    public static native int recvmmsg0(WordBase jnienv, WordBase clazz, int fd, boolean ipv6, JNIObjectHandle msgs, int offset, int len);
 
     @CFunction(value = "io_netty_epoll_native_epollCreate", transition = CFunction.Transition.NO_TRANSITION)
     public static native int sizeofEpollEvent(WordBase jnienv, WordBase clazz);

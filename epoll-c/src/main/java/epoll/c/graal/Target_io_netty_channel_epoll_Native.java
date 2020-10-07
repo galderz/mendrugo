@@ -32,12 +32,23 @@ final class Target_io_netty_channel_epoll_Native
         NettyEpollNative.eventFdWrite(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, value);
     }
 
-//    @Substitute
-//    private static void eventFdRead(int fd) {}
-//    @Substitute
-//    private static void timerFdRead(int fd) {}
-//    @Substitute
-//    private static void timerFdSetTime(int fd, int sec, int nsec) throws IOException {}
+    @Substitute
+    private static void eventFdRead(int fd)
+    {
+        NettyEpollNative.eventFdRead(WordFactory.nullPointer(), WordFactory.nullPointer(), fd);
+    }
+
+    @Substitute
+    private static void timerFdRead(int fd)
+    {
+        NettyEpollNative.timerFdRead(WordFactory.nullPointer(), WordFactory.nullPointer(), fd);
+    }
+
+    @Substitute
+    private static void timerFdSetTime(int fd, int sec, int nsec)
+    {
+        NettyEpollNative.timerFdSetTime(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, sec, nsec);
+    }
 
     @Substitute
     private static int epollCreate()
@@ -81,12 +92,25 @@ final class Target_io_netty_channel_epoll_Native
         return NettyEpollNative.epollCtlDel0(WordFactory.nullPointer(), WordFactory.nullPointer(), efd, fd);
     }
 
+    @Substitute
+    private static int splice0(int fd, long offIn, int fdOut, long offOut, long len)
+    {
+        return NettyEpollNative.splice0(WordFactory.nullPointer(), WordFactory.nullPointer(), fd, offIn, fdOut, offOut, len);
+    }
+
+//    Deprecated methods, plus how to reference package private classes)
+//
 //    @Substitute
-//    private static int splice0(int fd, long offIn, int fdOut, long offOut, long len) {}
+//    private static int sendmmsg0(int fd, boolean ipv6, NativeDatagramPacketArray.NativeDatagramPacket[] msgs, int offset, int len)
+//    {
+//        return NettyEpollNative.(WordFactory.nullPointer(), WordFactory.nullPointer())
+//    }
+//
 //    @Substitute
-//    private static int sendmmsg0 {}
-//    @Substitute
-//    private static int recvmmsg0 {}
+//    private static int recvmmsg0(int fd, boolean ipv6, NativeDatagramPacketArray.NativeDatagramPacket[] msgs, int offset, int len)
+//    {
+//        return NettyEpollNative.(WordFactory.nullPointer(), WordFactory.nullPointer())
+//    }
 
     @Substitute
     private static int sizeofEpollEvent()
