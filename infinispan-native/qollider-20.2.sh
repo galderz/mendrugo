@@ -23,11 +23,9 @@ qollider \
         -s \
         maven-settings.xml
 
-# Avoid object copy (ease of debug)
-# https://github.com/quarkusio/quarkus/tree/master
 qollider \
     maven-build \
-    --tree https://github.com/galderz/quarkus/tree/t_no_obj_copy
+    --tree https://github.com/quarkusio/quarkus/tree/1.7
 
 qollider \
     maven-build \
@@ -46,4 +44,5 @@ qollider \
         :infinispan-quarkus-server-runner \
         -Dquarkus.version=999-SNAPSHOT \
         -Dquarkus.native.debug.enabled=true \
+        -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-H:+PreserveFramePointer \
         dependency:sources
