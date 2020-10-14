@@ -3,7 +3,6 @@
 # -XX:+VerboseGC -XX:+PrintGC -XX:+PrintGCSummary -XX:+PrintHeapShape
 EXTRA_ARGS ?= ""
 
-ADDRESS ?= 127.0.0.1
 NUM_ENTRIES ?= 500000
 
 FG_HOME ?= /opt/FlameGraph
@@ -73,6 +72,11 @@ define run-native
   -Dquarkus.infinispan-server.bind-port=${2} \
   -Dinfinispan.bind.address=${ADDRESS}
 endef
+
+debug-jvm1:
+	JAVA_HOME=${Q_JAVA_HOME} \
+	JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,address=${ADDRESS}:8787,server=y,suspend=n" \
+	$(TMP_DIR)/jvm1/bin/server.sh -Dinfinispan.bind.address=${ADDRESS}
 
 record-native1:
 	cd $(TMP_DIR)/native1 && \
