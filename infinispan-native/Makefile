@@ -9,30 +9,36 @@ NUM_ENTRIES ?= 500000
 FG_HOME ?= /opt/FlameGraph
 PERF_HOME ?= /usr/bin
 
-INFINISPAN_VERSION ?= 11.0.5-SNAPSHOT
+INFINISPAN_VERSION ?= 12.0.0-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
 Q_JAVA_HOME ?= ${Q_HOME}/java_home
 SERVER_HOME = ${Q_HOME}/infinispan/server/runtime/target/infinispan-server-${INFINISPAN_VERSION}
 RUNNER_NAME = infinispan-quarkus-server-runner-${INFINISPAN_VERSION}-runner
 DEBUG_NAME = ${RUNNER_NAME}.debug
+PROFILING_NAME = profiling-quarkus-server-runner-${INFINISPAN_VERSION}-runner
 RUNNER_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${RUNNER_NAME}
 DEBUG_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${DEBUG_NAME}
+PROFILING_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${PROFILING_NAME}
+TMP_DIR = /tmp/servers-$$(date +%d%m)
+GRAPHS_DIR = $(TMP_DIR)/graphs
 
-install-servers: clean install-jvm install-native
+install-servers: clean mkdirs install-jvm install-native
 
 clean:
-	rm -drf servers
-	mkdir servers || true
-	mkdir graphs || true
+	rm -drf $(TMP_DIR)
+
+mkdirs:
+	mkdir -p $(TMP_DIR)
+	mkdir -p $(TMP_DIR)/graphs
 
 install-jvm:
 	$(call make-jvm,1)
 	$(call make-jvm,2)
 
 define make-jvm
-mkdir -p servers/jvm${1} || true
-cp -r ${SERVER_HOME}/* servers/jvm${1}
-./servers/jvm${1}/bin/cli.sh user create foo -p "bar"
+mkdir -p $(TMP_DIR)/jvm${1} || true
+cp -r ${SERVER_HOME}/* $(TMP_DIR)/jvm${1}
+$(TMP_DIR)/jvm${1}/bin/cli.sh user create foo -p "bar"
 endef
 
 install-native:
@@ -40,47 +46,48 @@ install-native:
 	$(call make-native,2)
 
 define make-native
-mkdir -p servers/native${1} || true
-mkdir -p servers/native${1}/server || true
-cp ${RUNNER_PATH} servers/native${1}/${RUNNER_NAME}
-cp ${DEBUG_PATH} servers/native${1}/${DEBUG_NAME} || true
-cp -r servers/jvm1/server/conf servers/native${1}/server
-cp -r servers/jvm1/server/conf servers/native${1}
+mkdir -p $(TMP_DIR)/native${1} || true
+mkdir -p $(TMP_DIR)/native${1}/server || true
+cp ${RUNNER_PATH} $(TMP_DIR)/native${1}/${RUNNER_NAME}
+cp ${PROFILING_PATH} $(TMP_DIR)/native${1}/${PROFILING_NAME}
+cp ${DEBUG_PATH} $(TMP_DIR)/native${1}/${DEBUG_NAME} || true
+cp -r $(TMP_DIR)/jvm1/server/conf $(TMP_DIR)/native${1}/server
+cp -r $(TMP_DIR)/jvm1/server/conf $(TMP_DIR)/native${1}
 endef
 
 start-jvm1:
-	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm1/bin/server.sh -Dinfinispan.bind.address=${ADDRESS}
+	JAVA_HOME=${Q_JAVA_HOME} $(TMP_DIR)/jvm1/bin/server.sh -Dinfinispan.bind.address=${ADDRESS}
 
 start-jvm2:
-	JAVA_HOME=${Q_JAVA_HOME} ./servers/jvm2/bin/server.sh -o 100 -Dinfinispan.bind.address=${ADDRESS}
+	JAVA_HOME=${Q_JAVA_HOME} $(TMP_DIR)/jvm2/bin/server.sh -o 100 -Dinfinispan.bind.address=${ADDRESS}
 
 start-native1:
-	cd servers/native1 && $(call run-native,11222)
+	cd $(TMP_DIR)/native1 && $(call run-native,$(RUNNER_NAME),11222)
 
 start-native2:
-	cd servers/native2 && $(call run-native,11322)
+	cd $(TMP_DIR)/native2 && $(call run-native,$(RUNNER_NAME),11322)
 
 define run-native
-./${RUNNER_NAME} \
+./${1} \
   ${EXTRA_ARGS} \
-  -Dquarkus.infinispan-server.bind-port=${1} \
+  -Dquarkus.infinispan-server.bind-port=${2} \
   -Dinfinispan.bind.address=${ADDRESS}
 endef
 
 record-native1:
-	cd servers/native1 && \
-		${call perf-record} -- $(call run-native,11222)
+	cd $(TMP_DIR)/native1 && \
+		${call perf-record} -- $(call run-native,$(PROFILING_NAME),11222)
 
 record-native2:
-	cd servers/native2 && \
-		${call perf-record} -- $(call run-native,11322)
+	cd $(TMP_DIR)/native2 && \
+		${call perf-record} -- $(call run-native,$(PROFILING_NAME),11322)
 
 define perf-record
 ${PERF_HOME}/perf record -F 99 -a --call-graph dwarf
 endef
 
 report-native1:
-	cd servers/native1 && \
+	cd $(TMP_DIR)/native1 && \
 		perf report --stdio
 
 gen-graphs:
@@ -88,8 +95,8 @@ gen-graphs:
 	${call run-graph,2}
 
 define run-graph
-${PERF_HOME}/perf script -i servers/native${1}/perf.data | ${FG_HOME}/stackcollapse-perf.pl > graphs/out.perf-folded
-${FG_HOME}/flamegraph.pl graphs/out.perf-folded > graphs/native${1}-perf-kernel.svg
+${PERF_HOME}/perf script -i $(TMP_DIR)/native${1}/perf.data | ${FG_HOME}/stackcollapse-perf.pl > $(GRAPHS_DIR)/out.perf-folded
+${FG_HOME}/flamegraph.pl $(GRAPHS_DIR)/out.perf-folded > $(GRAPHS_DIR)/native${1}-perf-kernel.svg
 endef
 
 load-data:
