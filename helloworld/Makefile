@@ -25,7 +25,7 @@ native-debug-remote-attach:
 run:
 	./helloworld
 
-call-tree:
+call-tree: build
 	native-image -H:+PrintAnalysisCallTree HelloWorld
 
 jar:
