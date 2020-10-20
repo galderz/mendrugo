@@ -1,3 +1,5 @@
+NEO_HOME ?= /opt/neo4j
+
 all: clean build native run
 
 clean: clean-reports
@@ -36,3 +38,19 @@ run-jar:
 
 method-histogram:
 	native-image -H:+PrintMethodHistogram HelloWorld
+
+neo4j-call-tree: call-tree
+	$(call load-cypher )
+
+neo4j-time-call-tree: call-tree
+	time $(call load-cypher)
+
+define load-cypher
+cat $(shell find reports -name '*.cypher') | $(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS)
+endef
+
+neo4j-start:
+	${NEO_HOME}/bin/neo4j console
+
+neo4j-clean:
+	cat clean.cypher | $(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS)
