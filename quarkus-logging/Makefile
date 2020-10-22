@@ -15,5 +15,11 @@ native-debug:
 run:
 	./target/quarkus-logging-1.0-SNAPSHOT-runner
 
+run-info:
+	./target/quarkus-logging-1.0-SNAPSHOT-runner -Dquarkus.log.category.\"org.acme.getting.started.commandmode\".level=INFO
+
+run-trace:
+	./target/quarkus-logging-1.0-SNAPSHOT-runner -Dquarkus.log.category.\"org.acme.getting.started.commandmode\".level=TRACE
+
 clean:
 	./mvnw clean
