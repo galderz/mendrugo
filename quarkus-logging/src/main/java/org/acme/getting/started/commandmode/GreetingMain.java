@@ -9,20 +9,17 @@ import org.jboss.logging.Logger;
 @QuarkusMain
 public class GreetingMain implements QuarkusApplication {
 
-    private static final Logger LOG = Logger.getLogger(GreetingMain.class);
-    private static final boolean isTrace = LOG.isTraceEnabled();
-
     @Inject
     GreetingService service;
 
     @Override
     public int run(String... args) {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("Compute whether trace enabled on the fly");
+        if (GreetingLogger.LOG.isTraceEnabled()) {
+            GreetingLogger.LOG.trace("Compute whether trace enabled on the fly");
         }
 
-        if (isTrace) {
-            LOG.trace(getMessage());
+        if (GreetingLogger.isTrace) {
+            GreetingLogger.LOG.trace(getMessage());
         }
 
         if(args.length>0) {
