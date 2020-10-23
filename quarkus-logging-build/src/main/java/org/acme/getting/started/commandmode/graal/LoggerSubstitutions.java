@@ -1,31 +1,31 @@
 package org.acme.getting.started.commandmode.graal;
 
 import com.oracle.svm.core.annotate.Alias;
-import com.oracle.svm.core.annotate.InjectAccessors;
+import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
-import org.acme.getting.started.commandmode.GreetingLogger;
-import org.jboss.logging.Logger;
+import org.graalvm.compiler.api.replacements.Fold;
 
-@TargetClass(value = GreetingLogger.class)
-final class Target_org_acme_getting_started_commandmode_GreetingLogger
+@TargetClass(className = "org.jboss.logging.Logger")
+final class Target_org_jboss_logging_Logger
 {
     @Alias
-    @InjectAccessors(IsTraceAccessor.class)
-    static boolean isTrace;
-}
+    private String name;
 
-final class IsTraceAccessor
-{
-    static boolean getIsTrace()
+    @Fold
+    @Substitute
+    boolean isTraceEnabled()
     {
-        return RuntimeIsTraceAccessor.isTrace;
+        if (name.equals("org.acme.getting.started.commandmode")
+            || name.startsWith("org.acme.getting.started.commandmode")
+        )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
-}
-
-final class RuntimeIsTraceAccessor
-{
-    static final Logger LOG = Logger.getLogger(GreetingLogger.class);
-    static final boolean isTrace = LOG.isTraceEnabled();
 }
 
 public class LoggerSubstitutions
