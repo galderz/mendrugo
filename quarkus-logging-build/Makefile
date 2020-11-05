@@ -6,6 +6,8 @@ additional-build-args-debug="$(additional-build-args),--debug-attach=*:8000"
 
 runner="quarkus-logging-build-1.0-SNAPSHOT-runner"
 
+all-snapshot: native-snapshot run
+
 all: native run
 
 native:
@@ -13,6 +15,11 @@ native:
 
 native-debug:
 	./mvnw install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args-debug)
+
+native-snapshot:
+	./mvnw install -Dnative \
+	-Dquarkus-plugin.version=999-SNAPSHOT \
+	-Dquarkus.platform.version=999-SNAPSHOT
 
 run:
 	./target/$(runner)
