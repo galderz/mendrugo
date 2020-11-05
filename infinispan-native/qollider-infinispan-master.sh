@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 # Avoid MBean server issue with 20.2
-ISPN_QUARKUS=https://github.com/infinispan/infinispan-quarkus/tree/master
+#ISPN_QUARKUS=https://github.com/infinispan/infinispan-quarkus/tree/master
+ISPN_QUARKUS=https://github.com/galderz/infinispan-quarkus/tree/t_fix_cli_java_26
+ISPN_QUARKUS_NATIVE_PROFILE=native-noargs
 ISPN_VERSION=12.0.0-SNAPSHOT
 
 set -e
@@ -40,7 +42,7 @@ qollider \
     maven-build \
     --tree ${ISPN_QUARKUS} \
     --additional-build-args \
-        -Dnative \
+        -D${ISPN_QUARKUS_NATIVE_PROFILE} \
         -pl \
         :infinispan-quarkus-server-runner \
         -Dquarkus.version=999-SNAPSHOT \
@@ -60,7 +62,7 @@ qollider \
     maven-build \
     --tree ${ISPN_QUARKUS} \
     --additional-build-args \
-        -Dnative \
+        -D${ISPN_QUARKUS_NATIVE_PROFILE} \
         -pl \
         :infinispan-quarkus-server-runner \
         -Dquarkus.version=999-SNAPSHOT \
