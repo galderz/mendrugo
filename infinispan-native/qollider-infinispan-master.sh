@@ -52,11 +52,11 @@ qollider \
 
 mv \
     ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${ISPN_VERSION}-runner \
-    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/profiling-quarkus-server-runner-${ISPN_VERSION}-runner
+    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-tracing-quarkus-server-runner-${ISPN_VERSION}-runner
 
 mv \
     ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${ISPN_VERSION}-runner.debug \
-    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/profiling-quarkus-server-runner-${ISPN_VERSION}-runner.debug
+    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-tracing-quarkus-server-runner-${ISPN_VERSION}-runner.debug
 
 qollider \
     maven-build \

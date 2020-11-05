@@ -12,12 +12,17 @@ INFINISPAN_VERSION ?= 12.0.0-SNAPSHOT
 Q_HOME ?= ${HOME}/.qollider/cache/latest
 Q_JAVA_HOME ?= ${Q_HOME}/java_home
 SERVER_HOME = ${Q_HOME}/infinispan/server/runtime/target/infinispan-server-${INFINISPAN_VERSION}
+
 RUNNER_NAME = infinispan-quarkus-server-runner-${INFINISPAN_VERSION}-runner
 DEBUG_NAME = ${RUNNER_NAME}.debug
-PROFILING_NAME = profiling-quarkus-server-runner-${INFINISPAN_VERSION}-runner
+TRACING_RUNNER_NAME = tracing-${RUNNER_NAME}
+TRACING_DEBUG_NAME = tracing-${DEBUG_NAME}
+
 RUNNER_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${RUNNER_NAME}
 DEBUG_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${DEBUG_NAME}
-PROFILING_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${PROFILING_NAME}
+TRACING_RUNNER_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${TRACING_RUNNER_NAME}
+TRACING_DEBUG_PATH = ${Q_HOME}/infinispan-quarkus/server-runner/target/${TRACING_DEBUG_NAME}
+
 TMP_DIR = /tmp/servers-$$(date +%d%m)
 GRAPHS_DIR = $(TMP_DIR)/graphs
 
@@ -37,7 +42,7 @@ install-jvm:
 define make-jvm
 mkdir -p $(TMP_DIR)/jvm${1} || true
 cp -r ${SERVER_HOME}/* $(TMP_DIR)/jvm${1}
-$(TMP_DIR)/jvm${1}/bin/cli.sh user create foo -p "bar"
+JAVA_HOME=${Q_JAVA_HOME} $(TMP_DIR)/jvm${1}/bin/cli.sh user create foo -p "bar"
 endef
 
 install-native:
@@ -48,8 +53,8 @@ define make-native
 mkdir -p $(TMP_DIR)/native${1} || true
 mkdir -p $(TMP_DIR)/native${1}/server || true
 cp ${RUNNER_PATH} $(TMP_DIR)/native${1}/${RUNNER_NAME}
-cp ${PROFILING_PATH} $(TMP_DIR)/native${1}/${PROFILING_NAME}
-cp ${DEBUG_PATH} $(TMP_DIR)/native${1}/${DEBUG_NAME} || true
+cp ${TRACING_RUNNER_PATH} $(TMP_DIR)/native${1}/${TRACING_RUNNER_NAME}
+cp ${TRACING_DEBUG_PATH} $(TMP_DIR)/native${1}/${TRACING_DEBUG_NAME}
 cp -r $(TMP_DIR)/jvm1/server/conf $(TMP_DIR)/native${1}/server
 cp -r $(TMP_DIR)/jvm1/server/conf $(TMP_DIR)/native${1}
 endef
@@ -79,12 +84,12 @@ debug-jvm1:
 	$(TMP_DIR)/jvm1/bin/server.sh -Dinfinispan.bind.address=${ADDRESS}
 
 record-native1:
+		${call perf-record} -- $(call run-native,$(TRACING_RUNNER_NAME),11222)
 	cd $(TMP_DIR)/native1 && \
-		${call perf-record} -- $(call run-native,$(PROFILING_NAME),11222)
 
 record-native2:
 	cd $(TMP_DIR)/native2 && \
-		${call perf-record} -- $(call run-native,$(PROFILING_NAME),11322)
+		${call perf-record} -- $(call run-native,$(TRACING_RUNNER_NAME),11322)
 
 define perf-record
 ${PERF_HOME}/perf record -F 99 -a --call-graph dwarf
