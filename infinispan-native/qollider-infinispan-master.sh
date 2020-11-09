@@ -50,13 +50,18 @@ qollider \
         -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-H:+PreserveFramePointer,--allow-incomplete-classpath \
         dependency:sources
 
-mv \
+TRACING_DIR=${HOME}/.qollider/cache/latest/tracing-infinispan-native
+rm -drf ${TRACING_DIR}
+mkdir -p ${TRACING_DIR}
+cp \
     ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${ISPN_VERSION}-runner \
-    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-tracing-quarkus-server-runner-${ISPN_VERSION}-runner
-
-mv \
+    ${TRACING_DIR}
+cp \
     ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${ISPN_VERSION}-runner.debug \
-    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-tracing-quarkus-server-runner-${ISPN_VERSION}-runner.debug
+    ${TRACING_DIR}
+cp -r \
+    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/sources \
+    ${TRACING_DIR}
 
 qollider \
     maven-build \
