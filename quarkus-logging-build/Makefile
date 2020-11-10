@@ -8,7 +8,7 @@ runner="quarkus-logging-build-1.0-SNAPSHOT-runner"
 
 all-snapshot: native-snapshot run
 
-all: native run
+all: native run run-warn run-info run-trace
 
 native:
 	./mvnw install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args)
@@ -23,6 +23,9 @@ native-snapshot:
 
 run:
 	./target/$(runner)
+
+run-warn:
+	./target/$(runner) -Dquarkus.log.category.\"org.acme.getting.started.commandmode\".level=WARN
 
 run-info:
 	./target/$(runner) -Dquarkus.log.category.\"org.acme.getting.started.commandmode\".level=INFO

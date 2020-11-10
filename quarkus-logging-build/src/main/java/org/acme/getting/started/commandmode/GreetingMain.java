@@ -13,12 +13,16 @@ public class GreetingMain implements QuarkusApplication {
 
     @Override
     public int run(String... args) {
-        if (GreetingLogger.LOG.isTraceEnabled()) {
-            GreetingLogger.LOG.trace(getMessageOnTheFly());
+        if (GreetingLogger.isTrace) {
+            GreetingLogger.LOG.trace(getTraceCached());
         }
 
-        if (GreetingLogger.isTrace) {
-            GreetingLogger.LOG.trace(getMessageStaticCached());
+        if (GreetingLogger.LOG.isTraceEnabled()) {
+            GreetingLogger.LOG.trace(getTraceOnTheFly());
+        }
+
+        if (GreetingLogger.LOG.isInfoEnabled()) {
+            GreetingLogger.LOG.info(getInfoOnTheFly());
         }
 
         GreetingLogger.LOG.trace("Log this message without user checking if trace is enabled");
@@ -32,14 +36,18 @@ public class GreetingMain implements QuarkusApplication {
         return 0;
     }
 
-    private String getMessageOnTheFly() {
-        System.out.println("Compute message having checked isTraceEnabled at runtime");
-        return "Compute whether trace enabled on the fly";
+    private String getTraceCached() {
+        System.out.println("static final boolean isTrace = LOG.isTraceEnabled() = true");
+        return "trace()";
     }
 
-    private String getMessageStaticCached() {
-        System.out.println("Compute message having checked isTrace static final field");
-        return "Use cached value to see if trace enabled";
+    private String getTraceOnTheFly() {
+        System.out.println("Runtime log.isTraceEnabled() = true");
+        return "trace()";
     }
 
+    private String getInfoOnTheFly() {
+        System.out.println("Runtime log.isInfoEnabled() = true");
+        return "info()";
+    }
 }

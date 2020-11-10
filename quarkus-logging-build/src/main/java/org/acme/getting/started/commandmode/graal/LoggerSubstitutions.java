@@ -4,6 +4,7 @@ import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 import org.graalvm.compiler.api.replacements.Fold;
+import org.jboss.logmanager.Level;
 
 @TargetClass(className = "org.jboss.logmanager.Logger")
 final class Target_org_jboss_logmanager_Logger
@@ -14,7 +15,7 @@ final class Target_org_jboss_logmanager_Logger
     // TODO should be @Fold? Don't think so cos then you'd lose the ability to switch log levels at runtime for higher values than min-level
     @Substitute
     public boolean isLoggable(java.util.logging.Level level) {
-        if (level.intValue() >= org.jboss.logmanager.Level.INFO.intValue())
+        if (LevelHolder.isMinLevelEnabled(level.intValue()))
             return loggerNode.isLoggableLevel(level.intValue());
 
         return false;
@@ -30,77 +31,80 @@ final class Target_org_jboss_logmanager_LoggerNode
     }
 }
 
-//@TargetClass(className = "org.jboss.logging.JBossLogManagerLogger")
-//final class Target_org_jboss_logging_JBossLogManagerLogger
+//@TargetClass(className = "org.jboss.logging.Logger")
+//final class Target_org_jboss_logging_Logger
 //{
-//    @Alias
-//    private org.jboss.logmanager.Logger logger;
-//
-////    // TODO should be @Fold?
-////    @Substitute
-////    public boolean isEnabled(final Logger.Level level)
-////    {
-////        if (level.ordinal() <= Logger.Level.INFO.ordinal())
-////        {
-////            return logger.isLoggable(translate(level));
-////        }
-////
-////        return false;
-////    }
-////
 ////    @Alias
-////    private static java.util.logging.Level translate(final Logger.Level level)
-////    {
-////        return null;
-////    }
-////
-////    @Substitute
-////    private void doLog(final Logger.Level level, final String loggerClassName, final Object message, final Object[] parameters, final Throwable thrown)
-////    {
-////        if (isEnabled(level))
+////    private String name;
+//
+//    // TODO if no categories, make these methods folded
+//    // if categories provided, they're not folded and controlled at runtime
+//
+//    // START: implementations for no configuration
+//
+//    @Fold
+//    @Substitute
+//    boolean isDebugEnabled()
+//    {
+//        return LevelHolder.isMinLevelEnabled(Level.DEBUG);
+//    }
+//
+//    @Fold
+//    @Substitute
+//    boolean isTraceEnabled()
+//    {
+//        return LevelHolder.isMinLevelEnabled(Level.TRACE);
+//
+//    }
+//
+////        if (name.equals("org.acme.getting.started.commandmode")
+////            || name.startsWith("org.acme.getting.started.commandmode")
+////        )
 ////        {
-////            if (parameters == null)
-////            {
-////                logger.log(loggerClassName, translatedLevel, String.valueOf(message), thrown);
-////            }
-////            else
-////            {
-////                logger.log(loggerClassName, translatedLevel, String.valueOf(message), ExtLogRecord.FormatStyle.MESSAGE_FORMAT, parameters, thrown);
-////            }
+////            return true;
 ////        }
-////    }
+////        else
+////        {
+////            return false;
+////        }
+//
 //}
 
-// Assume min-level=INFO (default)
+// Default implementation:
+// - trace/debug enabled checks folded to false
+// - info enabled checks are based on runtime config
 @TargetClass(className = "org.jboss.logging.Logger")
 final class Target_org_jboss_logging_Logger
 {
-//    @Alias
-//    private String name;
-
     @Fold
     @Substitute
     boolean isDebugEnabled()
     {
-        return false;
+        return LevelHolder.isMinLevelEnabled(Level.DEBUG);
     }
 
     @Fold
     @Substitute
     boolean isTraceEnabled()
     {
-        return false;
+        return LevelHolder.isMinLevelEnabled(Level.TRACE);
 
-//        if (name.equals("org.acme.getting.started.commandmode")
-//            || name.startsWith("org.acme.getting.started.commandmode")
-//        )
-//        {
-//            return true;
-//        }
-//        else
-//        {
-//            return false;
-//        }
+    }
+}
+
+class LevelHolder
+{
+    static final Level MIN_LEVEL = Level.INFO;
+    // static final Level MIN_LEVEL = Level.TRACE;
+
+    static boolean isMinLevelEnabled(Level level)
+    {
+        return isMinLevelEnabled(level.intValue());
+    }
+
+    static boolean isMinLevelEnabled(int level)
+    {
+        return level >= LevelHolder.MIN_LEVEL.intValue();
     }
 }
 
