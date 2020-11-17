@@ -23,6 +23,9 @@ final class Target_org_jboss_logmanager_Logger
         if (LevelHolder.isMinLevelEnabled(level.intValue(), name))
             return loggerNode.isLoggableLevel(level.intValue());
 
+//        if (level.intValue() >= Level.INFO.intValue())
+//            return loggerNode.isLoggableLevel(level.intValue());
+
         return false;
     }
 }
