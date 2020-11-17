@@ -6,16 +6,21 @@ import com.oracle.svm.core.annotate.TargetClass;
 import org.graalvm.compiler.api.replacements.Fold;
 import org.jboss.logmanager.Level;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @TargetClass(className = "org.jboss.logmanager.Logger")
 final class Target_org_jboss_logmanager_Logger
 {
     @Alias
+    private String name;
+
+    @Alias
     private Target_org_jboss_logmanager_LoggerNode loggerNode;
 
-    // TODO should be @Fold? Don't think so cos then you'd lose the ability to switch log levels at runtime for higher values than min-level
     @Substitute
     public boolean isLoggable(java.util.logging.Level level) {
-        if (LevelHolder.isMinLevelEnabled(level.intValue()))
+        if (LevelHolder.isMinLevelEnabled(level.intValue(), name))
             return loggerNode.isLoggableLevel(level.intValue());
 
         return false;
@@ -28,6 +33,31 @@ final class Target_org_jboss_logmanager_LoggerNode
     @Alias
     boolean isLoggableLevel(int level) {
         return false;
+    }
+}
+
+// Custom implementation:
+// - user has set min level for a given category to TRACE
+// - checks for isDebugEnabled and isTraceEnabled cannot be folded
+@TargetClass(className = "org.jboss.logging.Logger")
+final class Target_org_jboss_logging_Logger
+{
+    @Alias
+    private String name;
+
+//    @Fold
+    @Substitute
+    boolean isDebugEnabled()
+    {
+        return LevelHolder.isMinLevelEnabled(Level.DEBUG.intValue(), name);
+    }
+
+//    @Fold
+    @Substitute
+    boolean isTraceEnabled()
+    {
+        return LevelHolder.isMinLevelEnabled(Level.TRACE.intValue(), name);
+
     }
 }
 
@@ -70,41 +100,62 @@ final class Target_org_jboss_logmanager_LoggerNode
 //
 //}
 
-// Default implementation:
-// - trace/debug enabled checks folded to false
-// - info enabled checks are based on runtime config
-@TargetClass(className = "org.jboss.logging.Logger")
-final class Target_org_jboss_logging_Logger
-{
-    @Fold
-    @Substitute
-    boolean isDebugEnabled()
-    {
-        return LevelHolder.isMinLevelEnabled(Level.DEBUG);
-    }
-
-    @Fold
-    @Substitute
-    boolean isTraceEnabled()
-    {
-        return LevelHolder.isMinLevelEnabled(Level.TRACE);
-
-    }
-}
+//// Default implementation:
+//// - trace/debug enabled checks folded to false
+//// - info enabled checks are based on runtime config
+//@TargetClass(className = "org.jboss.logging.Logger")
+//final class Target_org_jboss_logging_Logger
+//{
+//    @Fold
+//    @Substitute
+//    boolean isInfoEnabled()
+//    {
+//        return true;
+//    }
+//
+//    @Fold
+//    @Substitute
+//    boolean isDebugEnabled()
+//    {
+//        return false;
+//    }
+//
+//    @Fold
+//    @Substitute
+//    boolean isTraceEnabled()
+//    {
+//        return false;
+//    }
+//}
 
 class LevelHolder
 {
-    static final Level MIN_LEVEL = Level.INFO;
+    // static final Level MIN_LEVEL = Level.INFO;
     // static final Level MIN_LEVEL = Level.TRACE;
+    static final Map<String, Level> MIN_LEVELS = new HashMap<>();
 
-    static boolean isMinLevelEnabled(Level level)
-    {
-        return isMinLevelEnabled(level.intValue());
+    static {
+        MIN_LEVELS.put("org.acme.getting.started.commandmode", Level.TRACE);
     }
 
-    static boolean isMinLevelEnabled(int level)
+    static boolean isMinLevelEnabled(int level, String name)
     {
-        return level >= LevelHolder.MIN_LEVEL.intValue();
+        for (Map.Entry<String, Level> entry : MIN_LEVELS.entrySet())
+        {
+            if (name.equals(entry.getKey())
+                || name.startsWith(entry.getKey())
+            )
+            {
+                return isMinLevelEnabled(level, entry.getValue().intValue());
+            }
+        }
+
+        return false;
+    }
+
+    static boolean isMinLevelEnabled(int level, int minLevel)
+    {
+        return level >= minLevel;
     }
 }
 
