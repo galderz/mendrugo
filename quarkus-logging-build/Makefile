@@ -11,13 +11,13 @@ all-snapshot: native-snapshot run
 all: native run run-warn run-info run-trace
 
 native:
-	./mvnw install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args)
+	mvn install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args)
 
 native-debug:
-	./mvnw install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args-debug)
+	mvn install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args-debug)
 
 native-snapshot:
-	./mvnw install -Dnative \
+	mvn install -Dnative \
 	-Dquarkus-plugin.version=999-SNAPSHOT \
 	-Dquarkus.platform.version=999-SNAPSHOT
 
@@ -34,4 +34,4 @@ run-trace:
 	./target/$(runner) -Dquarkus.log.category.\"org.acme.getting.started.commandmode\".level=TRACE
 
 clean:
-	./mvnw clean
+	mvn clean

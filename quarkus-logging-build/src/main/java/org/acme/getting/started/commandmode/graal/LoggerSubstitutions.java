@@ -1,9 +1,11 @@
 package org.acme.getting.started.commandmode.graal;
 
+import com.oracle.svm.core.SubstrateUtil;
 import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 import org.graalvm.compiler.api.replacements.Fold;
+import org.jboss.logging.Logger;
 import org.jboss.logmanager.Level;
 
 import java.util.HashMap;
@@ -52,15 +54,26 @@ final class Target_org_jboss_logging_Logger
     @Substitute
     boolean isDebugEnabled()
     {
-        return LevelHolder.isMinLevelEnabled(Level.DEBUG.intValue(), name);
+        return LevelHolder.isMinLevelEnabled(Level.DEBUG.intValue(), name)
+            && SubstrateUtil.cast(this, Target_org_jboss_logging_BasicLogger.class).isEnabled(Logger.Level.DEBUG);
     }
 
 //    @Fold
     @Substitute
     boolean isTraceEnabled()
     {
-        return LevelHolder.isMinLevelEnabled(Level.TRACE.intValue(), name);
+        return LevelHolder.isMinLevelEnabled(Level.TRACE.intValue(), name)
+            && SubstrateUtil.cast(this, Target_org_jboss_logging_BasicLogger.class).isEnabled(Logger.Level.TRACE);
+    }
+}
 
+@TargetClass(className = "org.jboss.logging.BasicLogger")
+final class Target_org_jboss_logging_BasicLogger
+{
+    @Alias
+    boolean isEnabled(Logger.Level level)
+    {
+        return false;
     }
 }
 
