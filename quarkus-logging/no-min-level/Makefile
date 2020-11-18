@@ -15,13 +15,13 @@ run:
 	./target/$(runner)
 
 run-warn:
-	./target/$(runner) -Dquarkus.log.category.\"org.example.house\".level=WARN
+	./target/$(runner) -Dquarkus.log.category.\"org.example.iron\".level=WARN
 
 run-info:
-	./target/$(runner) -Dquarkus.log.category.\"org.example.house\".level=INFO
+	./target/$(runner) -Dquarkus.log.category.\"org.example.iron\".level=INFO
 
 run-trace:
-	./target/$(runner) -Dquarkus.log.category.\"org.example.house\".level=TRACE
+	./target/$(runner) -Dquarkus.log.category.\"org.example.iron\".level=TRACE
 
 clean:
 	./mvnw clean

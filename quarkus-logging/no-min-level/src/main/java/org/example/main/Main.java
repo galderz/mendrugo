@@ -7,10 +7,12 @@ import org.example.iron.Iron;
 @QuarkusMain
 public class Main implements QuarkusApplication
 {
+    public static final String MIN_LEVEL = "INFO";
+
     @Override
     public int run(String... args)
     {
-        assert false;
+        Asserts.check();
         Iron.iron();
         return 0;
     }

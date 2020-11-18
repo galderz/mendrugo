@@ -1,5 +1,8 @@
 package org.example.iron;
 
+import org.example.main.Asserts;
+import org.example.main.Levels;
+import org.example.main.Main;
 import org.jboss.logging.Logger;
 
 public class Iron
@@ -11,66 +14,54 @@ public class Iron
     {
         tryTraceCached();
         tryTraceOnTheFly();
-        traceOnTheFly();
+        justTrace();
+
         tryInfoOnTheFly();
-    }
-
-    private static void tryInfoOnTheFly()
-    {
-        if (LOG.isInfoEnabled())
-        {
-            LOG.info(getInfoOnTheFly());
-        }
-        else
-        {
-            System.out.println("[house] Runtime LOG.isInfoEnabled() = false");
-        }
-    }
-
-    private static void traceOnTheFly()
-    {
-        LOG.trace("Log this message without user checking if trace is enabled");
-    }
-
-    private static void tryTraceOnTheFly()
-    {
-        if (LOG.isTraceEnabled())
-        {
-            LOG.trace(getTraceOnTheFly());
-        }
-        else
-        {
-            System.out.println("[house] Runtime LOG.isTraceEnabled() = false");
-        }
     }
 
     private static void tryTraceCached()
     {
         if (isTrace)
         {
-            LOG.trace(getTraceCached());
+            Asserts.assertTraceNotLogged(LOG);
         }
         else
         {
-            System.out.println("[house] static final boolean isTrace = LOG.isTraceEnabled() = false");
+            assert false;
         }
     }
 
-    private static String getTraceCached()
+    private static void tryTraceOnTheFly()
     {
-        System.out.println("[house] static final boolean isTrace = LOG.isTraceEnabled() = true");
-        return "trace()";
+        if (LOG.isTraceEnabled())
+        {
+            Asserts.assertTraceSet();
+            Asserts.assertTraceLogged(LOG);
+        }
+        else
+        {
+            Asserts.assertTraceNotSet();
+            Asserts.assertTraceNotLogged(LOG);
+        }
     }
 
-    private static String getTraceOnTheFly()
+    private static void justTrace()
     {
-        System.out.println("[house] Runtime LOG.isTraceEnabled() = true");
-        return "trace()";
+        Asserts.assertTraceNotSet();
+        Asserts.assertTraceNotLogged(LOG);
     }
 
-    private static String getInfoOnTheFly()
+    private static void tryInfoOnTheFly()
     {
-        System.out.println("[house] Runtime LOG.isInfoEnabled() = true");
-        return "info()";
+        if (LOG.isInfoEnabled())
+        {
+            Asserts.assertInfoSet();
+            Asserts.assertInfoLogged(LOG);
+        }
+        else
+        {
+            Asserts.assertInfoNotSet();
+            Asserts.assertInfoNotLogged(LOG);
+        }
     }
 }
