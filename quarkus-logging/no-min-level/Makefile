@@ -1,6 +1,7 @@
 additional-build-args-debug="$(additional-build-args),--debug-attach=*:8000"
+additional-build-args="-H:+RuntimeAssertions"
 
-runner="quarkus-logging-runner"
+runner=quarkus-logging-runner
 
 all: native run run-warn run-info run-trace
 
