@@ -2,7 +2,7 @@ package org.example.main;
 
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
-import org.example.house.House;
+import org.example.iron.Iron;
 
 @QuarkusMain
 public class Main implements QuarkusApplication
@@ -11,7 +11,7 @@ public class Main implements QuarkusApplication
     public int run(String... args)
     {
         assert false;
-        House.house();
+        Iron.iron();
         return 0;
     }
 }

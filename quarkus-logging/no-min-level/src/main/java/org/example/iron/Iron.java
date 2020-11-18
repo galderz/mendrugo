@@ -1,13 +1,13 @@
-package org.example.house;
+package org.example.iron;
 
 import org.jboss.logging.Logger;
 
-public class House
+public class Iron
 {
-    static final Logger LOG = Logger.getLogger(House.class);
+    static final Logger LOG = Logger.getLogger(Iron.class);
     static final boolean isTrace = LOG.isTraceEnabled();
 
-    public static void house()
+    public static void iron()
     {
         tryTraceCached();
         tryTraceOnTheFly();
