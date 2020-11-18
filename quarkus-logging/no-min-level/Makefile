@@ -6,10 +6,10 @@ runner=quarkus-logging-runner
 all: native run run-warn run-info run-trace
 
 native:
-	./mvnw install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args)
+	mvn install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args)
 
 native-debug:
-	./mvnw install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args-debug)
+	mvn install -Dnative -Dquarkus.native.additional-build-args=$(additional-build-args-debug)
 
 run:
 	./target/$(runner)
@@ -24,4 +24,4 @@ run-trace:
 	./target/$(runner) -Dquarkus.log.category.\"org.example.iron\".level=TRACE
 
 clean:
-	./mvnw clean
+	mvn clean
