@@ -24,3 +24,5 @@ mods
 mlib
 # output folder
 out
+# emacs backup files
+*~
