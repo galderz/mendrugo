@@ -41,41 +41,41 @@ final class Target_org_jboss_logmanager_LoggerNode
     }
 }
 
-// Custom implementation:
-// - user has set min level for a given category to TRACE
-// - checks for isDebugEnabled and isTraceEnabled cannot be folded
-@TargetClass(className = "org.jboss.logging.Logger")
-final class Target_org_jboss_logging_Logger
-{
-    @Alias
-    private String name;
+//// Custom implementation:
+//// - user has set min level for a given category to TRACE
+//// - checks for isDebugEnabled and isTraceEnabled cannot be folded
+//@TargetClass(className = "org.jboss.logging.Logger")
+//final class Target_org_jboss_logging_Logger
+//{
+//    @Alias
+//    private String name;
+//
+////    @Fold
+//    @Substitute
+//    boolean isDebugEnabled()
+//    {
+//        return LevelHolder.isMinLevelEnabled(Level.DEBUG.intValue(), name)
+//            && SubstrateUtil.cast(this, Target_org_jboss_logging_BasicLogger.class).isEnabled(Logger.Level.DEBUG);
+//    }
+//
+////    @Fold
+//    @Substitute
+//    boolean isTraceEnabled()
+//    {
+//        return LevelHolder.isMinLevelEnabled(Level.TRACE.intValue(), name)
+//            && SubstrateUtil.cast(this, Target_org_jboss_logging_BasicLogger.class).isEnabled(Logger.Level.TRACE);
+//    }
+//}
 
-//    @Fold
-    @Substitute
-    boolean isDebugEnabled()
-    {
-        return LevelHolder.isMinLevelEnabled(Level.DEBUG.intValue(), name)
-            && SubstrateUtil.cast(this, Target_org_jboss_logging_BasicLogger.class).isEnabled(Logger.Level.DEBUG);
-    }
-
-//    @Fold
-    @Substitute
-    boolean isTraceEnabled()
-    {
-        return LevelHolder.isMinLevelEnabled(Level.TRACE.intValue(), name)
-            && SubstrateUtil.cast(this, Target_org_jboss_logging_BasicLogger.class).isEnabled(Logger.Level.TRACE);
-    }
-}
-
-@TargetClass(className = "org.jboss.logging.BasicLogger")
-final class Target_org_jboss_logging_BasicLogger
-{
-    @Alias
-    boolean isEnabled(Logger.Level level)
-    {
-        return false;
-    }
-}
+//@TargetClass(className = "org.jboss.logging.BasicLogger")
+//final class Target_org_jboss_logging_BasicLogger
+//{
+//    @Alias
+//    boolean isEnabled(Logger.Level level)
+//    {
+//        return false;
+//    }
+//}
 
 //@TargetClass(className = "org.jboss.logging.Logger")
 //final class Target_org_jboss_logging_Logger
