@@ -89,14 +89,14 @@ public class reflection_poet implements Callable<Integer>
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
             .addException(Exception.class)
             .returns(void.class)
-            .addStatement("Class<?> clazz = Class.forName(\"$1L.Fruit0\")", PACKAGE_NAME)
+            .addStatement("Class<?> clazz = Class.forName($S)", String.format("%s.%s", PACKAGE_NAME, "Fruit0"))
             .addStatement("assert \"Fruit0\".equals(clazz.getSimpleName())")
             .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numFields)
-            .addStatement("String fieldName = \"attr_\" + i")
+            .addStatement("String fieldName = $S + i", "attr_")
             .addStatement("assert fieldName.equals(clazz.getField(fieldName).getName())")
-            .addStatement("String getterName = \"getAttr\" + i")
+            .addStatement("String getterName = $S + i", "getAttr")
             .addStatement("assert getterName.equals(clazz.getMethod(getterName).getName())")
-            .addStatement("String setterName = \"setAttr\" + i")
+            .addStatement("String setterName = $S + i", "setAttr")
             .addStatement("assert setterName.equals(clazz.getMethod(setterName, String.class).getName())")
             .endControlFlow()
             .build();
@@ -141,9 +141,7 @@ public class reflection_poet implements Callable<Integer>
             .addModifiers(Modifier.PUBLIC)
             .returns(void.class)
             .addParameter(String.class, "name")
-            .addStatement(
-                String.format("this.attr_%d = name", fieldNumber)
-            )
+            .addStatement("this.attr_$L = name", fieldNumber)
             .build();
     }
 
@@ -157,9 +155,7 @@ public class reflection_poet implements Callable<Integer>
         return builder
             .addModifiers(Modifier.PUBLIC)
             .returns(String.class)
-            .addStatement(
-                String.format("return attr_%d", fieldNumber)
-            )
+            .addStatement("return attr_$L", fieldNumber)
             .build();
     }
 
