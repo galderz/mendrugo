@@ -11,3 +11,14 @@ build:
 
 run-jvm:
 	java -ea -jar ./target/reflection-bigbang.jar
+
+native:
+	native-image \
+		-ea \
+		-jar ./target/reflection-bigbang.jar \
+		--no-fallback \
+		-H:+ReportExceptionStackTraces \
+		target/reflection-bigbang
+
+run-native:
+	./target/reflection-bigbang
