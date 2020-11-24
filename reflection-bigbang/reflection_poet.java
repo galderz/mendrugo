@@ -62,6 +62,7 @@ public class reflection_poet implements Callable<Integer>
     {
         final var registerFruits = registerFruits();
         final var registerFruit = registerFruit();
+        final var registerFruitFieldsAndMethods = registerFruitFieldsAndMethods();
 
         final var beforeAnalysis = beforeAnalysis();
 
@@ -72,6 +73,7 @@ public class reflection_poet implements Callable<Integer>
             .addMethod(beforeAnalysis)
             .addMethod(registerFruits)
             .addMethod(registerFruit)
+            .addMethod(registerFruitFieldsAndMethods)
             .build();
 
         JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type).build();
@@ -112,6 +114,25 @@ public class reflection_poet implements Callable<Integer>
             .addStatement("$T.out.println(\"Register fruit \" + index)", System.class)
             .addStatement("Class<?> clazz = Class.forName(\"$L.Fruit\" + index)", PACKAGE_NAME)
             .addStatement("$L.RuntimeReflection.register(clazz)", PACKAGE_HOSTED)
+            .addStatement("registerFruitFieldsAndMethods(clazz)")
+            .build();
+    }
+
+    MethodSpec registerFruitFieldsAndMethods()
+    {
+        return MethodSpec.methodBuilder("registerFruitFieldsAndMethods")
+            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .addParameter(Class.class, "clazz")
+            .addException(Exception.class)
+            .returns(void.class)
+            .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numFields)
+            .addStatement("String fieldName = $S + i", "attr_")
+            .addStatement("$L.RuntimeReflection.register(clazz.getField(fieldName))", PACKAGE_HOSTED)
+            .addStatement("String getterName = $S + i", "getAttr")
+            .addStatement("$L.RuntimeReflection.register(clazz.getMethod(getterName))", PACKAGE_HOSTED)
+            .addStatement("String setterName = $S + i", "setAttr")
+            .addStatement("$L.RuntimeReflection.register(clazz.getMethod(setterName, String.class))", PACKAGE_HOSTED)
+            .endControlFlow()
             .build();
     }
 
@@ -119,7 +140,7 @@ public class reflection_poet implements Callable<Integer>
     {
         final var assertFruits = assertFruits();
         final var assertFruit = assertFruit();
-        final var assertFruitField = assertFruitField();
+        final var assertFruitField = assertFruitFieldAndMethods();
 
         MethodSpec main = MethodSpec.methodBuilder("main")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -168,14 +189,14 @@ public class reflection_poet implements Callable<Integer>
             .addStatement("Class<?> clazz = Class.forName(\"$L.Fruit\" + index)", PACKAGE_NAME)
             .addStatement("assert (\"Fruit\" + index).equals(clazz.getSimpleName())")
             .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numFields)
-            .addStatement("assertFruitField(clazz, i)")
+            .addStatement("assertFruitFieldAndMethods(clazz, i)")
             .endControlFlow()
             .build();
     }
 
-    MethodSpec assertFruitField()
+    MethodSpec assertFruitFieldAndMethods()
     {
-        return MethodSpec.methodBuilder("assertFruitField")
+        return MethodSpec.methodBuilder("assertFruitFieldAndMethods")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
             .addParameter(Class.class, "clazz")
             .addParameter(int.class, "index")
