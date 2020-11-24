@@ -2,6 +2,7 @@
 //DEPS info.picocli:picocli:4.5.2
 //DEPS com.squareup:javapoet:1.13.0
 
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -12,8 +13,11 @@ import picocli.CommandLine.Option;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -25,6 +29,12 @@ import java.util.stream.IntStream;
 public class reflection_poet implements Callable<Integer>
 {
     public static final String PACKAGE_NAME = "com.example.reflection";
+
+    @Option(
+        description = "Number of classes"
+        , names = {"-c", "--number-classes"}
+    )
+    private int numClasses = 10;
 
     @Option(
         description = "Number of fields per type"
@@ -47,14 +57,43 @@ public class reflection_poet implements Callable<Integer>
         return 0;
     }
 
+//    void generateReflectionFeature() throws IOException
+//    {
+//        final var packageHosted = "org.graalvm.nativeimage.hosted";
+//
+//        final var methodBuilder = MethodSpec.methodBuilder("beforeAnalysis")
+//            .addModifiers(Modifier.PUBLIC)
+//            .addParameter(ClassName.get(packageHosted, "BeforeAnalysisAccess"), "access");
+//
+//        methodBuilder
+//            .beginControlFlow("try")
+//            .addStatement("$L.$L()", packageHosted)
+//            .nextControlFlow("catch ($T e)", Exception.class)
+//            .addStatement("throw new $T(e)", RuntimeException.class)
+//            .endControlFlow();
+//
+//        TypeSpec type = TypeSpec.classBuilder("ReflectionFeature")
+//            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+//            .superclass(ClassName.get(packageHosted, "Feature"))
+//            .addAnnotation(ClassName.get("com.oracle.svm.core.annotate", "AutomaticFeature"))
+////            .addMethod(main)
+////            .addMethod(assertFruits)
+////            .addMethod(assertFruit)
+//            .build();
+//
+//        JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type).build();
+//        javaFile.writeTo(generatedSourcesDirectory);
+//    }
+
     void generateMain() throws IOException
     {
-        MethodSpec assertFruits = MethodSpec.methodBuilder("assertFruits")
+        final var assertFruitsBuilder = MethodSpec.methodBuilder("assertFruits")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
             .addException(Exception.class)
-            .returns(void.class)
-            .addStatement("assertFruit()")
-            .build();
+            .returns(void.class);
+
+        IntStream.range(0, numClasses)
+            .forEach(index -> assertFruitsBuilder.addStatement("assertFruit($L)", index));
 
         MethodSpec assertFruit = generateAssertFruit();
 
@@ -73,13 +112,11 @@ public class reflection_poet implements Callable<Integer>
         TypeSpec type = TypeSpec.classBuilder("Main")
             .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
             .addMethod(main)
-            .addMethod(assertFruits)
+            .addMethod(assertFruitsBuilder.build())
             .addMethod(assertFruit)
             .build();
 
-        JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type)
-            .build();
-
+        JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type).build();
         javaFile.writeTo(generatedSourcesDirectory);
     }
 
@@ -87,10 +124,12 @@ public class reflection_poet implements Callable<Integer>
     {
         return MethodSpec.methodBuilder("assertFruit")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .addParameter(int.class, "index")
             .addException(Exception.class)
             .returns(void.class)
-            .addStatement("Class<?> clazz = Class.forName($S)", String.format("%s.%s", PACKAGE_NAME, "Fruit0"))
-            .addStatement("assert \"Fruit0\".equals(clazz.getSimpleName())")
+            .addStatement("$T.out.println(\"Assert fruit \" + index)", System.class)
+            .addStatement("Class<?> clazz = Class.forName(\"$L.Fruit\" + index)", PACKAGE_NAME)
+            .addStatement("assert (\"Fruit\" + index).equals(clazz.getSimpleName())")
             .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numFields)
             .addStatement("String fieldName = $S + i", "attr_")
             .addStatement("assert fieldName.equals(clazz.getField(fieldName).getName())")
@@ -102,7 +141,7 @@ public class reflection_poet implements Callable<Integer>
             .build();
     }
 
-    void generateFruits() throws Exception
+    void generateFruits()
     {
         final var fields = IntStream.range(0, numFields)
             .mapToObj(reflection_poet::toField)
@@ -116,19 +155,45 @@ public class reflection_poet implements Callable<Integer>
             .mapToObj(reflection_poet::toSetter)
             .collect(Collectors.toList());
 
-        final var typeBuilder = TypeSpec.classBuilder("Fruit0")
+        IntStream.range(0, numClasses)
+            .mapToObj(reflection_poet::toType)
+            .map(reflection_poet.addMembers(fields, getters, setters))
+            .map(reflection_poet::toJavaFile)
+            .forEach(this::writeJavaFile);
+    }
+
+    void writeJavaFile(JavaFile javaFile)
+    {
+        try
+        {
+            javaFile.writeTo(generatedSourcesDirectory);
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    static JavaFile toJavaFile(TypeSpec type)
+    {
+        return JavaFile.builder(PACKAGE_NAME, type).build();
+    }
+
+    static Function<TypeSpec.Builder, TypeSpec> addMembers(List<FieldSpec> fields, List<MethodSpec> getters, List<MethodSpec> setters)
+    {
+        return typeBuilder ->
+        {
+            fields.forEach(typeBuilder::addField);
+            getters.forEach(typeBuilder::addMethod);
+            setters.forEach(typeBuilder::addMethod);
+            return typeBuilder.build();
+        };
+    }
+
+    static TypeSpec.Builder toType(int index)
+    {
+        return TypeSpec.classBuilder("Fruit" + index)
             .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
-
-        fields.forEach(typeBuilder::addField);
-        getters.forEach(typeBuilder::addMethod);
-        setters.forEach(typeBuilder::addMethod);
-
-        final var type = typeBuilder.build();
-
-        JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type)
-            .build();
-
-        javaFile.writeTo(generatedSourcesDirectory);
     }
 
     static MethodSpec toSetter(int fieldNumber)
