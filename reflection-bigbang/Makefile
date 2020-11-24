@@ -1,10 +1,17 @@
 all: gen build run-jvm native run-native
 
+small: gen-small build run-jvm native run-native
+
 clean:
 	mvn clean
 
 gen:
 	jbang ./reflection_poet.java
+
+gen-small:
+	jbang ./reflection_poet.java \
+		--number-classes 200 \
+		--number-fields 30
 
 build:
 	mvn package

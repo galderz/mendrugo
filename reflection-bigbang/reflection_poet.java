@@ -3,6 +3,7 @@
 //DEPS com.squareup:javapoet:1.13.0
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -29,6 +30,14 @@ import java.util.stream.IntStream;
 public class reflection_poet implements Callable<Integer>
 {
     public static final String PACKAGE_NAME = "com.example.reflection";
+    public static final String PACKAGE_HOSTED = "org.graalvm.nativeimage.hosted";
+    public static final String RUNTIME_REFLECTION = String.format("%s.RuntimeReflection", PACKAGE_HOSTED);
+
+    @Option(
+        description = "Class prefix"
+        , names = {"-p", "--class-prefix"}
+    )
+    private String classPrefix = "Fruit";
 
     @Option(
         description = "Number of classes"
@@ -47,7 +56,6 @@ public class reflection_poet implements Callable<Integer>
         , names = {"-g", "--generated-sources-directory"}
     )
     private Path generatedSourcesDirectory = Path.of("target", "generated-sources");
-    public static final String PACKAGE_HOSTED = "org.graalvm.nativeimage.hosted";
 
     @Override
     public Integer call() throws Exception
@@ -60,10 +68,6 @@ public class reflection_poet implements Callable<Integer>
 
     void generateReflectionFeature() throws IOException
     {
-        final var registerFruits = registerFruits();
-        final var registerFruit = registerFruit();
-        final var registerFruitFieldsAndMethods = registerFruitFieldsAndMethods();
-
         final var beforeAnalysis = beforeAnalysis();
 
         TypeSpec type = TypeSpec.classBuilder("ReflectionFeature")
@@ -71,9 +75,7 @@ public class reflection_poet implements Callable<Integer>
             .addSuperinterface(ClassName.get(PACKAGE_HOSTED, "Feature"))
             .addAnnotation(ClassName.get("com.oracle.svm.core.annotate", "AutomaticFeature"))
             .addMethod(beforeAnalysis)
-            .addMethod(registerFruits)
-            .addMethod(registerFruit)
-            .addMethod(registerFruitFieldsAndMethods)
+            .addMethod(registerReflection())
             .build();
 
         JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type).build();
@@ -86,62 +88,15 @@ public class reflection_poet implements Callable<Integer>
             .addModifiers(Modifier.PUBLIC)
             .addParameter(ClassName.get(PACKAGE_HOSTED, "Feature.BeforeAnalysisAccess"), "access")
             .beginControlFlow("try")
-            .addStatement("registerFruits()")
+            .addStatement("registerReflection()")
             .nextControlFlow("catch ($T e)", Exception.class)
             .addStatement("throw new $T(e)", RuntimeException.class)
             .endControlFlow()
             .build();
     }
 
-    MethodSpec registerFruits()
-    {
-        return MethodSpec.methodBuilder("registerFruits")
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addException(Exception.class)
-            .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numClasses)
-            .addStatement("registerFruit(i)")
-            .endControlFlow()
-            .build();
-    }
-
-    MethodSpec registerFruit()
-    {
-        return MethodSpec.methodBuilder("registerFruit")
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addParameter(int.class, "index")
-            .addException(Exception.class)
-            .returns(void.class)
-            .addStatement("$T.out.println(\"Register fruit \" + index)", System.class)
-            .addStatement("Class<?> clazz = Class.forName(\"$L.Fruit\" + index)", PACKAGE_NAME)
-            .addStatement("$L.RuntimeReflection.register(clazz)", PACKAGE_HOSTED)
-            .addStatement("registerFruitFieldsAndMethods(clazz)")
-            .build();
-    }
-
-    MethodSpec registerFruitFieldsAndMethods()
-    {
-        return MethodSpec.methodBuilder("registerFruitFieldsAndMethods")
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addParameter(Class.class, "clazz")
-            .addException(Exception.class)
-            .returns(void.class)
-            .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numFields)
-            .addStatement("String fieldName = $S + i", "attr_")
-            .addStatement("$L.RuntimeReflection.register(clazz.getField(fieldName))", PACKAGE_HOSTED)
-            .addStatement("String getterName = $S + i", "getAttr")
-            .addStatement("$L.RuntimeReflection.register(clazz.getMethod(getterName))", PACKAGE_HOSTED)
-            .addStatement("String setterName = $S + i", "setAttr")
-            .addStatement("$L.RuntimeReflection.register(clazz.getMethod(setterName, String.class))", PACKAGE_HOSTED)
-            .endControlFlow()
-            .build();
-    }
-
     void generateMain() throws IOException
     {
-        final var assertFruits = assertFruits();
-        final var assertFruit = assertFruit();
-        final var assertFruitField = assertFruitFieldAndMethods();
-
         MethodSpec main = MethodSpec.methodBuilder("main")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
             .addException(Exception.class)
@@ -150,64 +105,56 @@ public class reflection_poet implements Callable<Integer>
             .addStatement("$T.out.println($S)", System.class, "Check asserts enabled...")
             .addStatement("$1L.Asserts.check()", PACKAGE_NAME)
             .addStatement("$T.out.println($S)", System.class, "Run assertions...")
-            .addStatement("assertFruits()")
+            .addStatement("assertReflection()")
             .addStatement("$T.out.println($S)", System.class, "Assertions successfully passed")
             .build();
 
         TypeSpec type = TypeSpec.classBuilder("Main")
             .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
             .addMethod(main)
-            .addMethod(assertFruits)
-            .addMethod(assertFruit)
-            .addMethod(assertFruitField)
+            .addMethod(assertReflection())
             .build();
 
         JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type).build();
         javaFile.writeTo(generatedSourcesDirectory);
     }
 
-    MethodSpec assertFruits()
+    MethodSpec assertReflection()
     {
-        return MethodSpec.methodBuilder("assertFruits")
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addException(Exception.class)
-            .returns(void.class)
-            .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numClasses)
-            .addStatement("assertFruit(i)")
-            .endControlFlow()
-            .build();
+        return forAll("assertReflection"
+            , CodeBlock.of("assert ($S + classIndex).equals(clazz.getSimpleName())", classPrefix)
+            , CodeBlock.of("assert ($1S + fieldIndex).equals(clazz.getField($1S + fieldIndex).getName())", "attr_")
+            , CodeBlock.of("assert ($1S + fieldIndex).equals(clazz.getMethod($1S + fieldIndex).getName())", "getAttr")
+            , CodeBlock.of("assert ($1S + fieldIndex).equals(clazz.getMethod($1S + fieldIndex, String.class).getName())", "setAttr")
+        );
     }
 
-    MethodSpec assertFruit()
+    MethodSpec registerReflection()
     {
-        return MethodSpec.methodBuilder("assertFruit")
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addParameter(int.class, "index")
-            .addException(Exception.class)
-            .returns(void.class)
-            .addStatement("$T.out.println(\"Assert fruit \" + index)", System.class)
-            .addStatement("Class<?> clazz = Class.forName(\"$L.Fruit\" + index)", PACKAGE_NAME)
-            .addStatement("assert (\"Fruit\" + index).equals(clazz.getSimpleName())")
-            .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numFields)
-            .addStatement("assertFruitFieldAndMethods(clazz, i)")
-            .endControlFlow()
-            .build();
+        return forAll("registerReflection"
+            , CodeBlock.of("$L.register(clazz)", RUNTIME_REFLECTION)
+            , CodeBlock.of("$L.register(clazz.getField($S + fieldIndex))", RUNTIME_REFLECTION, "attr_")
+            , CodeBlock.of("$L.register(clazz.getMethod($S + fieldIndex))", RUNTIME_REFLECTION, "getAttr")
+            , CodeBlock.of("$L.register(clazz.getMethod($S + fieldIndex, String.class))", RUNTIME_REFLECTION, "setAttr")
+        );
     }
 
-    MethodSpec assertFruitFieldAndMethods()
+    private MethodSpec forAll(String name, CodeBlock perClass, CodeBlock perField, CodeBlock perGetter, CodeBlock perSetter)
     {
-        return MethodSpec.methodBuilder("assertFruitFieldAndMethods")
+        return MethodSpec.methodBuilder(name)
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addParameter(Class.class, "clazz")
-            .addParameter(int.class, "index")
             .addException(Exception.class)
             .returns(void.class)
-            .addStatement("String fieldName = $S + index", "attr_")
-            .addStatement("assert fieldName.equals(clazz.getField(fieldName).getName())")
-            .addStatement("String getterName = $S + index", "getAttr")
-            .addStatement("assert getterName.equals(clazz.getMethod(getterName).getName())")
-            .addStatement("String setterName = $S + index", "setAttr")
-            .addStatement("assert setterName.equals(clazz.getMethod(setterName, String.class).getName())")
+            .addStatement("$T.out.println($S)", System.class, String.format("%s for %d classes and %d fields each", name, numClasses, numFields))
+            .beginControlFlow("for (int classIndex = $L; classIndex < $L; classIndex++)", 0, numClasses)
+            .addStatement("Class<?> clazz = Class.forName(\"$L.$L\" + classIndex)", PACKAGE_NAME, classPrefix)
+            .addStatement(perClass)
+            .beginControlFlow("for (int fieldIndex = $L; fieldIndex < $L; fieldIndex++)", 0, numFields)
+            .addStatement(perField)
+            .addStatement(perGetter)
+            .addStatement(perSetter)
+            .endControlFlow()
+            .endControlFlow()
             .build();
     }
 
