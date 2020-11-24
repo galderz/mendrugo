@@ -24,6 +24,7 @@ native:
 		-ea \
 		-jar ./target/reflection-bigbang.jar \
 		--no-fallback \
+		-H:+PrintAnalysisCallTree \
 		-H:+ReportExceptionStackTraces \
 		target/reflection-bigbang
 
