@@ -47,55 +47,79 @@ public class reflection_poet implements Callable<Integer>
         , names = {"-g", "--generated-sources-directory"}
     )
     private Path generatedSourcesDirectory = Path.of("target", "generated-sources");
+    public static final String PACKAGE_HOSTED = "org.graalvm.nativeimage.hosted";
 
     @Override
     public Integer call() throws Exception
     {
         generateFruits();
-        // generateReflectionFeature();
+        generateReflectionFeature();
         generateMain();
         return 0;
     }
 
-//    void generateReflectionFeature() throws IOException
-//    {
-//        final var packageHosted = "org.graalvm.nativeimage.hosted";
-//
-//        final var methodBuilder = MethodSpec.methodBuilder("beforeAnalysis")
-//            .addModifiers(Modifier.PUBLIC)
-//            .addParameter(ClassName.get(packageHosted, "BeforeAnalysisAccess"), "access");
-//
-//        methodBuilder
-//            .beginControlFlow("try")
-//            .addStatement("$L.$L()", packageHosted)
-//            .nextControlFlow("catch ($T e)", Exception.class)
-//            .addStatement("throw new $T(e)", RuntimeException.class)
-//            .endControlFlow();
-//
-//        TypeSpec type = TypeSpec.classBuilder("ReflectionFeature")
-//            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-//            .superclass(ClassName.get(packageHosted, "Feature"))
-//            .addAnnotation(ClassName.get("com.oracle.svm.core.annotate", "AutomaticFeature"))
-////            .addMethod(main)
-////            .addMethod(assertFruits)
-////            .addMethod(assertFruit)
-//            .build();
-//
-//        JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type).build();
-//        javaFile.writeTo(generatedSourcesDirectory);
-//    }
+    void generateReflectionFeature() throws IOException
+    {
+        final var registerFruits = registerFruits();
+        final var registerFruit = registerFruit();
+
+        final var beforeAnalysis = beforeAnalysis();
+
+        TypeSpec type = TypeSpec.classBuilder("ReflectionFeature")
+            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+            .addSuperinterface(ClassName.get(PACKAGE_HOSTED, "Feature"))
+            .addAnnotation(ClassName.get("com.oracle.svm.core.annotate", "AutomaticFeature"))
+            .addMethod(beforeAnalysis)
+            .addMethod(registerFruits)
+            .addMethod(registerFruit)
+            .build();
+
+        JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type).build();
+        javaFile.writeTo(generatedSourcesDirectory);
+    }
+
+    private MethodSpec beforeAnalysis()
+    {
+        return MethodSpec.methodBuilder("beforeAnalysis")
+            .addModifiers(Modifier.PUBLIC)
+            .addParameter(ClassName.get(PACKAGE_HOSTED, "Feature.BeforeAnalysisAccess"), "access")
+            .beginControlFlow("try")
+            .addStatement("registerFruits()")
+            .nextControlFlow("catch ($T e)", Exception.class)
+            .addStatement("throw new $T(e)", RuntimeException.class)
+            .endControlFlow()
+            .build();
+    }
+
+    MethodSpec registerFruits()
+    {
+        return MethodSpec.methodBuilder("registerFruits")
+            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .addException(Exception.class)
+            .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numClasses)
+            .addStatement("registerFruit(i)")
+            .endControlFlow()
+            .build();
+    }
+
+    MethodSpec registerFruit()
+    {
+        return MethodSpec.methodBuilder("registerFruit")
+            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .addParameter(int.class, "index")
+            .addException(Exception.class)
+            .returns(void.class)
+            .addStatement("$T.out.println(\"Register fruit \" + index)", System.class)
+            .addStatement("Class<?> clazz = Class.forName(\"$L.Fruit\" + index)", PACKAGE_NAME)
+            .addStatement("$L.RuntimeReflection.register(clazz)", PACKAGE_HOSTED)
+            .build();
+    }
 
     void generateMain() throws IOException
     {
-        final var assertFruitsBuilder = MethodSpec.methodBuilder("assertFruits")
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addException(Exception.class)
-            .returns(void.class);
-
-        IntStream.range(0, numClasses)
-            .forEach(index -> assertFruitsBuilder.addStatement("assertFruit($L)", index));
-
-        MethodSpec assertFruit = generateAssertFruit();
+        final var assertFruits = assertFruits();
+        final var assertFruit = assertFruit();
+        final var assertFruitField = assertFruitField();
 
         MethodSpec main = MethodSpec.methodBuilder("main")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -112,15 +136,28 @@ public class reflection_poet implements Callable<Integer>
         TypeSpec type = TypeSpec.classBuilder("Main")
             .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
             .addMethod(main)
-            .addMethod(assertFruitsBuilder.build())
+            .addMethod(assertFruits)
             .addMethod(assertFruit)
+            .addMethod(assertFruitField)
             .build();
 
         JavaFile javaFile = JavaFile.builder(PACKAGE_NAME, type).build();
         javaFile.writeTo(generatedSourcesDirectory);
     }
 
-    MethodSpec generateAssertFruit()
+    MethodSpec assertFruits()
+    {
+        return MethodSpec.methodBuilder("assertFruits")
+            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .addException(Exception.class)
+            .returns(void.class)
+            .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numClasses)
+            .addStatement("assertFruit(i)")
+            .endControlFlow()
+            .build();
+    }
+
+    MethodSpec assertFruit()
     {
         return MethodSpec.methodBuilder("assertFruit")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -131,13 +168,25 @@ public class reflection_poet implements Callable<Integer>
             .addStatement("Class<?> clazz = Class.forName(\"$L.Fruit\" + index)", PACKAGE_NAME)
             .addStatement("assert (\"Fruit\" + index).equals(clazz.getSimpleName())")
             .beginControlFlow("for (int i = $L; i < $L; i++)", 0, numFields)
-            .addStatement("String fieldName = $S + i", "attr_")
-            .addStatement("assert fieldName.equals(clazz.getField(fieldName).getName())")
-            .addStatement("String getterName = $S + i", "getAttr")
-            .addStatement("assert getterName.equals(clazz.getMethod(getterName).getName())")
-            .addStatement("String setterName = $S + i", "setAttr")
-            .addStatement("assert setterName.equals(clazz.getMethod(setterName, String.class).getName())")
+            .addStatement("assertFruitField(clazz, i)")
             .endControlFlow()
+            .build();
+    }
+
+    MethodSpec assertFruitField()
+    {
+        return MethodSpec.methodBuilder("assertFruitField")
+            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .addParameter(Class.class, "clazz")
+            .addParameter(int.class, "index")
+            .addException(Exception.class)
+            .returns(void.class)
+            .addStatement("String fieldName = $S + index", "attr_")
+            .addStatement("assert fieldName.equals(clazz.getField(fieldName).getName())")
+            .addStatement("String getterName = $S + index", "getAttr")
+            .addStatement("assert getterName.equals(clazz.getMethod(getterName).getName())")
+            .addStatement("String setterName = $S + index", "setAttr")
+            .addStatement("assert setterName.equals(clazz.getMethod(setterName, String.class).getName())")
             .build();
     }
 

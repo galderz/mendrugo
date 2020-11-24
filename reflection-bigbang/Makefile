@@ -1,4 +1,4 @@
-all: gen build run-jvm
+all: gen build run-jvm native run-native
 
 clean:
 	mvn clean
