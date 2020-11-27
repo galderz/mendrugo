@@ -1,5 +1,6 @@
 additional-build-args-debug="$(additional-build-args),--debug-attach=*:8000"
-additional-build-args="-H:+RuntimeAssertions"
+#additional-build-args="-H:+RuntimeAssertions"
+additional-build-args="-ea"
 
 runner=quarkus-logging-runner
 

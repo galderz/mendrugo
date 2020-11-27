@@ -6,9 +6,9 @@ import java.util.function.BiConsumer;
 
 public class Asserts
 {
-    public static void assertInfoLogged(Logger log)
+    public static void assertInfoLogged(String message, Logger log)
     {
-        assertLogged(true, "info", log::info);
+        assertLogged(true, message, log::info);
     }
 
     public static void assertInfoNotLogged(Logger log)
@@ -16,9 +16,9 @@ public class Asserts
         assertLogged(false, "info", log::info);
     }
 
-    public static void assertTraceLogged(Logger log)
+    public static void assertTraceLogged(String message, Logger log)
     {
-        assertLogged(true, "trace", log::trace);
+        assertLogged(true, message, log::trace);
     }
 
     public static void assertTraceNotLogged(Logger log)

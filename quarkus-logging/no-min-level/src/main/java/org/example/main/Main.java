@@ -13,7 +13,7 @@ public class Main implements QuarkusApplication
     public int run(String... args)
     {
         Asserts.check();
-        Iron.iron();
+        new Iron().iron();
         return 0;
     }
 }
