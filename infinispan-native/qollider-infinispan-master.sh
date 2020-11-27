@@ -1,75 +1,23 @@
 #!/usr/bin/env bash
 
-# Avoid MBean server issue with 20.2
-#ISPN_QUARKUS=https://github.com/infinispan/infinispan-quarkus/tree/master
-ISPN_QUARKUS=https://github.com/galderz/infinispan-quarkus/tree/t_fix_cli_java_26
-ISPN_QUARKUS_NATIVE_PROFILE=native-noargs
-ISPN_VERSION=12.0.0-SNAPSHOT
+JDK=${JDK:-https://github.com/openjdk/jdk11u-dev/commit/5ad383f7b802c9e8894e843a18acafd33569979f}
+MANDREL=${MANDREL:-https://github.com/graalvm/mandrel/commit/2fc1ec0892574f14133c3796bf88448ccaaea28e}
+INFINISPAN=${INFINISPAN:-https://github.com/wburns/infinispan/commit/8dce81940cfef3d18057158112610ddb9493172c}
+QUARKUS=${QUARKUS:-https://github.com/galderz/quarkus/commit/c9741eafa7ee6b2f8b2919ba1869fcae2383a60c}
+INFINISPAN_QUARKUS=${INFINISPAN_QUARKUS:-https://github.com/galderz/infinispan-quarkus/commit/53ec46a4ed3ce4e9811296bde1fa28560114f7ce}
 
 set -e
 
 source ${HOME}/.dotfiles/qollider/qollider.sh
 git pull
+JAVA_HOME=/opt/java-14 /opt/maven/bin/mvn clean install
 
-qollider \
-    jdk-build \
-    --tree https://github.com/openjdk/jdk11u-dev/tree/master
-
-qollider \
-    mandrel-build \
-    --tree https://github.com/graalvm/mandrel/tree/mandrel/20.2
-
-qollider \
-    maven-build \
-    --tree https://github.com/infinispan/infinispan/tree/master \
-    --additional-build-args \
-        -s \
-        maven-settings.xml
-
-qollider \
-    maven-build \
-    --tree https://github.com/quarkusio/quarkus/tree/master
-
-qollider \
-    maven-build \
-    --tree ${ISPN_QUARKUS} \
-    --additional-build-args \
-        -pl \
-        '!:infinispan-quarkus-integration-test-server' \
-        -Dquarkus.version=999-SNAPSHOT
-
-qollider \
-    maven-build \
-    --tree ${ISPN_QUARKUS} \
-    --additional-build-args \
-        -D${ISPN_QUARKUS_NATIVE_PROFILE} \
-        -pl \
-        :infinispan-quarkus-server-runner \
-        -Dquarkus.version=999-SNAPSHOT \
-        -Dquarkus.native.debug.enabled=true \
-        -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-H:+PreserveFramePointer,--allow-incomplete-classpath \
-        dependency:sources
-
-TRACING_DIR=${HOME}/.qollider/cache/latest/tracing-infinispan-native
-rm -drf ${TRACING_DIR}
-mkdir -p ${TRACING_DIR}
-cp \
-    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${ISPN_VERSION}-runner \
-    ${TRACING_DIR}
-cp \
-    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/infinispan-quarkus-server-runner-${ISPN_VERSION}-runner.debug \
-    ${TRACING_DIR}
-cp -r \
-    ${HOME}/.qollider/cache/latest/infinispan-quarkus/server-runner/target/sources \
-    ${TRACING_DIR}
-
-qollider \
-    maven-build \
-    --tree ${ISPN_QUARKUS} \
-    --additional-build-args \
-        -D${ISPN_QUARKUS_NATIVE_PROFILE} \
-        -pl \
-        :infinispan-quarkus-server-runner \
-        -Dquarkus.version=999-SNAPSHOT \
-        -Dquarkus.native.additional-build-args=--allow-incomplete-classpath \
-        dependency:sources
+# Uses latest mandrel 20.3 at the time script written
+# Infinispan commit is before Will's changes
+# Quarkus commit is before my changes to add min-level
+/opt/jbang/bin/jbang -Dqollider.version=999-SNAPSHOT https://raw.githubusercontent.com/galderz/qollider/master/examples/infinispan_quarkus.java \
+    --jdk ${JDK} \
+    --mandrel ${MANDREL} \
+    --infinispan ${INFINISPAN} \
+    --quarkus ${QUARKUS} \
+    --infinispan-quarkus ${INFINISPAN_QUARKUS}
