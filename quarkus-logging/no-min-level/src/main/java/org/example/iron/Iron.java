@@ -59,6 +59,20 @@ public class Iron
             Asserts.assertTraceNotSet();
             Asserts.assertTraceNotLogged(LOG);
         }
+
+        final long start = System.currentTimeMillis();
+        if (start == 0 && LOG.isTraceEnabled())
+        {
+            Asserts.assertTraceSet();
+            Asserts.assertTraceLogged("iron-trace-conditional-start-fly", LOG);
+        }
+
+        final long end = System.currentTimeMillis();
+        if (LOG.isTraceEnabled() && end == 0)
+        {
+            Asserts.assertTraceSet();
+            Asserts.assertTraceLogged("iron-trace-conditional-end-fly", LOG);
+        }
     }
 
     private static void justTrace()
