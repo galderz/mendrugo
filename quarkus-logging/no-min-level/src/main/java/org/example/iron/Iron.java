@@ -10,6 +10,11 @@ public class Iron
 
     private final boolean isTraceInstance = LOG.isTraceEnabled();
 
+    public Logger getLog()
+    {
+        return LOG;
+    }
+
     public void iron()
     {
         tryTraceCachedStatic();
@@ -44,6 +49,12 @@ public class Iron
         {
             Asserts.assertTraceNotSet();
             Asserts.assertTraceNotLogged(LOG);
+        }
+
+        if (getLog().isTraceEnabled())
+        {
+            Asserts.assertTraceSet();
+            Asserts.assertTraceLogged("iron-trace-instance-getlog-fly", LOG);
         }
     }
 
