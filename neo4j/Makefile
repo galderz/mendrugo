@@ -10,6 +10,7 @@ clean-reports:
 	rm -drf reports || true
 
 clean-neo4j:
+	rm -f ${NEO_HOME}/import/*
 	cat clean.cypher | $(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) || true
 
 build:
@@ -43,8 +44,12 @@ method-histogram:
 	native-image -H:+PrintMethodHistogram HelloWorld
 
 neo4j:
+	cp reports/*.csv ${NEO_HOME}/import
 	time cat $(shell find reports -name '*.cypher') | $(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS)
 
-neo4j-start:
+neo4j-stop:
+	${NEO_HOME}/bin/neo4j stop || true
+
+neo4j-start: neo4j-stop
 	${NEO_HOME}/bin/neo4j console
 
