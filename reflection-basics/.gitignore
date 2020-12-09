@@ -1,0 +1,8 @@
+*
+!*.*
+!*/
+!Makefile
+!*.java
+*.class
+META-INF
+reports
