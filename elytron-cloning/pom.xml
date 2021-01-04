@@ -12,13 +12,23 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <graal.version>20.3.0</graal.version>
+        <wildfly-elytron.version>1.14.0.Final</wildfly-elytron.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron</artifactId>
-            <version>1.14.0.Final</version>
+            <version>${wildfly-elytron.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>svm</artifactId>
+            <version>${graal.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

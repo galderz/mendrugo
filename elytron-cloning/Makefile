@@ -10,8 +10,15 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+JAVA_FILES = $(shell find src/ -type f -name '*.java')
+
+NATIVEFLAGS += -ea
 NATIVEFLAGS += --allow-incomplete-classpath
+NATIVEFLAGS += --enable-all-security-services
 NATIVEFLAGS += --no-fallback
+
+run-native: target/main
+> ./target/main
 
 target/main: run-jar
 > native-image -jar target/main.jar ${NATIVEFLAGS} target/main
@@ -19,7 +26,7 @@ target/main: run-jar
 run-jar: target/main.jar
 > java -ea -jar target/main.jar
 
-target/main.jar: pom.xml src/main/java/org/example/elytron/Main.java
+target/main.jar: pom.xml $(JAVA_FILES)
 > mvn package
 
 clean:

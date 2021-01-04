@@ -22,13 +22,13 @@ public class Main
     {
         needEnabledAsserts();
 
-        findReflectionCopyConstructor();
+        // findReflectionCopyConstructor();
         cloneWithCopyConstructor();
 
-        findReflectionCloneMethod();
+        // findReflectionCloneMethod();
         cloneWithCloneMethod();
 
-        findReflectionNoCopyCtorOrCloneMethod();
+        // findReflectionNoCopyCtorOrCloneMethod();
         cloneBestGuess();
     }
 
@@ -42,10 +42,15 @@ public class Main
     }
 
     private static UnaryOperator<Key> checkForCopyCtor(final Class<?> declType, final Class<?> paramType) {
-        final Constructor<?> constructor = doPrivileged((PrivilegedAction<Constructor<?>>) () -> {
-            try {
+        final Constructor<?> constructor = doPrivileged((PrivilegedAction<Constructor<?>>) () ->
+        {
+            try
+            {
                 return declType.getDeclaredConstructor(paramType);
-            } catch (NoSuchMethodException e) {
+            }
+            catch (NoSuchMethodException e)
+            {
+                System.out.printf("Copy ctor in %s for parameter %s not found%n", declType, paramType);
                 return null;
             }
         });
@@ -75,6 +80,7 @@ public class Main
     {
         final var secretKey = new CopyConstructorSecretKey("blehbleh");
         final var credential = new SecretKeyCredential(secretKey);
+        System.out.println("Call SecretKeyCredential.clone()");
         final var cloned = credential.clone();
         assert cloned.getSecretKey() instanceof CopyConstructorSecretKey;
         assert ((CopyConstructorSecretKey) cloned.getSecretKey()).calledCopyConstructor;
@@ -131,7 +137,6 @@ public class Main
 
     public static final class CopyConstructorSecretKey implements SecretKey
     {
-
         final SecretKey key;
         final boolean calledCopyConstructor;
 
