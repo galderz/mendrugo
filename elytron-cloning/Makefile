@@ -10,6 +10,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+NATIVEFLAGS += --allow-incomplete-classpath
 NATIVEFLAGS += --no-fallback
 
 target/main: run-jar
