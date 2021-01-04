@@ -4,17 +4,71 @@ import org.wildfly.security.credential.SecretKeyCredential;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.interfaces.PBEKey;
 import javax.crypto.spec.PBEKeySpec;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.security.Key;
+import java.security.PrivilegedAction;
 import java.security.SecureRandom;
+import java.util.function.UnaryOperator;
+
+import static java.security.AccessController.doPrivileged;
 
 public class Main
 {
     public static void main(String[] args) throws Exception
     {
         needEnabledAsserts();
+
+        findReflectionCopyConstructor();
         cloneWithCopyConstructor();
+
+        findReflectionCloneMethod();
         cloneWithCloneMethod();
+
+        findReflectionNoCopyCtorOrCloneMethod();
         cloneBestGuess();
+    }
+
+    private static void findReflectionCopyConstructor()
+    {
+        final var secretKey = new CopyConstructorSecretKey("blehbleh");
+        final var ctorOp = checkForCopyCtor(CopyConstructorSecretKey.class, SecretKey.class);
+        final var copied = ctorOp.apply(secretKey);
+        assert copied instanceof CopyConstructorSecretKey;
+        assert ((CopyConstructorSecretKey) copied).calledCopyConstructor;
+    }
+
+    private static UnaryOperator<Key> checkForCopyCtor(final Class<?> declType, final Class<?> paramType) {
+        final Constructor<?> constructor = doPrivileged((PrivilegedAction<Constructor<?>>) () -> {
+            try {
+                return declType.getDeclaredConstructor(paramType);
+            } catch (NoSuchMethodException e) {
+                return null;
+            }
+        });
+        return constructor == null ? null : produceOp(constructor);
+    }
+
+    private static UnaryOperator<Key> produceOp(final Constructor<?> constructor)
+    {
+        return original ->
+        {
+            try
+            {
+                return (Key) constructor.newInstance(original);
+            }
+            catch (RuntimeException | Error e)
+            {
+                throw e;
+            }
+            catch (Throwable throwable)
+            {
+                throw new UndeclaredThrowableException(throwable);
+            }
+        };
     }
 
     private static void cloneWithCopyConstructor()
@@ -26,8 +80,58 @@ public class Main
         assert ((CopyConstructorSecretKey) cloned.getSecretKey()).calledCopyConstructor;
     }
 
+    private static void findReflectionCloneMethod()
+    {
+        final var secretKey = new CloneMethodSecretKey(getPasswordKey("blehbleh"));
+        final var cloneOp = checkForCloneMethod(CloneMethodSecretKey.class, SecretKey.class);
+        final var cloned = cloneOp.apply(secretKey);
+        assert cloned instanceof CloneMethodSecretKey;
+        assert secretKey.calledClone;
+    }
+
+    private static UnaryOperator<Key> checkForCloneMethod(final Class<?> declType, final Class<?> returnType)
+    {
+        final Method method = doPrivileged((PrivilegedAction<Method>) () ->
+        {
+            try
+            {
+                final var cloneMethod = declType.getDeclaredMethod("clone");
+                if (cloneMethod.getReturnType() == returnType)
+                    return cloneMethod;
+
+                return null;
+            }
+            catch (NoSuchMethodException e)
+            {
+                return null;
+            }
+        });
+
+        return method == null ? null : produceOp(method);
+    }
+
+    private static UnaryOperator<Key> produceOp(final Method method)
+    {
+        return original ->
+        {
+            try
+            {
+                return (Key) method.invoke(original);
+            }
+            catch (RuntimeException | Error e)
+            {
+                throw e;
+            }
+            catch (Throwable throwable)
+            {
+                throw new UndeclaredThrowableException(throwable);
+            }
+        };
+    }
+
     public static final class CopyConstructorSecretKey implements SecretKey
     {
+
         final SecretKey key;
         final boolean calledCopyConstructor;
 
@@ -119,9 +223,17 @@ public class Main
         }
     }
 
+    private static void findReflectionNoCopyCtorOrCloneMethod()
+    {
+        final var secretKey = getPasswordKey("blahblah");
+        final var cloneOp = checkForCloneMethod(secretKey.getClass(), PBEKey.class);
+        assert cloneOp == null;
+        final var copyCtorOp = checkForCloneMethod(secretKey.getClass(), PBEKey.class);
+        assert copyCtorOp == null;
+    }
+
     private static void cloneBestGuess() throws Exception
     {
-        // Option 1. Try with a key that has no clone or copy constructor, but it's checked
         final var secretKey = getPasswordKey("blahblah");
         final var credential = new SecretKeyCredential(secretKey);
         final var cloned = credential.clone();
