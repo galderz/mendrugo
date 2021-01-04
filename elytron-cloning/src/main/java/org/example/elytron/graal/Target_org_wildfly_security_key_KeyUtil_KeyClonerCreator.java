@@ -1,6 +1,5 @@
 package org.example.elytron.graal;
 
-import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 
@@ -16,12 +15,6 @@ import static java.security.AccessController.doPrivileged;
 @TargetClass(className = "org.wildfly.security.key.KeyUtil$KeyClonerCreator")
 final class Target_org_wildfly_security_key_KeyUtil_KeyClonerCreator
 {
-    @Alias
-    protected UnaryOperator<Key> computeValue(final Class<?> type)
-    {
-        return null;
-    }
-
     @Substitute
     private UnaryOperator<Key> checkForCloneMethod(final Class<?> declType, final Class<?> returnType)
     {
