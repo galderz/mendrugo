@@ -11,7 +11,9 @@ clean-reports:
 
 clean-neo4j:
 	rm -f ${NEO_HOME}/import/*
-	cat clean.cypher | $(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) || true
+	$(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "MATCH(n) DETACH DELETE n" || true
+	$(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "DROP CONSTRAINT unique_vm_id" || true
+	$(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "DROP CONSTRAINT unique_method_id" || true
 
 build:
 	javac HelloWorld.java
