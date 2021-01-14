@@ -37,7 +37,7 @@ call-tree: build
 	native-image -H:+PrintAnalysisCallTree HelloWorld
 
 jar:
-	jar cvfm helloworld.jar Manifest.txt HelloWorld.class
+	jar cvfe helloworld.jar HelloWorld HelloWorld.class
 
 run-jar:
 	java -jar helloworld.jar
