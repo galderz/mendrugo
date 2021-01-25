@@ -5,9 +5,9 @@ import java.security.Signature;
 
 final class Transactions
 {
-    static void sign() throws Exception
+    static void sign(String methodName) throws Exception
     {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        KeyPairGenerator keyPairGenerator = getKeyPairGenerator(methodName);
         keyPairGenerator.initialize(1024);
 
         final KeyPair aliceKeyPair = keyPairGenerator.generateKeyPair();
@@ -25,6 +25,13 @@ final class Transactions
 
         final SignedTransaction signedTransaction = SignedTransaction.of(signatureAlgorithm.sign(), transaction);
         System.out.println(signedTransaction);
+    }
+
+    private static KeyPairGenerator getKeyPairGenerator(String methodName) throws Exception
+    {
+        final var method = KeyPairGenerator.class.getMethod(methodName, String.class);
+        return (KeyPairGenerator) method.invoke(null , "RSA");
+        // return KeyPairGenerator.getInstance("RSA");
     }
 
     static String toHex(byte[] bytes)
