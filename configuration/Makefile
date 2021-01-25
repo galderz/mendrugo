@@ -25,12 +25,9 @@ execnative = $(nativeimage) \
   -jar $(targetjarfile) \
   -H:+ReportExceptionStackTraces \
   --no-fallback
-execnativealtsecurity = $(execnativeskip) \
-  --enable-all-security-services
 execnativeskip = $(execnative) \
   -H:+SkipConfigurationFiles
-execnativeskipdebug = $(execnativeskip) \
-  --debug-attach=*:8000
+execnativeskipdebug =
 
 currentdir = $(notdir $(shell pwd))
 targetdir = /tmp/mendrugo/$(currentdir)
@@ -74,7 +71,7 @@ $(targetdir)/%.class: %.java
 > javac -d $(targetdir) $<
 
 debug:
-> $(execnativedebug) $(program)
+> $(execnativeskip) --debug-attach=*:8000 $(program)
 .PHONY: debug
 
 $(imageagent): $(nativeimage)
@@ -95,6 +92,6 @@ default: $(targetjarfile) $(nativeimage)
 .PHONY: default
 
 alt-security: $(targetjarfile) $(nativeimage)
-> $(call native-image-workaround-security)
+> $(execnativeskip) --enable-all-security-services $(program)
 > $(program) getInstance
 .PHONY: workaround
