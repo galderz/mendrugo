@@ -19,6 +19,10 @@ gen
 reports
 # classes
 *.class
+# jar files
+*.jar
+# executables
+a.out
 # built modules
 mods
 mlib
