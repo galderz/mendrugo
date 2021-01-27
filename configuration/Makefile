@@ -26,7 +26,6 @@ jar = example.jar
 program = a.out
 
 invokenative += $(nativeimage)
-invokenative += -jar $(jar)
 invokenative += -H:+ReportExceptionStackTraces
 invokenative += --no-fallback
 
@@ -38,7 +37,7 @@ run: $(program)
 .PHONY: run
 
 $(program): $(jar) $(nativeimage)
-> $(invokenative) $(program)
+> $(invokenative) -jar $(jar) $(program)
 
 $(jar): $(classfiles) $(nativeproperties) $(reflectjson)
 > jar cvfe $@ Example $(classfiles) $(nativeproperties) $(reflectjson)
@@ -51,7 +50,11 @@ $(nativeimage): $(substratejavafiles)
 > JAVA_HOME=$(MANDREL_BOOT_JAVA_HOME) $(mx) build
 
 debug:
-> $(invokenative) --debug-attach=*:8000 $(program)
+> $(invokenative) -jar $(jar) --debug-attach=*:8000 $(program)
+.PHONY: debug
+
+debug-driver:
+> $(invokenative) -jar $(jar) --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000 $(program)
 .PHONY: debug
 
 $(imageagent): $(nativeimage)
@@ -62,6 +65,45 @@ jvm-run: $(jar) $(imageagent)
 .PHONY: jvm-run
 
 clean:
-> rm -f *.class
+> rm -f a.out
 > rm -f *.jar
+> rm -f *.class
 .PHONY: clean
+
+noreflect := $(invokenative)
+noreflect += --exclude-config example.jar,META-INF\/native-image\/.*.json
+noreflect += -jar $(jar)
+
+skip-reflect: $(jar) $(nativeimage)
+> $(noreflect) $(program)
+> ./$(program) getInstance
+.PHONY: skip-reflect
+
+skip-reflect-debug:
+> $(noreflect) --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000 $(program)
+> ./$(program) getInstance
+.PHONY: skip-reflect-debug
+
+nosecurity := $(invokenative)
+nosecurity += --exclude-config example.jar,META-INF\/native-image\/.*.properties
+nosecurity += -jar $(jar)
+
+skip-security: $(jar) $(nativeimage)
+> $(nosecurity) $(program)
+> ./$(program) getInstance
+.PHONY: skip-security
+
+skip-security-debug:
+> $(nosecurity) --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000 $(program)
+> ./$(program) getInstance
+.PHONY: skip-security-debug
+
+noboth := $(invokenative)
+noboth += --exclude-config example.jar,META-INF\/native-image\/.*.properties
+noboth += --exclude-config example.jar,META-INF\/native-image\/.*.json
+noboth += -jar $(jar)
+
+skip-both: $(jar) $(nativeimage)
+> $(noboth) $(program)
+> ./$(program) getInstance
+.PHONY: skip-both
