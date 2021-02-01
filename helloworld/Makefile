@@ -24,6 +24,9 @@ native-debug-attach:
 native-debug-remote-attach:
 	native-image --debug-attach=*:8000 HelloWorld
 
+native-dashboard:
+	native-image -H:DashboardDump=dashboard -H:+DashboardPointsTo HelloWorld
+
 run:
 	./helloworld
 
