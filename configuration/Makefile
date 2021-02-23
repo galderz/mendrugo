@@ -71,7 +71,7 @@ clean:
 .PHONY: clean
 
 noreflect := $(invokenative)
-noreflect += --exclude-config example.jar,META-INF\/native-image\/.*.json
+noreflect += --exclude-config example.*.jar META-INF\/native-image\/.*.json
 noreflect += -jar $(jar)
 
 skip-reflect: $(jar) $(nativeimage)
@@ -85,7 +85,7 @@ skip-reflect-debug:
 .PHONY: skip-reflect-debug
 
 nosecurity := $(invokenative)
-nosecurity += --exclude-config example.jar,META-INF\/native-image\/.*.properties
+nosecurity += --exclude-config example.*.jar META-INF\/native-image\/.*.properties
 nosecurity += -jar $(jar)
 
 skip-security: $(jar) $(nativeimage)
@@ -99,8 +99,8 @@ skip-security-debug:
 .PHONY: skip-security-debug
 
 noboth := $(invokenative)
-noboth += --exclude-config example.jar,META-INF\/native-image\/.*.properties
-noboth += --exclude-config example.jar,META-INF\/native-image\/.*.json
+noboth += --exclude-config example.*.jar META-INF\/native-image\/.*.properties
+noboth += --exclude-config example.*.jar META-INF\/native-image\/.*.json
 noboth += -jar $(jar)
 
 skip-both: $(jar) $(nativeimage)
