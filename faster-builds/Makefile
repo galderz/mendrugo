@@ -33,18 +33,25 @@ done
 endef
 
 count-classes-java8:
-> $(call count-classes,$(JAVA8_HOME))
+> $(call native-byteman,$(JAVA8_HOME),count-classes)
 
 count-classes-java11:
-> $(call count-classes,$(JAVA11_HOME))
+> $(call native-byteman,$(JAVA11_HOME),count-classes)
 
-define count-classes
+list-classes-java8:
+> $(call native-byteman,$(JAVA8_HOME),list-classes)
+
+list-classes-java11:
+> $(call native-byteman,$(JAVA11_HOME),list-classes)
+
+define native-byteman
 cd $(QUICKSTARTS_HOME)/validation-quickstart
 git checkout $(QUARKUS_VERSION)
-JAVA_HOME=$1 mvn clean install -DskipTests -Dnative -Dquarkus.native.additional-build-args="-J-javaagent:$(BYTEMAN_HOME)/lib/byteman.jar=script:/home/g/1/mendrugo/faster-builds/rules/count-classes.btm\,boot:$(BYTEMAN_HOME)/lib/byteman.jar\,prop:org.jboss.byteman.verbose=true\,prop:org.jboss.byteman.transform.all=true"
+JAVA_HOME=$(1) mvn clean install -DskipTests -Dnative -Dquarkus.native.additional-build-args="-J-javaagent:$(BYTEMAN_HOME)/lib/byteman.jar=script:/home/g/1/mendrugo/faster-builds/rules/$(2).btm\,boot:$(BYTEMAN_HOME)/lib/byteman.jar\,prop:org.jboss.byteman.verbose=true\,prop:org.jboss.byteman.transform.all=true"
 endef
 
 debug-attach:
 > cd $(QUICKSTARTS_HOME)/validation-quickstart
 > git checkout $(QUARKUS_VERSION)
 > JAVA_HOME=$(JAVA11_HOME) mvn clean install -DskipTests -Dnative -Dquarkus.native.additional-build-args="--debug-attach=*:8000"
+

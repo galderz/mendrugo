@@ -1,0 +1,8 @@
+RULE native image init all classes
+CLASS com.oracle.svm.hosted.ImageClassLoader
+METHOD handleClass
+AT ENTRY
+IF TRUE
+DO traceOpen("logfile", "/tmp/class-list.txt");
+   traceln("logfile", $clazz.getName());
+ENDRULE
