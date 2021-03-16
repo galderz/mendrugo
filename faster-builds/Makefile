@@ -66,3 +66,18 @@ debug-attach:
 > cd $(QUICKSTARTS_HOME)/validation-quickstart
 > git checkout $(QUARKUS_VERSION)
 > JAVA_HOME=$(JAVA11_HOME) mvn clean install -DskipTests -Dnative -Dquarkus.native.additional-build-args="--debug-attach=*:8000"
+
+reports-java8:
+> $(call reports,$(JAVA8_HOME))
+
+reports-java11:
+> $(call reports,$(JAVA11_HOME))
+
+reports-mandrel:
+> $(call reports,$(MANDREL_HOME))
+
+define reports
+cd $(QUICKSTARTS_HOME)/validation-quickstart
+git checkout $(QUARKUS_VERSION)
+JAVA_HOME=$1 mvn clean install -DskipTests -Dnative -Dquarkus.native.enable-reports
+endef
