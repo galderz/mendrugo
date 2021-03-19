@@ -1,3 +1,5 @@
+package org.example.random;
+
 import java.security.SecureRandom;
 
 public class Randoms

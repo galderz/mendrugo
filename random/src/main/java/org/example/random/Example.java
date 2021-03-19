@@ -1,3 +1,5 @@
+package org.example.random;
+
 import java.util.Arrays;
 
 class Example

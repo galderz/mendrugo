@@ -14,13 +14,15 @@ MANDREL_HOME=/opt/mandrel
 MX_HOME=/opt/mx
 MANDREL_BOOT_JAVA_HOME=/opt/mandrel-boot-java
 
-classfiles = $(patsubst %.java, %.class, $(wildcard *.java))
-jar = example.jar
+javafiles = $(shell find src/main/java -type f -name '*.java')
+classfiles = $(patsubst src/main/java/%.java, target/classes/%.class, $(javafiles))
+jar = target/example.jar
 program = a.out
 
 native += native-image
 native += -H:+ReportExceptionStackTraces
-native += --initialize-at-build-time=Example
+native += --initialize-at-build-time=org.example.random.Example
+#native += --initialize-at-run-time=Utils
 native += --no-fallback
 
 run: $(program)
@@ -30,13 +32,9 @@ run: $(program)
 $(program): $(jar)
 > $(native) -jar $(jar) $(program)
 
-$(jar): $(classfiles)
-> jar cvfe $@ Example $(classfiles)
+$(jar): $(javafiles)
+> mvn package
 
-%.class: %.java
-> javac -d . $<
-
-debug:
 > $(native) -jar $(jar) --debug-attach=*:8000 $(program)
 .PHONY: debug
 
@@ -52,7 +50,5 @@ jvm-run: $(jar) $(imageagent)
 .PHONY: jvm-run
 
 clean:
-> rm -f a.out*
-> rm -f *.jar
-> rm -f *.class
+> mvn clean
 .PHONY: clean
