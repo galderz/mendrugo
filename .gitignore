@@ -22,7 +22,7 @@ reports
 # jar files
 *.jar
 # executables
-a.out
+a.out*
 # built modules
 mods
 mlib
