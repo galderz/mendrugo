@@ -6,7 +6,7 @@ class Example
 
     static
     {
-        randoms = new Randoms();
+        randoms = new Randoms(Utils.testRandom);
     }
 
     public static void main(String[] args)
