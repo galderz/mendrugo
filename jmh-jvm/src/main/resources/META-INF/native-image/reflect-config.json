@@ -1,0 +1,118 @@
+[
+{
+  "name":"java.lang.Object",
+  "allDeclaredMethods":true
+},
+{
+  "name":"java.security.MessageDigestSpi"
+},
+{
+  "name":"org.openjdk.jmh.infra.BlackholeL0",
+  "fields":[{"name":"markerBegin", "allowUnsafeAccess":true}]
+},
+{
+  "name":"org.openjdk.jmh.infra.BlackholeL2",
+  "fields":[
+    {"name":"b1", "allowUnsafeAccess":true}, 
+    {"name":"b2", "allowUnsafeAccess":true}, 
+    {"name":"bool1", "allowUnsafeAccess":true}, 
+    {"name":"bool2", "allowUnsafeAccess":true}, 
+    {"name":"c1", "allowUnsafeAccess":true}, 
+    {"name":"c2", "allowUnsafeAccess":true}, 
+    {"name":"d1", "allowUnsafeAccess":true}, 
+    {"name":"d2", "allowUnsafeAccess":true}, 
+    {"name":"f1", "allowUnsafeAccess":true}, 
+    {"name":"f2", "allowUnsafeAccess":true}, 
+    {"name":"i1", "allowUnsafeAccess":true}, 
+    {"name":"i2", "allowUnsafeAccess":true}, 
+    {"name":"l1", "allowUnsafeAccess":true}, 
+    {"name":"l2", "allowUnsafeAccess":true}, 
+    {"name":"obj1", "allowUnsafeAccess":true}, 
+    {"name":"s1", "allowUnsafeAccess":true}, 
+    {"name":"s2", "allowUnsafeAccess":true}
+  ]
+},
+{
+  "name":"org.openjdk.jmh.infra.BlackholeL4",
+  "fields":[{"name":"markerEnd", "allowUnsafeAccess":true}]
+},
+{
+  "name":"org.openjdk.jmh.infra.ControlL0",
+  "fields":[{"name":"markerBegin", "allowUnsafeAccess":true}]
+},
+{
+  "name":"org.openjdk.jmh.infra.ControlL2",
+  "fields":[
+    {"name":"startMeasurement", "allowUnsafeAccess":true}, 
+    {"name":"stopMeasurement", "allowUnsafeAccess":true}
+  ]
+},
+{
+  "name":"org.openjdk.jmh.infra.ControlL4",
+  "fields":[{"name":"markerEnd", "allowUnsafeAccess":true}]
+},
+{
+  "name":"org.openjdk.jmh.infra.ThreadParamsL0",
+  "fields":[{"name":"markerBegin", "allowUnsafeAccess":true}]
+},
+{
+  "name":"org.openjdk.jmh.infra.ThreadParamsL2",
+  "fields":[
+    {"name":"groupCount", "allowUnsafeAccess":true}, 
+    {"name":"groupIdx", "allowUnsafeAccess":true}, 
+    {"name":"groupThreadCount", "allowUnsafeAccess":true}, 
+    {"name":"groupThreadIdx", "allowUnsafeAccess":true}, 
+    {"name":"subgroupCount", "allowUnsafeAccess":true}, 
+    {"name":"subgroupIdx", "allowUnsafeAccess":true}, 
+    {"name":"subgroupThreadCount", "allowUnsafeAccess":true}, 
+    {"name":"subgroupThreadIdx", "allowUnsafeAccess":true}, 
+    {"name":"threadCount", "allowUnsafeAccess":true}, 
+    {"name":"threadIdx", "allowUnsafeAccess":true}
+  ]
+},
+{
+  "name":"org.openjdk.jmh.infra.ThreadParamsL4",
+  "fields":[{"name":"markerEnd", "allowUnsafeAccess":true}]
+},
+{
+  "name":"org.openjdk.jmh.runner.InfraControlL0",
+  "fields":[{"name":"markerBegin", "allowUnsafeAccess":true}]
+},
+{
+  "name":"org.openjdk.jmh.runner.InfraControlL2",
+  "fields":[
+    {"name":"benchmarkParams", "allowUnsafeAccess":true}, 
+    {"name":"isDone", "allowUnsafeAccess":true}, 
+    {"name":"isFailing", "allowUnsafeAccess":true}, 
+    {"name":"iterationParams", "allowUnsafeAccess":true}, 
+    {"name":"lastIteration", "allowUnsafeAccess":true}, 
+    {"name":"preSetup", "allowUnsafeAccess":true}, 
+    {"name":"preTearDown", "allowUnsafeAccess":true}, 
+    {"name":"shouldSynchIterations", "allowUnsafeAccess":true}, 
+    {"name":"threads", "allowUnsafeAccess":true}, 
+    {"name":"volatileSpoiler", "allowUnsafeAccess":true}, 
+    {"name":"warmdownDone", "allowUnsafeAccess":true}, 
+    {"name":"warmdownShouldWait", "allowUnsafeAccess":true}, 
+    {"name":"warmdownVisited", "allowUnsafeAccess":true}, 
+    {"name":"warmupDone", "allowUnsafeAccess":true}, 
+    {"name":"warmupShouldWait", "allowUnsafeAccess":true}, 
+    {"name":"warmupVisited", "allowUnsafeAccess":true}
+  ]
+},
+{
+  "name":"org.openjdk.jmh.runner.InfraControlL4",
+  "fields":[{"name":"markerEnd", "allowUnsafeAccess":true}]
+},
+{
+  "name":"org.sample.jmh_generated.MyBenchmark_testMethod_jmhTest",
+  "allDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.misc.Unsafe"
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]
