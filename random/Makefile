@@ -35,6 +35,7 @@ $(program): $(jar)
 $(jar): $(javafiles)
 > mvn package
 
+debug:
 > $(native) -jar $(jar) --debug-attach=*:8000 $(program)
 .PHONY: debug
 
