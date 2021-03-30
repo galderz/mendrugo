@@ -17,5 +17,5 @@ clean:
 	rm -f *.jar
 	rm -drf libs
 	rm -f *.java
-	rm -f hello
+	rm -f $(executable)
 .PHONY: clean
