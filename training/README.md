@@ -50,7 +50,7 @@ Create the example code:
 
 ```bash
 cd first
-make init
+make hello.java
 ```
 
 Load it into an IDE of choice, e.g. IntelliJ IDEA:
