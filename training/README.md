@@ -89,6 +89,17 @@ Getting `native-image` info while building executables:
 native-image --native-image-info -jar hello.jar hello
 ```
 
+Use `--verbose` to get a better understanding of how `native-image` works.
+It's a 2-step process.
+The first is a short java process, executed as native code.
+The second is where the real stuff happens.
+A normal java process for which you can see all the parameter invocations.
+You can take that and run it manually.
+
+```bash
+native-image --verbose -jar hello.jar hello
+```
+
 Find out shared library dependencies of an executable:
 
 ```bash
