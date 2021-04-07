@@ -125,3 +125,64 @@ SVM heap and text sections contributing the most to the size of the binary:
 ```bash
 readelf -SW ./hello
 ```
+
+
+### Reports
+
+Create the example code:
+
+```bash
+cd reporting
+make reporting.java
+```
+
+Load it into an IDE of choice, e.g. IntelliJ IDEA:
+
+```bash
+make intellij-idea
+```
+
+Build a jar for it:
+
+```bash
+make reporting.jar
+```
+
+Run the jar with `java`:
+
+```bash
+java -jar reporting.jar
+```
+
+Build the native executable:
+
+```bash
+native-image -jar reporting.jar reporting
+```
+
+Some warnings appearing:
+
+```bash
+Warning: Reflection method java.lang.Class.forName invoked at picocli.CommandLine$BuiltIn$ClassConverter.convert(CommandLine.java:13819)
+```
+
+Not obvious from the java code where these calls are coming from.
+Use reporting flags to gather more information, e.g. `-H:+PrintAnalysisCallTree`:
+
+```bash
+native-image -H:+PrintAnalysisCallTree -jar reporting.jar reporting
+```
+
+`used_packages`, `used_classes` and `used_methods` when comparing different versions of the application.
+Example: why does the image take longer to build? why is the image bigger now?
+
+`call_tree` report useful for getting an approximation on why something is included.
+Open the `call_tree` report and look for `Class.forName` invocations.
+
+There are other reporting flags,
+but not used as much as `-H:+PrintAnalysisCallTree`.
+Find all available flags calling:
+
+```bash
+native-image --expert-options-all
+```
