@@ -13,7 +13,7 @@ $(jar): $(source)
 $(source):
 	jbang init --template=hello $(source)
 
-intellij-idea
+intellij-idea:
 	jbang edit --open=idea $(source)
 .PHONY: intellij-idea
 
