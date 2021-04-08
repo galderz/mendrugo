@@ -188,6 +188,114 @@ native-image --expert-options-all
 ```
 
 
+### Initialization
+
+This section focuses on the initialization aspects of native executables.
+
+Load it into an IDE of choice, e.g. IntelliJ IDEA:
+
+```bash
+make intellij-idea
+```
+
+Build a jar for it:
+
+```bash
+make init.jar
+```
+
+Run it with java:
+
+```bash
+java -jar init.jar
+```
+
+Generate a native executable:
+
+```bash
+native-image -jar init.jar init
+```
+
+Try running it:
+
+```bash
+$ ./init
+Caused by: java.lang.ClassNotFoundException: sun.security.rsa.RSAKeyPairGenerator$Legacy
+```
+
+Look for security options:
+
+```bash
+native-image --help | grep securiy
+```
+
+Create native executable with security services enabled: 
+
+```bash
+native-image --enable-all-security-services -jar init.jar init
+```
+
+Run it:
+
+```bash
+./init
+```
+
+The static block initialization,
+when is it running?
+At build time or at runtime?
+Add a print statement to the static block, 
+rebuild and execute:
+
+```bash
+$ make
+$ native-image --enable-all-security-services -jar init.jar init
+$ ./init
+(message)
+```
+
+It shows up at runtime.
+GraalVM initializes user static variables and blocks at runtime by default.
+It can be beneficial though to push some initialization steps to the build phase.
+For example: loading classes, reading configuration...etc.
+That can both speed up startup and reduce memory consumption.
+
+Instruct native image to initialize encryption example at build time:
+
+```bash
+native-image --initialize-at-build-time --enable-all-security-services -jar init.jar init
+```
+
+The static block message appears during build time,
+but now the code hits some unsupported feature.
+Request native image to not use fallback:
+
+```bash
+$ native-image --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
+Error: No instances of sun.security.provider.NativePRNG are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use --trace-object-instantiation=sun.security.provider.NativePRNG.
+```
+
+Execute again adding option to track object instantiation:
+
+```bash
+$ native-image --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
+Error: No instances of sun.security.provider.NativePRNG are allowed in the image heap as this class should be initialized at image runtime. Object has been initialized by the com.sun.jndi.dns.DnsClient class initializer with a trace:
+ 	at sun.security.provider.NativePRNG.<init>(NativePRNG.java:205)
+	at jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Unknown Source)
+	at jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:490)
+	at java.security.Provider.newInstanceUtil(Provider.java:176)
+	at java.security.Provider$Service.newInstance(Provider.java:1894)
+	at java.security.SecureRandom.getDefaultPRNG(SecureRandom.java:290)
+	at java.security.SecureRandom.<init>(SecureRandom.java:219)
+	at sun.security.jca.JCAUtil$CachedSecureRandomHolder.<clinit>(JCAUtil.java:59)
+	at sun.security.jca.JCAUtil.getSecureRandom(JCAUtil.java:69)
+	at com.sun.jndi.dns.DnsClient.<clinit>(DnsClient.java:82)
+```
+
+What does `DnsClient` have to do with our example?
+
 ### Bonus: configuration with native image agent
 
 Go back to the reporting example and generate a native image as default:

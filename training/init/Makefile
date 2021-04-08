@@ -2,13 +2,13 @@ executable := init
 jar := $(executable).jar
 source := $(executable).java
 
-all: $(executable)
+all: $(jar)
 
 $(executable): $(jar)
 	native-image -jar $(jar) $(executable)
 
 $(jar): $(source)
-	jbang export portable $(source)
+	jbang export portable --force $(source)
 
 intellij-idea:
 	jbang edit --open=idea $(source)
