@@ -295,6 +295,39 @@ Error: No instances of sun.security.provider.NativePRNG are allowed in the image
 ```
 
 What does `DnsClient` have to do with our example?
+Run it again with `-H:+PrintAnalysisCallTree`:
+
+```bash
+native-image -H:+PrintAnalysisCallTree --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
+```
+
+Open `call_tree` report.
+The report won't show you anything meaningful here.
+Try grepping or looking for `AsymmetricEncryption`, or `clinit`.
+We don't see anything related to our static block.
+
+To potentially gather more clues,
+try running the reports with the class being initialized at runtime.
+See if it gives us some clues:
+
+```bash
+native-image -H:+PrintAnalysisCallTree --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --enable-all-security-services -jar init.jar init
+```
+
+If you open the report,
+you should now see an entry point for the static block:
+
+```bash
+├── entry init$AsymmetricEncryption.<clinit>():void id=644 
+...
+│   ├── virtually calls java.security.KeyPairGenerator.initialize(int):void @bci=22
+│   │   └── is overridden by java.security.KeyPairGenerator.initialize(int):void id=1108 
+│   │       ├── virtually calls java.security.KeyPairGenerator.initialize(int, java.security.SecureRandom):void @bci=5
+```
+
+The `initialize` methods ends up calling another method with a `SecureRandom`.
+Let's now look at the source code to see what is going on there.
+
 
 ### Bonus: configuration with native image agent
 
