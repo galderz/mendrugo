@@ -273,9 +273,29 @@ Request native image to not use fallback:
 ```bash
 $ native-image --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
 Error: No instances of sun.security.provider.NativePRNG are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use --trace-object-instantiation=sun.security.provider.NativePRNG.
+Detailed message:
+Trace: Object was reached by
+	reading field java.security.SecureRandom.secureRandomSpi of
+		constant java.security.SecureRandom@7b5c3cf3 reached by
+	reading field java.security.KeyPairGenerator$Delegate.initRandom of
+		constant java.security.KeyPairGenerator$Delegate@492ceba1 reached by
+	scanning method init$AsymmetricEncryption.main(init.java:44)
+Call path from entry point to init$AsymmetricEncryption.main():
+	at init$AsymmetricEncryption.main(init.java:44)
+	at init.main(init.java:18)
+	at com.oracle.svm.core.JavaMainWrapper.runCore(JavaMainWrapper.java:146)
+	at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:182)
+	at com.oracle.svm.core.code.IsolateEnterStub.JavaMainWrapper_run_5087f5482cc9a6abc971913ece43acb471d2631b(generated:0)
 ```
 
-Execute again adding option to track object instantiation:
+So, what the message above is telling us is that the `KeyPairGenerator`
+instance in the main method contains a `SecureRandom` instance,
+which references `NativePRNG`.
+This is not desirable because something that's supposed to be random is not longer so,
+because the seed is baked in the image.
+As a next step, we'd like to know what is causing such instance to be left in the heap image.
+
+We could try again adding option to track object instantiation:
 
 ```bash
 $ native-image --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
@@ -325,9 +345,31 @@ you should now see an entry point for the static block:
 │   │       ├── virtually calls java.security.KeyPairGenerator.initialize(int, java.security.SecureRandom):void @bci=5
 ```
 
+We know get some clues.
 The `initialize` methods ends up calling another method with a `SecureRandom`.
 Let's now look at the source code to see what is going on there.
 
+It turns out that the `initialize` method that takes `int`,
+it uses the `JCAUtil.getSecureRandom()`,
+which returns a cached `SecureRandom` instance.
+However, this is also happens to be used by the `DnsClient`.
+When you try trace initialization,
+unfortunately GraalVM is showing you the path through `DnsClient`,
+which has nothing to do with our application.
+
+So, trace initialization flags can be useful,
+but they can seem to be lying to you at a first glance.
+This is something that can be applied to some of the exceptions you get when building native images.
+Often they can show misleading or imprecise information.
+
+So, how do we fix the example?
+It's an easy fix, move the `initialize` call to the main method.
+By doing that, the initialization happens at runtime and it's all fine.
+Let's try it:
+
+```bash
+native-image --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
+```
 
 ### Bonus: configuration with native image agent
 
