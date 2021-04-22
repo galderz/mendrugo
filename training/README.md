@@ -371,6 +371,142 @@ Let's try it:
 native-image --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
 ```
 
+### Runtime Profiling
+
+This section focuses on learning how to profile native image generated executables.
+It includes 2 different examples,
+the first covers a single threaded program,
+and the second is a multi-threaded one.
+
+
+#### Profiling single thread program
+
+Load it into an IDE of choice, e.g. IntelliJ IDEA:
+
+```bash
+cd exec-profile-single
+make intellij-idea
+```
+
+Build a jar for it:
+
+```bash
+make stringbuilders.jar
+```
+
+Run it with java:
+
+```bash
+java -jar stringbuilders.jar
+```
+
+Generate a native executable:
+
+```bash
+native-image -jar stringbuilders.jar stringbuilders
+```
+
+Run it:
+
+```bash
+./stringbuilders
+```
+
+It never completes... what is happening?
+Let's assume we can't profile the java version.
+How do we profile it?
+Since we're dealing with a linux native executable,
+we can use tools like `perf` directly:
+
+```bash
+perf record -F 1009 -g -a -- ./stringbuilders
+```
+
+We could use `perf report` to inspect the perf data,
+but you can often get a better picture showing that data as a 
+[flame graph](https://github.com/brendangregg/FlameGraph):
+
+```bash
+make flamegraph
+```
+
+The flamegraph is an `svg` file that a web browser,
+such as Google Chrome,
+can easily display it:
+
+```bash
+open flamegraph.svg
+```
+
+Hmmmm, we see a big majority of time spent in what is supposed to be our main,
+but we see no trace of our class,
+nor the `StringBuilder` class we're calling.
+We should look at the symbol table of the binary:
+can we find symbols for our class and the `StringBuilder`?
+We need those in order to get meaningful data:
+
+```bash
+objdump -t stringbuilders | grep stringbuilders
+objdump -t stringbuilders | grep StringBuilder
+```
+
+None of those really show anything.
+This is why we don't see any call graphs in the flame graphs.
+This is deliberate decision that native image makes.
+By default, it removes symbols from the binary.
+
+We can regain those back in several ways,
+one of which is generating a native executable with debug info:
+
+```bash
+native-image -g -jar stringbuilders.jar stringbuilders
+```
+
+Inspect the native executable with `objdump`,
+and see how the symbols are now present:
+
+```bash
+objdump -t stringbuilders | grep StringBuilder
+```
+
+Then, run the executable through `perf`,
+indicating that the call graph is `dwarf`:
+
+```bash
+perf record -F 1009 --call-graph dwarf -a -- ./stringbuilders
+```
+
+Make and open a flamegraph:
+
+```bash
+make flamegraph
+open flamegraph.svg
+```
+
+The flamegraph now shows where the bottleneck is.
+It's when `StringBuilder.delete` is called,
+and `System.arraycopy` is called as part of `AbstractStringBuilder.shift`.
+The issue is that 1 million characters need to be shifted in very small increments.
+
+Technically, the same flamegraph could have been achieved in other ways that didn't require DWARF debug info.
+However, the advantage of that debug info is that,
+`perf` can show us the relevant source code lines.
+To do that, simply call `perf report` with an extra parameter to shwow source code lines: 
+
+```bash
+$ perf report --stdio -F+srcline
+...
+    99.08%     0.01%  AbstractStringBuilder.java:1025                   stringbuilders  stringbuilders      [.] AbstractStringBuilder_delete_58681f709e2653ae2d27c3a178d8de9a64d94ff7
+            |
+            ---AbstractStringBuilder_delete_58681f709e2653ae2d27c3a178d8de9a64d94ff7
+```
+
+
+#### Profile multi thread program
+
+<TODO>
+
+
 ### Bonus: configuration with native image agent
 
 Go back to the reporting example and generate a native image as default:
@@ -496,3 +632,4 @@ Finally, the binary created should work as expected:
 
 For more details, 
 see [GraalVM documentation on native image build configuration](https://www.graalvm.org/reference-manual/native-image/BuildConfiguration/).
+
