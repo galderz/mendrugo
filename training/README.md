@@ -394,12 +394,6 @@ Build a jar for it:
 make stringbuilders.jar
 ```
 
-Run it with java:
-
-```bash
-java -jar stringbuilders.jar
-```
-
 Generate a native executable:
 
 ```bash
@@ -491,7 +485,7 @@ The issue is that 1 million characters need to be shifted in very small incremen
 Technically, the same flamegraph could have been achieved in other ways that didn't require DWARF debug info.
 However, the advantage of that debug info is that,
 `perf` can show us the relevant source code lines.
-To do that, simply call `perf report` with an extra parameter to shwow source code lines: 
+To do that, simply call `perf report` with an extra parameter to show source code lines: 
 
 ```bash
 $ perf report --stdio -F+srcline
@@ -504,7 +498,7 @@ $ perf report --stdio -F+srcline
 
 #### Profile multi thread program
 
-<TODO>
+TODO
 
 
 ### Bonus: configuration with native image agent

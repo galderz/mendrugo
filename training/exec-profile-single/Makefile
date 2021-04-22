@@ -24,13 +24,16 @@ intellij-idea:
 profile-fp:
 	native-image -H:-DeleteLocalSymbols -H:+PreserveFramePointer -jar $(jar) $(executable)
 	perf record -F 1009 -g -a -- ./$(executable)
+.PHONY: profile-fp
 
 profile-dwarf:
 	native-image -g -jar $(jar) $(executable)
 	perf record -F 1009 --call-graph dwarf -a -- ./$(executable)
+.PHONY: profile-dwarf
 
 profile-report:
 	perf report --stdio -F+srcline
+.PHONY: profile-report
 
 clean:
 	rm -f *.jar
