@@ -498,7 +498,72 @@ $ perf report --stdio -F+srcline
 
 #### Profile multi thread program
 
-TODO
+Multi-threaded programs might require special attention,
+when trying to understand their runtime behaviour.
+
+Load it into an IDE of choice, e.g. IntelliJ IDEA:
+
+```bash
+cd exec-profile-multi
+make intellij-idea
+```
+
+Build a jar for it:
+
+```bash
+make datagrams.jar
+```
+
+Build the native executable with debug info:
+
+```bash
+native-image -g -jar datagrams.jar datagrams
+```
+
+Run it through `perf`:
+
+```bash
+perf record -F 1009 --call-graph dwarf -a -- ./datagrams
+```
+
+Make and open a flamegraph:
+
+```bash
+make flamegraph
+open flamegraph.svg
+```
+
+The flamegraph produced looks odd.
+Each thread is treated independently even though they all do the same work.
+This makes it difficult to have a clear picture of the bottlenecks in the program.
+
+This is happening because from a `perf` perspective,
+each thread is a different command.
+We can see that if we inspect `perf report`:
+
+```bash
+$ perf report --stdio
+# Children      Self  Command          Shared Object       Symbol
+# ........  ........  ...............  ..................  ...........................................................................................................................................
+#
+...
+     9.18%     0.01%  thread-3         datagrams           [.] datagrams_sendLoop_096e6529247e2e5446b986d81035f52ce12133fb
+...
+     7.12%     0.02%  thread-4         datagrams           [.] DatagramChannelImpl_send_6bb2ce127b1f52f0bf68e97a6085aa686e4b83f4
+```
+
+This can be worked around by applying some modifications to the `perf` output,
+in order to make all threads have the same name. E.g.
+
+```bash
+$ make flamegraph-fixed
+perf script | sed -E "s/thread-[0-9]*/thread/" | /opt/FlameGraph/stackcollapse-perf.pl > out.perf-folded
+/opt/FlameGraph/flamegraph.pl out.perf-folded > flamegraph.svg
+```
+
+When you open the flamegraph,
+you will see all threads' work collapsed into a single area.
+Then, you can clearly see that there's some locking that could affect performance.
 
 
 ### Bonus: configuration with native image agent
