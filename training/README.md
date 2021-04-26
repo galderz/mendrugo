@@ -187,6 +187,8 @@ Find all available flags calling:
 native-image --expert-options-all
 ```
 
+This [bonus section](#bonus-configuration-with-native-image-agent) explains how to get remove the warning messages.
+
 
 ### Initialization
 
