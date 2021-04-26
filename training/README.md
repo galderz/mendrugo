@@ -566,6 +566,11 @@ you will see all threads' work collapsed into a single area.
 Then, you can clearly see that there's some locking that could affect performance.
 
 
+### Bonus: Profile memory of program
+
+Not yet available, `perf mem record` only supported in Intel CPU.
+
+
 ### Bonus: configuration with native image agent
 
 Go back to the reporting example and generate a native image as default:
