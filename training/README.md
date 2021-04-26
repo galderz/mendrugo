@@ -257,10 +257,14 @@ $ ./init
 ```
 
 It shows up at runtime.
-GraalVM initializes user static variables and blocks at runtime by default.
+GraalVM initializes user static variables and blocks at runtime by default **(&ast;)**.
 It can be beneficial though to push some initialization steps to the build phase.
 For example: loading classes, reading configuration...etc.
 That can both speed up startup and reduce memory consumption.
+
+**(&ast;)** If GraalVM can proof that a class is safe to initialize at build time, 
+it will do so.
+These scenarios are beyond the scope of this training.
 
 Instruct native image to initialize encryption example at build time:
 
