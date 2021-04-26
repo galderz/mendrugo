@@ -18,4 +18,5 @@ clean:
 	rm -f *.jar
 	rm -drf libs
 	rm -f $(executable)
+	rm -drf reports
 .PHONY: clean
