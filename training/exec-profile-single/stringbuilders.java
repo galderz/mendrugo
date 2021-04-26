@@ -3,6 +3,10 @@
 
 import static java.lang.System.*;
 
+/**
+ * Adapted from Andrei Pangin's example:
+ * https://github.com/apangin/java-profiling-presentation/blob/master/src/demo1/StringBuilderTest.java
+ */
 public class stringbuilders
 {
     public static void main(String... args)

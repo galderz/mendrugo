@@ -12,6 +12,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.System.*;
 
+/**
+ * Adapted from Andrei Pangin's example:
+ * https://github.com/apangin/java-profiling-presentation/blob/master/src/demo6/DatagramTest.java
+ */
 public class datagrams
 {
     private static final AtomicLong totalPackets = new AtomicLong();

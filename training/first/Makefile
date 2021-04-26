@@ -8,7 +8,7 @@ $(executable): $(jar)
 	native-image -jar $(jar) $(executable)
 
 $(jar): $(source)
-	jbang export portable $(source)
+	jbang export portable --force $(source)
 
 $(source):
 	jbang init --template=hello $(source)
