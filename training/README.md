@@ -34,6 +34,7 @@ Interesting even for long-running apps, e.g. Infinispan / Data Grid.
 
 Download latest
 [GraalVM CE](https://www.graalvm.org/downloads/).
+This training assumes minimum version 21.1.0.
 
 Add `bin` directory to the `PATH`.
 
@@ -222,25 +223,6 @@ Try running it:
 
 ```bash
 $ ./init
-Caused by: java.lang.ClassNotFoundException: sun.security.rsa.RSAKeyPairGenerator$Legacy
-```
-
-Look for security options:
-
-```bash
-native-image --help | grep securiy
-```
-
-Create native executable with security services enabled: 
-
-```bash
-native-image --enable-all-security-services -jar init.jar init
-```
-
-Run it:
-
-```bash
-./init
 ```
 
 The static block initialization,
@@ -250,8 +232,8 @@ Add a print statement to the static block,
 rebuild and execute:
 
 ```bash
-$ make
-$ native-image --enable-all-security-services -jar init.jar init
+$ make init.jar
+$ native-image -jar init.jar init
 $ ./init
 (message)
 ```
@@ -262,14 +244,13 @@ It can be beneficial though to push some initialization steps to the build phase
 For example: loading classes, reading configuration...etc.
 That can both speed up startup and reduce memory consumption.
 
-**(&ast;)** If GraalVM can proof that a class is safe to initialize at build time, 
-it will do so.
+**(&ast;)** If GraalVM can proof that a class is safe to initialize at build time, it will do so.
 These scenarios are beyond the scope of this training.
 
 Instruct native image to initialize encryption example at build time:
 
 ```bash
-native-image --initialize-at-build-time --enable-all-security-services -jar init.jar init
+native-image --initialize-at-build-time -jar init.jar init
 ```
 
 The static block message appears during build time,
@@ -277,7 +258,7 @@ but now the code hits some unsupported feature.
 Request native image to not use fallback:
 
 ```bash
-$ native-image --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
+$ native-image --no-fallback --initialize-at-build-time -jar init.jar init
 Error: No instances of sun.security.provider.NativePRNG are allowed in the image heap as this class should be initialized at image runtime. To see how this object got instantiated use --trace-object-instantiation=sun.security.provider.NativePRNG.
 Detailed message:
 Trace: Object was reached by
@@ -304,17 +285,9 @@ As a next step, we'd like to know what is causing such instance to be left in th
 We could try again adding option to track object instantiation:
 
 ```bash
-$ native-image --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
+$ native-image --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --initialize-at-build-time -jar init.jar init
 Error: No instances of sun.security.provider.NativePRNG are allowed in the image heap as this class should be initialized at image runtime. Object has been initialized by the com.sun.jndi.dns.DnsClient class initializer with a trace:
- 	at sun.security.provider.NativePRNG.<init>(NativePRNG.java:205)
-	at jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Unknown Source)
-	at jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
-	at jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
-	at java.lang.reflect.Constructor.newInstance(Constructor.java:490)
-	at java.security.Provider.newInstanceUtil(Provider.java:176)
-	at java.security.Provider$Service.newInstance(Provider.java:1894)
-	at java.security.SecureRandom.getDefaultPRNG(SecureRandom.java:290)
-	at java.security.SecureRandom.<init>(SecureRandom.java:219)
+	at java.security.SecureRandom.<init>(SecureRandom.java:218)
 	at sun.security.jca.JCAUtil$CachedSecureRandomHolder.<clinit>(JCAUtil.java:59)
 	at sun.security.jca.JCAUtil.getSecureRandom(JCAUtil.java:69)
 	at com.sun.jndi.dns.DnsClient.<clinit>(DnsClient.java:82)
@@ -324,7 +297,7 @@ What does `DnsClient` have to do with our example?
 Run it again with `-H:+PrintAnalysisCallTree`:
 
 ```bash
-native-image -H:+PrintAnalysisCallTree --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
+native-image -H:+PrintAnalysisCallTree --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --initialize-at-build-time -jar init.jar init
 ```
 
 Open `call_tree` report.
@@ -337,7 +310,7 @@ try running the reports with the class being initialized at runtime.
 See if it gives us some clues:
 
 ```bash
-native-image -H:+PrintAnalysisCallTree --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback --enable-all-security-services -jar init.jar init
+native-image -H:+PrintAnalysisCallTree --trace-object-instantiation=sun.security.provider.NativePRNG --no-fallback -jar init.jar init
 ```
 
 If you open the report,
@@ -376,6 +349,7 @@ Let's try it:
 ```bash
 native-image --no-fallback --initialize-at-build-time --enable-all-security-services -jar init.jar init
 ```
+
 
 ### Runtime Profiling
 

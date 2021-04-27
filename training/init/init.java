@@ -25,6 +25,7 @@ public class init
 
         static
         {
+            System.out.println("Static block");
             try
             {
                 KEY_PAIR_GEN = KeyPairGenerator.getInstance("RSA");
