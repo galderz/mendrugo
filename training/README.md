@@ -365,7 +365,7 @@ which has nothing to do with our application.
 
 So, trace initialization flags can be useful,
 but they can seem to be lying to you at a first glance.
-This is something that can be applied to some of the exceptions you get when building native images.
+This is something that can be applied to some exceptions you get when building native images.
 Often they can show misleading or imprecise information.
 
 So, how do we fix the example?
