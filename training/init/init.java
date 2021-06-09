@@ -15,7 +15,8 @@ public class init
 {
     public static void main(String... args) throws Exception
     {
-        AsymmetricEncryption.main();
+        final String msg = AsymmetricEncryption.encryptDecrypt("welcome to the training");
+        out.println(msg);
     }
 
     static class AsymmetricEncryption
@@ -25,7 +26,6 @@ public class init
 
         static
         {
-            System.out.println("Static block");
             try
             {
                 KEY_PAIR_GEN = KeyPairGenerator.getInstance("RSA");
@@ -39,21 +39,28 @@ public class init
             }
         }
 
-        static void main() throws Exception
+        static String encryptDecrypt(String msg)
         {
-            KeyPair keyPair = KEY_PAIR_GEN.generateKeyPair();
+            try
+            {
+                KeyPair keyPair = KEY_PAIR_GEN.generateKeyPair();
 
-            byte[] text = "welcome to the training".getBytes(StandardCharsets.UTF_8);
+                byte[] text = msg.getBytes(StandardCharsets.UTF_8);
 
-            // Encrypt with private key
-            CIPHER.init(Cipher.ENCRYPT_MODE, keyPair.getPrivate());
-            byte[] encrypted = CIPHER.doFinal(text);
+                // Encrypt with private key
+                CIPHER.init(Cipher.ENCRYPT_MODE, keyPair.getPrivate());
+                byte[] encrypted = CIPHER.doFinal(text);
 
-            // Decrypt with public key
-            CIPHER.init(Cipher.DECRYPT_MODE, keyPair.getPublic());
-            byte[] unencrypted = CIPHER.doFinal(encrypted);
+                // Decrypt with public key
+                CIPHER.init(Cipher.DECRYPT_MODE, keyPair.getPublic());
+                byte[] unencrypted = CIPHER.doFinal(encrypted);
 
-            out.println(new String(unencrypted, StandardCharsets.UTF_8));
+                return new String(unencrypted, StandardCharsets.UTF_8);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
