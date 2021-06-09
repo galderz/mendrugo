@@ -2,6 +2,7 @@ project := code-with-quarkus
 zip := $(project).zip
 executable := ./$(project)/target/$(project)-1.0.0-SNAPSHOT-runner
 pom := $(project)/pom.xml
+image := quay.io/quarkus/ubi-quarkus-mandrel:21.0-java11
 
 mvn-native += ./mvnw
 mvn-native += package
@@ -9,11 +10,26 @@ mvn-native += -DskipTests
 mvn-native += -Pnative
 mvn-native += -Dquarkus.native.container-build=true
 mvn-native += -Dquarkus.native.container-runtime=podman
-mvn-native += -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel:21.0-java11
+mvn-native += -Dquarkus.native.builder-image=$(image)
 
 run: $(executable)
 	./$(executable)
 .PHONY: run
+
+# There are other reporting flags, but not used as much as the call tree one.
+# Find all available flags calling:
+expert-options:
+	podman run $(image) --expert-options-all
+.PHONY: expert-options
+
+# Generate and inspect reports.
+# Notice how reports are generated in a folder inside the container that is mapped locally.
+# call_tree report useful for getting an approximation on why something is included.
+# used_packages, used_classes and used_methods when comparing different versions of the application.
+# Example: why does the image take longer to build? why is the image bigger now?
+reports: $(pom)
+	cd $(project) && $(mvn-native) -Dquarkus.native.enable-reports
+.PHONY: reports
 
 # Inspect sections of the binary. SVM heap and text sections contributing the most to the size of the binary.
 readelf: $(executable)
