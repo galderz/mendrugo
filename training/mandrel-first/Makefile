@@ -14,13 +14,47 @@ mvn-native += -Dquarkus.native.container-build=true
 mvn-native += -Dquarkus.native.container-runtime=podman
 mvn-native += -Dquarkus.native.builder-image=$(image)
 
+FG_HOME ?= /opt/FlameGraph
+
 run: $(executable)
-	./$(executable)
+	$(executable)
 .PHONY: run
 
 run-jvm: $(executable)
 	java -jar code-with-quarkus/target/code-with-quarkus-1.0.0-SNAPSHOT-native-image-source-jar/code-with-quarkus-1.0.0-SNAPSHOT-runner.jar
 .PHONY: run-jvm
+
+flamegraph-fixed:
+	perf script | sed -E "s/thread-[0-9]*/thread/" | $(FG_HOME)/stackcollapse-perf.pl > out.perf-folded
+	$(FG_HOME)/flamegraph.pl out.perf-folded > flamegraph.svg
+.PHONY: flamegraph-fixed
+
+perf-report-src:
+	perf report --stdio -F+srcline
+.PHONY: perf-report-src
+
+# Swap -g for --call-graph dwarf
+perf-record-dwarf: $(executable)
+	perf record -F 1009 --call-graph dwarf -a $(executable)
+.PHONY: perf-record-dwarf
+
+debug-info: $(pom)
+	cd $(project) && $(mvn-native) -Dquarkus.native.debug.enabled
+.PHONY: debug-info
+
+query-symbols: $(executable)
+	objdump -t $(executable) | grep GreetingResource || true
+	objdump -t $(executable) | grep StringBuilder || true
+
+flamegraph:
+	perf script -i perf.data | $(FG_HOME)/stackcollapse-perf.pl > out.perf-folded
+	$(FG_HOME)/flamegraph.pl out.perf-folded > flamegraph.svg
+.PHONY: flamegraph
+
+# -g to enable call graph recording.executable
+# -a for all cpus
+perf-record: $(executable)
+	perf record -F 1009 -g -a ./$(executable)
 
 trace-object-instantiation: $(pom)
 	cd $(project) && $(mvn-native) -Dquarkus.native.additional-build-args=--trace-object-instantiation=sun.security.provider.NativePRNG
