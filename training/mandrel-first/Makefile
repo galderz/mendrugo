@@ -1,8 +1,10 @@
+quarkus-version := 1.13.6.Final
+mandrel-version := 21.0
 project := code-with-quarkus
 zip := $(project).zip
 executable := ./$(project)/target/$(project)-1.0.0-SNAPSHOT-runner
 pom := $(project)/pom.xml
-image := quay.io/quarkus/ubi-quarkus-mandrel:21.0-java11
+image := quay.io/quarkus/ubi-quarkus-mandrel:$(mandrel-version)-java11
 
 mvn-native += ./mvnw
 mvn-native += package
@@ -15,6 +17,14 @@ mvn-native += -Dquarkus.native.builder-image=$(image)
 run: $(executable)
 	./$(executable)
 .PHONY: run
+
+run-jvm: $(executable)
+	java -jar code-with-quarkus/target/code-with-quarkus-1.0.0-SNAPSHOT-native-image-source-jar/code-with-quarkus-1.0.0-SNAPSHOT-runner.jar
+.PHONY: run-jvm
+
+trace-object-instantiation: $(pom)
+	cd $(project) && $(mvn-native) -Dquarkus.native.additional-build-args=--trace-object-instantiation=sun.security.provider.NativePRNG
+.PHONY: trace-object-instantiation
 
 # There are other reporting flags, but not used as much as the call tree one.
 # Find all available flags calling:
@@ -31,7 +41,8 @@ reports: $(pom)
 	cd $(project) && $(mvn-native) -Dquarkus.native.enable-reports
 .PHONY: reports
 
-# Inspect sections of the binary. SVM heap and text sections contributing the most to the size of the binary.
+# Inspect sections of the binary.
+# SVM heap and text sections contributing the most to the size of the binary.
 readelf: $(executable)
 	readelf -SW $(executable)
 .PHONY: readelf
@@ -73,14 +84,15 @@ hello:
 $(executable): $(pom)
 	cd $(project) && $(mvn-native)
 
-$(pom): $(zip)
-	unzip $(zip)
+$(pom):
+	true | mvn io.quarkus:quarkus-maven-plugin:$(quarkus-version):create
 	touch $(pom)
 
-$(zip):
-	curl -O -J https://code.quarkus.io/api/download
-
 clean:
+	cd $(project) && mvn clean
+.PHONY: clean
+
+clean-all:
 	rm -drf $(project)
 	rm -f $(zip)
-.PHONY: clean
+.PHONY: clean-all
