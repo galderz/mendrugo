@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //JAVA_OPTIONS -ea
-//DEPS org.graalvm.nativeimage:svm:21.0.0-SNAPSHOT
+//DEPS org.graalvm.nativeimage:svm:21.2.0-SNAPSHOT
 
 import com.oracle.svm.core.annotate.AutomaticFeature;
 import org.graalvm.nativeimage.hosted.Feature;
