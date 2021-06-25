@@ -24,6 +24,10 @@ run-jvm: $(executable)
 	java -jar code-with-quarkus/target/code-with-quarkus-1.0.0-SNAPSHOT-native-image-source-jar/code-with-quarkus-1.0.0-SNAPSHOT-runner.jar
 .PHONY: run-jvm
 
+gdb-run: $(executable)
+	gdb $(executable)
+.PHONY: gdb-run
+
 flamegraph-fixed:
 	perf script | sed -E "s/thread-[0-9]*/thread/" | $(FG_HOME)/stackcollapse-perf.pl > out.perf-folded
 	$(FG_HOME)/flamegraph.pl out.perf-folded > flamegraph.svg
@@ -45,6 +49,7 @@ debug-info: $(pom)
 query-symbols: $(executable)
 	objdump -t $(executable) | grep GreetingResource || true
 	objdump -t $(executable) | grep StringBuilder || true
+.PHONY: query-symbols
 
 flamegraph:
 	perf script -i perf.data | $(FG_HOME)/stackcollapse-perf.pl > out.perf-folded
