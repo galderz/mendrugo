@@ -1,4 +1,4 @@
-quarkus-version := 1.13.6.Final
+quarkus-version := 1.13.7.Final
 mandrel-version := 21.0
 project := code-with-quarkus
 zip := $(project).zip
