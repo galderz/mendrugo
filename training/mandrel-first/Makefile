@@ -38,7 +38,7 @@ perf-report-src:
 .PHONY: perf-report-src
 
 # Swap -g for --call-graph dwarf
-perf-record-dwarf: $(executable)
+record-dwarf: $(executable)
 	perf record -F 1009 --call-graph dwarf -a $(executable)
 .PHONY: perf-record-dwarf
 
@@ -58,7 +58,7 @@ flamegraph:
 
 # -g to enable call graph recording.executable
 # -a for all cpus
-perf-record: $(executable)
+record: $(executable)
 	perf record -F 1009 -g -a ./$(executable)
 
 trace-object-instantiation: $(pom)

@@ -48,6 +48,25 @@ expert-options:
 	docker run $(image) --expert-options-all
 .PHONY: expert-options
 
+debug-info: $(pom)
+	cd $(project) && $(mvn-native) -Dquarkus.native.debug.enabled
+.PHONY: debug-info
+
+# Enter a fedora container for entering commands
+fedora-tools-run-privileged: $(executable) fedora-tools-image
+	docker run --privileged -t -i -v $(PWD)/$(targetdir):/data --rm -p 8080:8080 fedora-tools:v1 /bin/bash
+.PHONY: fedora
+
+# Inspect native binary
+inspect: $(executable) fedora-tools-image
+	docker run -i -v $(PWD):/data --rm fedora-tools:v1 /bin/bash -c \
+		"$(ldd_cmd); $(strings_hello); $(strings_vm); $(readelf_cmd)"
+.PHONY: inspect
+
+fedora-tools-image:
+	docker build -t fedora-tools:v1 .
+.PHONY: fedora-tools-image
+
 # Generate and inspect reports.
 # Notice how reports are generated in a folder inside the container that is mapped locally.
 # call_tree report useful for getting an approximation on why something is included.
@@ -56,17 +75,6 @@ expert-options:
 reports: $(pom)
 	cd $(project) && $(mvn-native) -Dquarkus.native.enable-reports
 .PHONY: reports
-
-# Enter a fedora container for entering commands
-fedora: $(executable)
-	docker run -t -i -v $(PWD)/$(targetdir):/data --rm fedora:34 /bin/bash
-.PHONY: fedora
-
-# Inspect native binary
-inspect: $(executable)
-	docker run -i -v $(PWD):/data --rm fedora:34 /bin/bash -c \
-		"$(dnd_install); $(ldd_cmd); $(strings_hello); $(strings_vm); $(readelf_cmd)"
-.PHONY: inspect
 
 # Use --verbose to get a better understanding of how native-image works.
 # It's a 2-step process.
