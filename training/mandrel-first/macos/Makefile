@@ -42,6 +42,21 @@ run: $(artifact)
 	docker run -i --rm -p 8080:8080 g/$(project):1.0.0-SNAPSHOT
 .PHONY: run
 
+# There are other reporting flags, but not used as much as the call tree one.
+# Find all available flags calling:
+expert-options:
+	docker run $(image) --expert-options-all
+.PHONY: expert-options
+
+# Generate and inspect reports.
+# Notice how reports are generated in a folder inside the container that is mapped locally.
+# call_tree report useful for getting an approximation on why something is included.
+# used_packages, used_classes and used_methods when comparing different versions of the application.
+# Example: why does the image take longer to build? why is the image bigger now?
+reports: $(pom)
+	cd $(project) && $(mvn-native) -Dquarkus.native.enable-reports
+.PHONY: reports
+
 # Enter a fedora container for entering commands
 fedora: $(executable)
 	docker run -t -i -v $(PWD)/$(targetdir):/data --rm fedora:34 /bin/bash
