@@ -54,7 +54,7 @@ debug-info: $(pom)
 
 # Enter a fedora container for entering commands
 fedora-tools-run-privileged: $(executable) fedora-tools-image
-	docker run --privileged -t -i -v $(PWD)/$(targetdir):/data --rm -p 8080:8080 fedora-tools:v1 /bin/bash
+	docker run --privileged -t -i -v $(PWD)/$(project):/data --rm -p 8080:8080 fedora-tools:v1 /bin/bash
 .PHONY: fedora
 
 # Inspect native binary
