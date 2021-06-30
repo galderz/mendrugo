@@ -24,14 +24,18 @@ dnd_install += install
 dnd_install += -y
 dnd_install += binutils
 
-strings += strings
-strings += /data/$(executable)
-strings += |
-strings += grep
-strings_hello += $(strings)
+strings_cmd += strings
+strings_cmd += /data/$(executable)
+strings_cmd += |
+strings_cmd += grep
+strings_hello += $(strings_cmd)
 strings_hello += Hello
-strings_vm += $(strings)
+strings_vm += $(strings_cmd)
 strings_vm += core.VM
+
+readelf_cmd += readelf
+readelf_cmd += -SW
+readelf_cmd += /data/$(executable)
 
 # Then head to http://localhost:8080/hello-resteasy
 run: $(artifact)
@@ -46,7 +50,7 @@ fedora: $(executable)
 # Inspect native binary
 inspect: $(executable)
 	docker run -i -v $(PWD):/data --rm fedora:34 /bin/bash -c \
-		"$(dnd_install); $(ldd_cmd); $(strings_hello); $(strings_vm)"
+		"$(dnd_install); $(ldd_cmd); $(strings_hello); $(strings_vm); $(readelf_cmd)"
 .PHONY: inspect
 
 # Use --verbose to get a better understanding of how native-image works.
