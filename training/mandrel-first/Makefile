@@ -24,6 +24,10 @@ run-jvm: $(executable)
 	java -jar code-with-quarkus/target/code-with-quarkus-1.0.0-SNAPSHOT-native-image-source-jar/code-with-quarkus-1.0.0-SNAPSHOT-runner.jar
 .PHONY: run-jvm
 
+preserve-fp: $(pom)
+	cd $(project) && $(mvn-native) -Dquarkus.native.additional-build-args=-H:+PreserveFramePointer,-H:-DeleteLocalSymbols
+.PHONY: preserve-fp
+
 gdb-run: $(executable)
 	gdb $(executable)
 .PHONY: gdb-run
