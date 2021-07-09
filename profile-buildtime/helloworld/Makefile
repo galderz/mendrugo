@@ -25,18 +25,18 @@ classfiles := $(patsubst %.java,%.class,$(javafiles))
 
 ap_agent := -J-agentpath:$(AP_HOME)/build/libasyncProfiler.so=start
 
-# TODO add tee to capture output (e.g. phase elapsed times)
+# TODO use async profiler 2 instead of 1.8.x (see https://github.com/jvm-profiling-tools/async-profiler/releases/tag/v2.0)
+
+$(target_dir)/$(exec): $(classfiles)
+> cd $(target_dir)
+> $(vm)/bin/native-image $(main)
 
 profiling: $(classfiles)
 > cd $(target_dir)
-> $(vm)/bin/native-image $(ap_agent),file=profile-wall.svg,event=wall,threads,interval=10ms $(main)
-> $(vm)/bin/native-image $(ap_agent),file=profile-lock.svg,event=lock,total $(main)
-> $(vm)/bin/native-image $(ap_agent),file=profile-alloc.svg,event=alloc $(main)
-> $(vm)/bin/native-image $(ap_agent),file=profile-cpu.svg,event=cpu $(main)
-
-$(target_dir)/$(exec):
-> cd $(target_dir)
-> $(vm)/bin/native-image $(main)
+> $(vm)/bin/native-image $(ap_agent),file=profile-wall.svg,event=wall,threads,interval=10ms $(main) | tee console-wall.log
+> $(vm)/bin/native-image $(ap_agent),file=profile-lock.svg,event=lock,total $(main) | tee console-lock.log
+> $(vm)/bin/native-image $(ap_agent),file=profile-alloc.svg,event=alloc $(main) | tee console-alloc.log
+> $(vm)/bin/native-image $(ap_agent),file=profile-cpu.svg,event=cpu $(main) | tee console-cpu.log
 
 %.class: %.java $(target_dir)
 > $(vm)/bin/javac -d $(target_dir) -classpath . $<
