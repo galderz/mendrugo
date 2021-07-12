@@ -14,6 +14,7 @@ comma := ,
 
 NAME ?= graalvm-21.2-dev
 AP_HOME ?= /opt/async-profiler
+EXTRA_ARGS ?=
 
 target_dir := target/$(NAME)
 vm := /opt/$(NAME)
@@ -29,14 +30,7 @@ ap_agent := -J-agentpath:$(AP_HOME)/build/libasyncProfiler.so=start
 
 $(target_dir)/$(exec): $(classfiles)
 > cd $(target_dir)
-> $(vm)/bin/native-image $(main)
-
-profiling: $(classfiles)
-> cd $(target_dir)
-> $(vm)/bin/native-image $(ap_agent),file=profile-wall.svg,event=wall,threads,interval=10ms $(main) | tee console-wall.log
-> $(vm)/bin/native-image $(ap_agent),file=profile-lock.svg,event=lock,total $(main) | tee console-lock.log
-> $(vm)/bin/native-image $(ap_agent),file=profile-alloc.svg,event=alloc $(main) | tee console-alloc.log
-> $(vm)/bin/native-image $(ap_agent),file=profile-cpu.svg,event=cpu $(main) | tee console-cpu.log
+> $(vm)/bin/native-image $(main) $(EXTRA_ARGS)
 
 %.class: %.java $(target_dir)
 > $(vm)/bin/javac -d $(target_dir) -classpath . $<
@@ -44,6 +38,25 @@ profiling: $(classfiles)
 $(target_dir):
 > mkdir -p $(target_dir)
 
+reports: $(classfiles)
+> cd $(target_dir)
+> $(vm)/bin/native-image $(main) $(EXTRA_ARGS) -H:+PrintAnalysisCallTree
+> wc -l reports/used_methods*.txt
+> wc -l reports/used_classes*.txt
+> wc -l reports/used_packages*.txt
+
+profiling: $(classfiles)
+> cd $(target_dir)
+> $(vm)/bin/native-image $(ap_agent),file=profile-wall.svg,event=wall,threads,interval=10ms $(main) | tee console-wall.log
+> $(vm)/bin/native-image $(ap_agent),file=profile-lock.svg,event=lock,total $(main) | tee console-lock.log
+> $(vm)/bin/native-image $(ap_agent),file=profile-alloc.svg,event=alloc $(main) | tee console-alloc.log
+> $(vm)/bin/native-image $(ap_agent),file=profile-cpu.svg,event=cpu $(main) | tee console-cpu.log
+.PHONY: profiling
+
 clean:
 > rm -drf $(target_dir)
 .PHONY: clean
+
+clean-all:
+> rm -drf target
+.PHONY: clean-all
