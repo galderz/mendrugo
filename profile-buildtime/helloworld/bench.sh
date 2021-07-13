@@ -2,12 +2,14 @@
 
 set -e
 
+make clean-all
+
 argsBench()
 {
     local name=$1
     local args=$2
     NAME=$name EXTRA_ARGS=$args make clean
-    NAME=$name EXTRA_ARGS=$args make
+    NAME=$name EXTRA_ARGS=$args make reports | tee -a "target/$name/console.log"
     for i in `seq 1 10`
     do
         NAME=$name EXTRA_ARGS=$args make | tee -a "target/$name/console.log"
@@ -22,7 +24,7 @@ homeBench()
 {
     local graalvm_home=$1
     GRAALVM_HOME=$graalvm_home make clean
-    GRAALVM_HOME=$graalvm_home make
+    GRAALVM_HOME=$graalvm_home make reports | tee -a "target/$graalvm_home/console.log"
     for i in `seq 1 10`
     do
         GRAALVM_HOME=$graalvm_home make | tee -a "target/$graalvm_home/console.log"
