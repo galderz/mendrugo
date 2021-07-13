@@ -12,14 +12,19 @@ endif
 
 comma := ,
 
-NAME ?= graalvm-21.2-dev
+GRAALVM_HOME ?= graalvm-21.2-dev
 AP_HOME ?= /opt/async-profiler
+NAME ?= $(GRAALVM_HOME)
 EXTRA_ARGS ?=
 
 target_dir := target/$(NAME)
-vm := /opt/$(NAME)
+vm := /opt/$(GRAALVM_HOME)
 main := HelloWorld
 exec := $(shell echo $(main) | tr A-Z a-z)
+
+comma := ,
+space := $(subst ,, )
+args := $(subst $(comma),$(space),$(EXTRA_ARGS))
 
 javafiles := $(shell find . -type f -name '*.java')
 classfiles := $(patsubst %.java,%.class,$(javafiles))
@@ -30,7 +35,7 @@ ap_agent := -J-agentpath:$(AP_HOME)/build/libasyncProfiler.so=start
 
 $(target_dir)/$(exec): $(classfiles)
 > cd $(target_dir)
-> $(vm)/bin/native-image $(main) $(EXTRA_ARGS)
+> $(vm)/bin/native-image $(main) $(args)
 
 %.class: %.java $(target_dir)
 > $(vm)/bin/javac -d $(target_dir) -classpath . $<
@@ -40,7 +45,7 @@ $(target_dir):
 
 reports: $(classfiles)
 > cd $(target_dir)
-> $(vm)/bin/native-image $(main) $(EXTRA_ARGS) -H:+PrintAnalysisCallTree
+> $(vm)/bin/native-image $(main) $(args) -H:+PrintAnalysisCallTree
 > wc -l reports/used_methods*.txt
 > wc -l reports/used_classes*.txt
 > wc -l reports/used_packages*.txt
