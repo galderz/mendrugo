@@ -10,14 +10,26 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-gen_sources_dir := target/generated-sources
+GRAALVM_HOME ?= graalvm-21.2-dev
 
+vm := /opt/$(GRAALVM_HOME)
+jar := target/example.jar
+exec := target/example
+
+gen_sources_dir := target/generated-sources
 sources = $(shell find . -type f -name '*.java')
 classes = $(patsubst %.java,target/classes/%.class,$(notdir $(sources)))
 
-all: target/example.jar
+all: $(exec)
 
-target/example.jar: $(gen_sources_dir) make.java
+$(exec): $(jar)
+> $(vm)/bin/native-image -jar $< $@
+
+reports: $(jar)
+> $(vm)/bin/native-image -jar $< $(exec) -H:+PrintAnalysisCallTree
+.PHONY: reports
+
+$(jar): $(gen_sources_dir) make.java
 > jbang ./make.java
 > make -s phonyJar
 
