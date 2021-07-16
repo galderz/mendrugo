@@ -42,4 +42,5 @@ $(gen_sources_dir):
 
 clean:
 > rm -drf target
+> rm -drf reports
 .PHONY: clean

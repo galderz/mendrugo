@@ -3,6 +3,7 @@
 //DEPS com.squareup:javapoet:1.13.0
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -17,14 +18,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Command(name = "make", mixinStandardHelpOptions = true, version = "make 0.1",
     description = "make made with jbang")
 class make implements Callable<Integer>
 {
     public static final String PACKAGE_NAME = "com.example.stringconcat";
+
+    @Option(
+        description = "Number of aggregate types"
+        , names = {"-a", "--number-aggregate-types"}
+    )
+    private int numAggregates = 5;
 
     @Option(
         description = "Number of types"
@@ -54,10 +63,10 @@ class make implements Callable<Integer>
     public Integer call()
     {
         final List<TypeSpec> types = makeTypes(numTypes, numFields);
-        final TypeSpec aggregator = makeAggregator(types);
-        final TypeSpec main = makeMain(aggregator);
+        final List<TypeSpec> aggregators = makeAggregators(numAggregates, types);
+        final TypeSpec main = makeMain(aggregators);
 
-        types.add(aggregator);
+        types.addAll(aggregators);
         types.add(main);
 
         types.stream()
@@ -70,18 +79,21 @@ class make implements Callable<Integer>
         return 0;
     }
 
-    private TypeSpec makeMain(TypeSpec aggregator)
+    private TypeSpec makeMain(List<TypeSpec> aggregators)
     {
-        MethodSpec main = MethodSpec.methodBuilder("main")
+        MethodSpec.Builder main = MethodSpec.methodBuilder("main")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
             .returns(void.class)
-            .addParameter(String[].class, "args")
-            .addStatement("$T.out.println(new $L())", System.class, aggregator.name)
-            .build();
+            .addParameter(String[].class, "args");
+
+        aggregators
+            .forEach(aggregator ->
+                main.addStatement("$T.out.println(new $L())", System.class, aggregator.name)
+            );
 
         return TypeSpec.classBuilder("Main")
             .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-            .addMethod(main)
+            .addMethod(main.build())
             .build();
     }
 
@@ -96,17 +108,27 @@ class make implements Callable<Integer>
             )
             .collect(Collectors.toList());
 
+        final MethodSpec.Builder toString = MethodSpec.methodBuilder("toString")
+            .addModifiers(Modifier.PUBLIC)
+            .returns(String.class);
+
+        toString.addCode("return \"Fruit{\"\n");
+        fields.forEach(field -> toString.addCode(String.format("+ \" %s=\" + %s\n", field.name, field.name)));
+        toString.addStatement("+ \"}\"");
+
         return IntStream.range(0, numTypes)
             .mapToObj(i ->
                 TypeSpec
                     .classBuilder("Fruit" + i)
-                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL))
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+            )
             .peek(typeBuilder -> typeBuilder.addFields(fields))
+            .peek(typeBuilder -> typeBuilder.addMethod(toString.build()))
             .map(TypeSpec.Builder::build)
             .collect(Collectors.toList());
     }
 
-    private TypeSpec makeAggregator(List<TypeSpec> typeSpecs)
+    private List<TypeSpec> makeAggregators(int numAggregates, List<TypeSpec> typeSpecs)
     {
         final List<FieldSpec> fields = typeSpecs.stream()
             .map(type ->
@@ -117,19 +139,38 @@ class make implements Callable<Integer>
             )
             .collect(Collectors.toList());
 
-        final MethodSpec.Builder toString = MethodSpec.methodBuilder("toString")
-            .addModifiers(Modifier.PUBLIC)
-            .returns(String.class);
+        final List<MethodSpec> toStringMethods = IntStream.range(0, numAggregates)
+            .mapToObj(i ->
+                MethodSpec.methodBuilder("toString")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(String.class)
+                    .addCode("return \"Basket" + i + "{\"\n")
+                    .addCode(toStringFields(numTypes - i, fields).build())
+                    .addCode("+ \"}\";")
+                    .build()
+            )
+            .collect(Collectors.toList());
 
-        toString.addCode("return \"Basket{\"\n");
-        fields.forEach(field -> toString.addCode(String.format("+ \" %s=\" + %s\n", field.name, field.name)));
-        toString.addStatement("+ \"}\"");
+        return IntStream.range(0, numAggregates)
+            .mapToObj(i ->
+                TypeSpec.classBuilder("Basket" + i)
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addMethod(toStringMethods.get(i))
+                    .addFields(fields)
+                    .build()
+            )
+            .collect(Collectors.toList());
+    }
 
-        return TypeSpec.classBuilder("Basket")
-            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-            .addMethod(toString.build())
-            .addFields(fields)
-            .build();
+    private CodeBlock.Builder toStringFields(int numStringFields, List<FieldSpec> fields)
+    {
+        return IntStream.range(0, numStringFields)
+            .mapToObj(i -> String.format("+ \" %s=\" + %s\n", fields.get(i).name, fields.get(i).name))
+            .collect(
+                CodeBlock::builder
+                , CodeBlock.Builder::add
+                , (b1, b2) -> {}
+            );
     }
 
     public interface CheckedConsumer<T>
