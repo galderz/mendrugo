@@ -58,6 +58,11 @@ profiling: $(classfiles)
 > $(vm)/bin/native-image $(ap_agent),file=profile-cpu.svg,event=cpu $(main) | tee console-cpu.log
 .PHONY: profiling
 
+analyse:
+> rm -f target/*.csv
+> jbang ../analyse.java
+.PHONY: analyse
+
 clean:
 > rm -drf $(target_dir)
 .PHONY: clean

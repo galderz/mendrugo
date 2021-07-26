@@ -9,17 +9,16 @@ import picocli.CommandLine.Parameters;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.lang.annotation.Native;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,10 +36,8 @@ class analyse implements Callable<Integer>
     }
 
     @Override
-    public Integer call() throws Exception
+    public Integer call()
     {
-        System.out.println("Hello " + greeting);
-
         final Stream<File> jobs = Arrays.stream(
             Objects.requireNonNull(
                 new File("target")
@@ -50,41 +47,57 @@ class analyse implements Callable<Integer>
 
         jobs
             .map(this::toJobResult)
-            .map(this::toCsvLines)
-            .forEach(lines ->
-                {
-                    try
-                    {
-                        Files.write(Path.of("target/native-image.csv"), lines);
-                    }
-                    catch (IOException e)
-                    {
-                        throw new UncheckedIOException(e);
-                    }
-                }
-            );
+            .map(this::toCsv)
+            .forEach(this::writeCsvFile);
 
         return 0;
     }
 
-    Iterable<String> toCsvLines(JobResult job)
+    private void writeCsvFile(Csv csv)
     {
-        final List<String> values = job.phases().stream()
-            .map(phase ->
-                String.format(
-                    "%s,%s,%s,%s"
-                    , job.name
-                    , phase.name
-                    , phase.duration.toMillis()
-                    , phase.memory
-                )
+        try
+        {
+            final Path path = Path.of("target", String.format("%s.csv", csv.name));
+            Files.write(path, csv.lines, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    Csv toCsv(JobResult job)
+    {
+        final int numPhases = 8;
+        final AtomicInteger counter = new AtomicInteger();
+
+        final List<String> values = job.phases.stream()
+            .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numPhases))
+            .entrySet()
+            .stream()
+            .map(phaseRun ->
+                phaseRun.getValue().stream()
+                    .map(p -> p.duration.toMillis())
+                    .map(String::valueOf)
+                    .collect(
+                        Collectors.joining(
+                            ","
+                            , String.format("Run %s,", phaseRun.getKey() + 1)
+                            , String.format(",%s", job.name)
+                        )
+                    )
             )
             .collect(Collectors.toList());
 
+        final String header = job.phases.stream()
+            .limit(8)
+            .map(PhaseResult::name)
+            .collect(Collectors.joining(",", "Time (in ms),", ",Name"));
+
         List<String> result = new ArrayList<>();
-        result.add("Job,Phase,Time,Memory");
+        result.add(header);
         result.addAll(values);
-        return result;
+        return new Csv("native-image-time", result);
     }
 
     JobResult toJobResult(File job)
@@ -107,12 +120,12 @@ class analyse implements Callable<Integer>
 
     PhaseResult toPhaseResult(String line)
     {
-        final String[] elements = line.split(" ");
-        final String phase = elements[1].replace(":", "");
+        final String[] elements = line.split("\\s+");
+        final String phase = elements[1].replaceAll("[\\[\\]:]", "");
         final String duration = elements[2].replace(",", "");
-        final String memory = elements[2];
+        final String memory = elements[4];
         return new PhaseResult(
-            phase
+            Character.toUpperCase(phase.charAt(0)) + phase.substring(1)
             , Duration.ofMillis(Math.round(Double.parseDouble(duration)))
             , Double.parseDouble(memory)
         );
@@ -126,8 +139,11 @@ class analyse implements Callable<Integer>
         , List<PhaseResult> phases
     ) {}
 
-    record PhaseResult(String name, Duration duration, double memory)
-    {
-        // Duration in milliseconds, memory in GB
-    }
+    /**
+     * Duration in milliseconds.
+     * Memory in GB
+     */
+    record PhaseResult(String name, Duration duration, double memory) {}
+
+    record Csv(String name, Iterable<String> lines) {}
 }
