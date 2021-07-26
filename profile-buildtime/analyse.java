@@ -149,17 +149,11 @@ class analyse implements Callable<Integer>
             .entrySet()
             .stream()
             .map(phaseRun ->
-                phaseRun.getValue().stream()
-                    .filter(p -> !p.name.equals("Total"))
-                    .map(p -> p.duration.toMillis())
-                    .map(String::valueOf)
-                    .collect(
-                        Collectors.joining(
-                            ","
-                            , String.format("Run %s,", phaseRun.getKey() + 1)
-                            , String.format(",%s", job.name)
-                        )
-                    )
+                String.format(
+                    "%s,%s"
+                    , toPhaseTimeCsv(job.name, phaseRun.getKey(), phaseRun.getValue())
+                    , toPhaseMemoryCsv(job.name, phaseRun.getKey(), phaseRun.getValue())
+                )
             )
             .collect(Collectors.toList());
 
@@ -169,9 +163,39 @@ class analyse implements Callable<Integer>
             .collect(Collectors.joining(",", ",", ",Name"));
 
         List<String> result = new ArrayList<>();
-        result.add(header);
+        result.add(String.format("%s,%s", header, header));
         result.addAll(values);
         return new Csv("native-image-time-phases", result);
+    }
+
+    private String toPhaseTimeCsv(String name, int run, List<PhaseResult> phases)
+    {
+        return phases.stream()
+            .filter(p -> !p.name.equals("Total"))
+            .map(p -> p.duration.toMillis())
+            .map(String::valueOf)
+            .collect(
+                Collectors.joining(
+                    ","
+                    , String.format("Run %s,", run + 1)
+                    , String.format(",%s", name)
+                )
+            );
+    }
+
+    private String toPhaseMemoryCsv(String name, int run, List<PhaseResult> phases)
+    {
+        return phases.stream()
+            .filter(p -> !p.name.equals("Total"))
+            .map(PhaseResult::memory)
+            .map(String::valueOf)
+            .collect(
+                Collectors.joining(
+                    ","
+                    , String.format("Run %s,", run + 1)
+                    , String.format(",%s", name)
+                )
+            );
     }
 
     JobResult toJobResult(File job)
