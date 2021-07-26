@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
@@ -57,7 +58,7 @@ class analyse implements Callable<Integer>
             .forEach(this::writeCsvFile);
 
         writeCsvFile(toTotalCsv(jobResults));
-
+        writeCsvFile(toUsedReports(jobResults));
         return 0;
     }
 
@@ -72,6 +73,31 @@ class analyse implements Callable<Integer>
         {
             throw new UncheckedIOException(e);
         }
+    }
+
+    Csv toUsedReports(List<JobResult> jobs)
+    {
+        final String usedClasses = jobs.stream()
+            .map(JobResult::usedClasses)
+            .map(String::valueOf)
+            .collect(Collectors.joining(",", "Used Classes,", ""));
+
+        final String usedMethods = jobs.stream()
+            .map(JobResult::usedMethods)
+            .map(String::valueOf)
+            .collect(Collectors.joining(",", "Used Methods,", ""));
+
+        final String usedPackages = jobs.stream()
+            .map(JobResult::usedMethods)
+            .map(String::valueOf)
+            .collect(Collectors.joining(",", "Used Packages,", ""));
+
+        final String header = jobs.stream()
+            .map(JobResult::name)
+            .collect(Collectors.joining(",", ",", ""));
+
+        List<String> result = List.of(header, usedClasses, usedMethods, usedPackages);
+        return new Csv("native-image-used", result);
     }
 
     Csv toTotalCsv(List<JobResult> jobs)
@@ -150,20 +176,59 @@ class analyse implements Callable<Integer>
 
     JobResult toJobResult(File job)
     {
-        final String jobName = job.toPath().getFileName().toString();
-        try(Stream<String> lines = Files.lines(job.toPath().resolve("console.log")))
+        final Path jobPath = job.toPath();
+        final String jobName = jobPath.getFileName().toString();
+        try(Stream<String> lines = Files.lines(jobPath.resolve("console.log")))
         {
-            final List<PhaseResult> phases = lines
-                .filter(line -> line.startsWith("[") && !line.contains("("))
-                .map(this::toPhaseResult)
-                .collect(Collectors.toList());
-
-            return new JobResult(jobName, -1, -1, -1, phases);
+            final List<PhaseResult> phases = toPhases(lines);
+            final Path reportsPath = jobPath.resolve("reports");
+            final long usedClasses = countLines("used_classes", reportsPath);
+            final long usedMethods = countLines("used_methods", reportsPath);
+            final long usedPackages = countLines("used_packages", reportsPath);
+            return new JobResult(jobName, usedClasses, usedMethods, usedPackages, phases);
         }
         catch (IOException e)
         {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private long countLines(String prefix, Path path) {
+        final File directory = path.toFile();
+        final File[] found = directory.listFiles((x, name) -> name.startsWith(prefix));
+        if (found == null)
+        {
+            throw new IllegalStateException(String.format(
+                "Path %s not a directory"
+                , path
+            ));
+        }
+
+        if (found.length != 1)
+        {
+            throw new IllegalStateException(String.format(
+                "Expected only 1 file to be found with prefix %s in %s"
+                , prefix
+                , path
+            ));
+        }
+
+        try
+        {
+            return Files.lines(found[0].toPath()).count();
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private List<PhaseResult> toPhases(Stream<String> lines)
+    {
+        return lines
+            .filter(line -> line.startsWith("[") && !line.contains("("))
+            .map(this::toPhaseResult)
+            .collect(Collectors.toList());
     }
 
     PhaseResult toPhaseResult(String line)
@@ -181,9 +246,9 @@ class analyse implements Callable<Integer>
     
     static record JobResult(
         String name
-        , int usedClasses
-        , int usedMethods
-        , int usedPackages
+        , long usedClasses
+        , long usedMethods
+        , long usedPackages
         , List<PhaseResult> phases
     ) {}
 
