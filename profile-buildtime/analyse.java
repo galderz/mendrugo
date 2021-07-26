@@ -16,11 +16,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -108,7 +110,7 @@ class analyse implements Callable<Integer>
 
         final Map<Integer, List<PhaseResult>> totals = jobs.stream()
             .flatMap(jobResult -> jobResult.phases().stream())
-            .filter(phase -> phase.name.equals("Total"))
+            .filter(phase -> phase.phase.isTotal())
             .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numRuns));
 
         final List<String> values = IntStream
@@ -144,26 +146,33 @@ class analyse implements Callable<Integer>
         final int numPhases = 8;
         final AtomicInteger counter = new AtomicInteger();
 
+        final List<Phase> affectsMemory = List.of(Phase.CLASSLIST, Phase.ANALYSIS, Phase.COMPILE);
+
         final List<String> values = job.phases.stream()
             .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numPhases))
             .entrySet()
             .stream()
             .map(phaseRun ->
                 String.format(
-                    "%s,%s"
+                    "%s,%s,%s"
                     , toPhaseTimeCsv(job.name, phaseRun.getKey(), phaseRun.getValue())
-                    , toPhaseMemoryCsv(job.name, phaseRun.getKey(), phaseRun.getValue())
+                    , toPhaseMemoryCsv(job.name, phaseRun.getKey(), phaseRun.getValue(), Phase::notTotal)
+                    , toPhaseMemoryCsv(job.name, phaseRun.getKey(), phaseRun.getValue(), p -> p.contains(affectsMemory))
                 )
             )
             .collect(Collectors.toList());
 
         final String header = job.phases.stream()
             .limit(numPhases - 1)
-            .map(PhaseResult::name)
+            .map(p -> p.phase.toTitle())
+            .collect(Collectors.joining(",", ",", ",Name"));
+
+        final String affectsMemoryHeader = affectsMemory.stream()
+            .map(Phase::toTitle)
             .collect(Collectors.joining(",", ",", ",Name"));
 
         List<String> result = new ArrayList<>();
-        result.add(String.format("%s,%s", header, header));
+        result.add(String.format("%s,%s,%s", header, header, affectsMemoryHeader));
         result.addAll(values);
         return new Csv("native-image-phases", result);
     }
@@ -171,7 +180,7 @@ class analyse implements Callable<Integer>
     private String toPhaseTimeCsv(String name, int run, List<PhaseResult> phases)
     {
         return phases.stream()
-            .filter(p -> !p.name.equals("Total"))
+            .filter(p -> p.phase.notTotal())
             .map(p -> p.duration.toMillis())
             .map(String::valueOf)
             .collect(
@@ -183,10 +192,10 @@ class analyse implements Callable<Integer>
             );
     }
 
-    private String toPhaseMemoryCsv(String name, int run, List<PhaseResult> phases)
+    private String toPhaseMemoryCsv(String name, int run, List<PhaseResult> phases, Predicate<Phase> phaseFilter)
     {
         return phases.stream()
-            .filter(p -> !p.name.equals("Total"))
+            .filter(p -> phaseFilter.test(p.phase))
             .map(PhaseResult::memory)
             .map(String::valueOf)
             .collect(
@@ -262,7 +271,7 @@ class analyse implements Callable<Integer>
         final String duration = elements[2].replace(",", "");
         final String memory = elements[4];
         return new PhaseResult(
-            Character.toUpperCase(phase.charAt(0)) + phase.substring(1)
+            Phase.valueOf(phase.toUpperCase(Locale.ROOT))
             , Duration.ofMillis(Math.round(Double.parseDouble(duration)))
             , Double.parseDouble(memory)
         );
@@ -280,7 +289,40 @@ class analyse implements Callable<Integer>
      * Duration in milliseconds.
      * Memory in GB
      */
-    record PhaseResult(String name, Duration duration, double memory) {}
+    record PhaseResult(Phase phase, Duration duration, double memory) {}
 
     record Csv(String name, Iterable<String> lines) {}
+
+    enum Phase {
+        CLASSLIST
+        , SETUP
+        , ANALYSIS
+        , UNIVERSE
+        , COMPILE
+        , IMAGE
+        , WRITE
+        , TOTAL
+        ;
+
+        String toTitle()
+        {
+            return this.toString().charAt(0)
+                + this.toString().toLowerCase(Locale.ROOT).substring(1);
+        }
+
+        boolean isTotal()
+        {
+            return this == TOTAL;
+        }
+
+        boolean notTotal()
+        {
+            return !isTotal();
+        }
+
+        boolean contains(List<Phase> phases)
+        {
+            return phases.contains(this);
+        }
+    }
 }
