@@ -16,10 +16,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Command(name = "analyse", mixinStandardHelpOptions = true, version = "analyse 0.1",
@@ -45,10 +48,15 @@ class analyse implements Callable<Integer>
             )
         );
 
-        jobs
+        final List<JobResult> jobResults = jobs
             .map(this::toJobResult)
-            .map(this::toCsv)
+            .collect(Collectors.toList());
+
+        jobResults.stream()
+            .map(this::toPhaseCsv)
             .forEach(this::writeCsvFile);
+
+        writeCsvFile(toTotalCsv(jobResults));
 
         return 0;
     }
@@ -66,7 +74,46 @@ class analyse implements Callable<Integer>
         }
     }
 
-    Csv toCsv(JobResult job)
+    Csv toTotalCsv(List<JobResult> jobs)
+    {
+        final int numJobs = jobs.size();
+        final int numRuns = 10;
+        final AtomicInteger counter = new AtomicInteger();
+
+        final Map<Integer, List<PhaseResult>> totals = jobs.stream()
+            .flatMap(jobResult -> jobResult.phases().stream())
+            .filter(phase -> phase.name.equals("Total"))
+            .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numRuns));
+
+        final List<String> values = IntStream
+            .range(0, numRuns)
+            .mapToObj(i ->
+                IntStream
+                    .range(0, numJobs)
+                    .mapToObj(j -> totals.get(j).get(i))
+                    .map(p -> p.duration.toMillis())
+                    .map(String::valueOf)
+                    .collect(
+                        Collectors.joining(
+                            ","
+                            , String.format("Run %s,", i + 1)
+                            , ""
+                        )
+                    )
+            )
+            .collect(Collectors.toList());
+
+        final String header = jobs.stream()
+            .map(JobResult::name)
+            .collect(Collectors.joining(",", "Time (in ms),", ""));
+
+        List<String> result = new ArrayList<>();
+        result.add(header);
+        result.addAll(values);
+        return new Csv("native-image-time-total", result);
+    }
+
+    Csv toPhaseCsv(JobResult job)
     {
         final int numPhases = 8;
         final AtomicInteger counter = new AtomicInteger();
@@ -77,6 +124,7 @@ class analyse implements Callable<Integer>
             .stream()
             .map(phaseRun ->
                 phaseRun.getValue().stream()
+                    .filter(p -> !p.name.equals("Total"))
                     .map(p -> p.duration.toMillis())
                     .map(String::valueOf)
                     .collect(
@@ -90,14 +138,14 @@ class analyse implements Callable<Integer>
             .collect(Collectors.toList());
 
         final String header = job.phases.stream()
-            .limit(8)
+            .limit(numPhases - 1)
             .map(PhaseResult::name)
             .collect(Collectors.joining(",", "Time (in ms),", ",Name"));
 
         List<String> result = new ArrayList<>();
         result.add(header);
         result.addAll(values);
-        return new Csv("native-image-time", result);
+        return new Csv("native-image-time-phases", result);
     }
 
     JobResult toJobResult(File job)
