@@ -165,7 +165,7 @@ class analyse implements Callable<Integer>
         List<String> result = new ArrayList<>();
         result.add(String.format("%s,%s", header, header));
         result.addAll(values);
-        return new Csv("native-image-time-phases", result);
+        return new Csv("native-image-phases", result);
     }
 
     private String toPhaseTimeCsv(String name, int run, List<PhaseResult> phases)
