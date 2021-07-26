@@ -131,7 +131,7 @@ class analyse implements Callable<Integer>
 
         final String header = jobs.stream()
             .map(JobResult::name)
-            .collect(Collectors.joining(",", "Time (in ms),", ""));
+            .collect(Collectors.joining(",", ",", ""));
 
         List<String> result = new ArrayList<>();
         result.add(header);
@@ -166,7 +166,7 @@ class analyse implements Callable<Integer>
         final String header = job.phases.stream()
             .limit(numPhases - 1)
             .map(PhaseResult::name)
-            .collect(Collectors.joining(",", "Time (in ms),", ",Name"));
+            .collect(Collectors.joining(",", ",", ",Name"));
 
         List<String> result = new ArrayList<>();
         result.add(header);
