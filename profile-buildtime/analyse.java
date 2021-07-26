@@ -19,11 +19,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -59,8 +57,8 @@ class analyse implements Callable<Integer>
             .map(this::toPhaseCsv)
             .forEach(this::writeCsvFile);
 
-        writeCsvFile(toTotalCsv("native-image-totals", jobResults));
-        writeCsvFile(toUsedReports("native-image-totals", jobResults));
+        writeCsvFile(toTotalCsv(jobResults));
+        writeCsvFile(toUsedReports(jobResults));
         return 0;
     }
 
@@ -77,7 +75,7 @@ class analyse implements Callable<Integer>
         }
     }
 
-    Csv toUsedReports(String name, List<JobResult> jobs)
+    Csv toUsedReports(List<JobResult> jobs)
     {
         final String usedClasses = jobs.stream()
             .map(JobResult::usedClasses)
@@ -99,10 +97,10 @@ class analyse implements Callable<Integer>
             .collect(Collectors.joining(",", ",", ""));
 
         List<String> result = List.of(header, usedClasses, usedMethods, usedPackages);
-        return new Csv(name, result);
+        return new Csv("native-image-totals", result);
     }
 
-    Csv toTotalCsv(String name, List<JobResult> jobs)
+    Csv toTotalCsv(List<JobResult> jobs)
     {
         final int numJobs = jobs.size();
         final int numRuns = 10;
@@ -138,7 +136,7 @@ class analyse implements Callable<Integer>
         List<String> result = new ArrayList<>();
         result.add(header);
         result.addAll(values);
-        return new Csv(name, result);
+        return new Csv("native-image-totals", result);
     }
 
     Csv toPhaseCsv(JobResult job)
