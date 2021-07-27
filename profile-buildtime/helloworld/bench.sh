@@ -8,6 +8,10 @@ homeBench()
 {
     local graalvm_home=$1
     GRAALVM_HOME=$graalvm_home make clean
+
+    mkdir -p "target/$graalvm_home"
+    touch "target/$graalvm_home/console.log"
+
     GRAALVM_HOME=$graalvm_home make reports | tee -a "target/$graalvm_home/console.log"
     for i in `seq 1 10`
     do
@@ -15,7 +19,7 @@ homeBench()
     done
 }
 
-for graalvm_home in graalvm-20.3-dev graalvm-21.2-dev
+for graalvm_home in "graalvm-ce-java11-20.3.3" "graalvm-ce-java11-21.0.0.2" "graalvm-ce-java11-21.1.0" "graalvm-ce-java11-21.2.0" "graalvm-21.3-dev"
 do
     homeBench $graalvm_home
 done
