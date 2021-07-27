@@ -12,7 +12,7 @@ homeBench()
     mkdir -p "target/$graalvm_home"
     touch "target/$graalvm_home/console.log"
 
-    GRAALVM_HOME=$graalvm_home make reports | tee -a "target/$graalvm_home/console.log"
+    GRAALVM_HOME=$graalvm_home make reports
     for i in `seq 1 10`
     do
         GRAALVM_HOME=$graalvm_home make | tee -a "target/$graalvm_home/console.log"
