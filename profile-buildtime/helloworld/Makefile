@@ -60,7 +60,7 @@ profiling: $(classfiles)
 
 analyse:
 > rm -f target/*.csv
-> jbang ../common/analyse.java
+> jbang ../analyse.java
 .PHONY: analyse
 
 clean:
