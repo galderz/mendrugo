@@ -144,7 +144,7 @@ class analyse implements Callable<Integer>
         final int numPhases = 8;
         final AtomicInteger counter = new AtomicInteger();
 
-        final List<Phase> affectsMemory = List.of(Phase.CLASSLIST, Phase.ANALYSIS, Phase.COMPILE);
+        final List<Phase> affectsMemory = List.of(Phase.CLASSLIST, Phase.ANALYSIS, Phase.COMPILE, Phase.IMAGE);
 
         final List<String> values = job.phases.stream()
             .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numPhases))
@@ -307,6 +307,7 @@ class analyse implements Callable<Integer>
             return this.toString().charAt(0)
                 + this.toString().toLowerCase(Locale.ROOT).substring(1);
         }
+
 
         boolean isTotal()
         {
