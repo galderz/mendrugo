@@ -257,7 +257,7 @@ class analyse implements Callable<Integer>
     private List<PhaseResult> toPhases(Stream<String> lines)
     {
         return lines
-            .filter(line -> line.startsWith("[") && !line.contains("("))
+            .filter(line -> line.endsWith("GB") && !line.contains("("))
             .map(this::toPhaseResult)
             .collect(Collectors.toList());
     }
