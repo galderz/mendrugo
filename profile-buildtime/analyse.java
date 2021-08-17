@@ -15,6 +15,8 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,12 +44,13 @@ class analyse implements Callable<Integer>
     @Override
     public Integer call()
     {
-        final Stream<File> jobs = Arrays.stream(
-            Objects.requireNonNull(
-                new File("target")
-                    .listFiles(File::isDirectory)
+        final Stream<File> jobs = Arrays
+            .stream(
+                Objects.requireNonNull(
+                    new File("target").listFiles(File::isDirectory)
+                )
             )
-        );
+            .sorted();
 
         final List<JobResult> jobResults = jobs
             .map(this::toJobResult)
