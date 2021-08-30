@@ -17,9 +17,16 @@ MANDREL_BOOT_JAVA_HOME=/opt/mandrel-boot-java
 substrate := $(MANDREL_HOME)/substratevm
 substratejavafiles = $(shell find $(substrate)/ -type f -name '*.java')
 graalvmhome = $(MANDREL_HOME)/sdk/latest_graalvm_home
+
 nativeimage = $(graalvmhome)/bin/native-image
+ifdef VERBOSE
+  nativeimage += --verbose
+endif
+
 imageagent = $(graalvmhome)/lib/libnative-image-agent.so
 mx = $(MX_HOME)/mx
+bin_jar = $(graalvmhome)/bin/jar
+javac = $(graalvmhome)/bin/javac
 
 classfiles = $(patsubst %.java, %.class, $(wildcard *.java))
 jar = example.jar
@@ -40,10 +47,10 @@ $(program): $(jar) $(nativeimage)
 > $(invokenative) -jar $(jar) $(program)
 
 $(jar): $(classfiles) $(nativeproperties) $(reflectjson)
-> jar cvfe $@ Example $(classfiles) $(nativeproperties) $(reflectjson)
+> $(bin_jar) cvfe $@ Example $(classfiles) $(nativeproperties) $(reflectjson)
 
 %.class: %.java
-> javac -d . $<
+> $(javac) -d . $<
 
 $(nativeimage): $(substratejavafiles)
 > cd $(substrate)
