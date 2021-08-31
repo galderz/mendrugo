@@ -12,18 +12,29 @@ endif
 
 JAVA_FILES = $(shell find src/ -type f -name '*.java')
 
-NATIVEFLAGS += -ea
-NATIVEFLAGS += --no-fallback
-NATIVEFLAGS += --verbose
-
 program := target/example
 jar := target/example.jar
+
+native_image += native-image
+
+ifdef EXCLUDE
+  native_image += --exclude-config netty-common-*.jar META-INF\/native-image\/.*.properties
+endif
+
+native_image += -jar
+native_image += $(jar)
+native_image += -ea
+native_image += --no-fallback
+
+ifdef VERBOSE
+  native_image += --verbose
+endif
 
 run: $(program)
 > ./$(program)
 
 $(program): $(jar)
-> native-image -jar $(jar) ${NATIVEFLAGS} $(program)
+> $(native_image) $(program)
 
 $(jar): pom.xml $(JAVA_FILES)
 > mvn package
