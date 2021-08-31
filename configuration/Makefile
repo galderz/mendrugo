@@ -10,7 +10,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-MANDREL_HOME=/opt/mandrel
+MANDREL_HOME ?= /opt/mandrel
 MX_HOME=/opt/mx
 MANDREL_BOOT_JAVA_HOME=/opt/mandrel-boot-java
 
@@ -91,19 +91,19 @@ skip-reflect-debug:
 > ./$(program) getInstance
 .PHONY: skip-reflect-debug
 
-nosecurity := $(invokenative)
-nosecurity += --exclude-config example.*.jar META-INF\/native-image\/.*.properties
-nosecurity += -jar $(jar)
+no_args := $(invokenative)
+no_args += --exclude-config example.*.jar META-INF\/native-image\/.*.properties
+no_args += -jar $(jar)
 
-skip-security: $(jar) $(nativeimage)
-> $(nosecurity) $(program)
+skip-args: $(jar) $(nativeimage)
+> $(no_args) $(program)
 > ./$(program) getInstance
-.PHONY: skip-security
+.PHONY: skip-args
 
-skip-security-debug:
-> $(nosecurity) --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000 $(program)
+skip-args-debug:
+> $(no_args) --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000 $(program)
 > ./$(program) getInstance
-.PHONY: skip-security-debug
+.PHONY: skip-args-debug
 
 noboth := $(invokenative)
 noboth += --exclude-config example.*.jar META-INF\/native-image\/.*.properties
