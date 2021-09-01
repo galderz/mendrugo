@@ -10,64 +10,72 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+all: run
+
+# Mandrel
+MANDREL_BOOT ?= /opt/mandrel-boot
 MANDREL_HOME ?= /opt/mandrel
-MX_HOME=/opt/mx
-MANDREL_BOOT_JAVA_HOME=/opt/mandrel-boot-java
+MX_HOME ?= /opt/mx
 
+mx = $(MX_HOME)/mx
 substrate := $(MANDREL_HOME)/substratevm
-substratejavafiles = $(shell find $(substrate)/ -type f -name '*.java')
-graalvmhome = $(MANDREL_HOME)/sdk/latest_graalvm_home
+substrate_java_files = $(shell find $(substrate)/ -type f -name '*.java')
 
-nativeimage = $(graalvmhome)/bin/native-image
+graalvm_home = $(MANDREL_HOME)/sdk/latest_graalvm_home
+bin_jar = $(graalvm_home)/bin/jar
+bin_javac = $(graalvm_home)/bin/javac
+bin_native_image = $(graalvm_home)/bin/native-image
+imageagent = $(graalvm_home)/lib/libnative-image-agent.so
+
+$(bin_native_image): $(substrate_java_files)
+> cd $(substrate)
+> JAVA_HOME=$(MANDREL_BOOT) $(mx) build
+
+$(image_agent): $(bin_native_image)
+> native-image --macro:native-image-agent-library
+
+do_native_image += $(bin_native_image)
+do_native_image += -H:+ReportExceptionStackTraces
+do_native_image += --no-fallback
+
 ifdef VERBOSE
-  nativeimage += --verbose
+  do_native_image += --verbose
 endif
 
-imageagent = $(graalvmhome)/lib/libnative-image-agent.so
-mx = $(MX_HOME)/mx
-bin_jar = $(graalvmhome)/bin/jar
-javac = $(graalvmhome)/bin/javac
+ifeq ($(DEBUG),driver)
+  do_native_image += --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
+else ifdef DEBUG
+  do_native_image += --debug-attach=*:8000
+endif
 
+# Project
 classfiles = $(patsubst %.java, %.class, $(wildcard *.java))
 jar = example.jar
 program = a.out
 
-invokenative += $(nativeimage)
-invokenative += -H:+ReportExceptionStackTraces
-invokenative += --no-fallback
-
 nativeproperties = META-INF/native-image/native-image.properties
 reflectjson = META-INF/native-image/reflect-config.json
 
-run: $(program)
+ifeq ($(SKIP),reflect)
+  do_native_image += --exclude-config example.*.jar META-INF\/native-image\/.*.json
+  do_native_image += -jar $(jar)
+else ifeq ($(SKIP),args)
+  do_native_image += -jar $(jar)
+  do_native_image += --exclude-config example.*.jar META-INF\/native-image\/.*.properties
+endif
+
+run: $(jar) $(bin_native_image)
+> $(do_native_image) -jar $(jar) $(program)
 > ./$(program) getInstance
 .PHONY: run
-
-$(program): $(jar) $(nativeimage)
-> $(invokenative) -jar $(jar) $(program)
 
 $(jar): $(classfiles) $(nativeproperties) $(reflectjson)
 > $(bin_jar) cvfe $@ Example $(classfiles) $(nativeproperties) $(reflectjson)
 
 %.class: %.java
-> $(javac) -d . $<
+> $(bin_javac) -d . $<
 
-$(nativeimage): $(substratejavafiles)
-> cd $(substrate)
-> JAVA_HOME=$(MANDREL_BOOT_JAVA_HOME) $(mx) build
-
-debug:
-> $(invokenative) -jar $(jar) --debug-attach=*:8000 $(program)
-.PHONY: debug
-
-debug-driver:
-> $(invokenative) -jar $(jar) --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000 $(program)
-.PHONY: debug
-
-$(imageagent): $(nativeimage)
-> native-image --macro:native-image-agent-library
-
-jvm-run: $(jar) $(imageagent)
+jvm-run: $(jar) $(image_agent)
 > java -agentlib:native-image-agent=config-output-dir=META-INF/native-image -jar $(jar)
 .PHONY: jvm-run
 
@@ -76,41 +84,3 @@ clean:
 > rm -f *.jar
 > rm -f *.class
 .PHONY: clean
-
-noreflect := $(invokenative)
-noreflect += --exclude-config example.*.jar META-INF\/native-image\/.*.json
-noreflect += -jar $(jar)
-
-skip-reflect: $(jar) $(nativeimage)
-> $(noreflect) $(program)
-> ./$(program) getInstance
-.PHONY: skip-reflect
-
-skip-reflect-debug:
-> $(noreflect) --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000 $(program)
-> ./$(program) getInstance
-.PHONY: skip-reflect-debug
-
-no_args := $(invokenative)
-no_args += --exclude-config example.*.jar META-INF\/native-image\/.*.properties
-no_args += -jar $(jar)
-
-skip-args: $(jar) $(nativeimage)
-> $(no_args) $(program)
-> ./$(program) getInstance
-.PHONY: skip-args
-
-skip-args-debug:
-> $(no_args) --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000 $(program)
-> ./$(program) getInstance
-.PHONY: skip-args-debug
-
-noboth := $(invokenative)
-noboth += --exclude-config example.*.jar META-INF\/native-image\/.*.properties
-noboth += --exclude-config example.*.jar META-INF\/native-image\/.*.json
-noboth += -jar $(jar)
-
-skip-both: $(jar) $(nativeimage)
-> $(noboth) $(program)
-> ./$(program) getInstance
-.PHONY: skip-both
