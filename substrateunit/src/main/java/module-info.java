@@ -1,3 +1,3 @@
 module org.example.substrateunit {
-    requires jdk.internal.vm.compiler;
+    requires jdk.internal.vm.ci;
 }
