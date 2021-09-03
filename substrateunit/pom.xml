@@ -21,13 +21,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.graalvm.nativeimage</groupId>
-            <artifactId>pointsto</artifactId>
-            <version>${graalvm.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.nativeimage</groupId>
-            <artifactId>svm</artifactId>
+            <groupId>org.graalvm.compiler</groupId>
+            <artifactId>compiler</artifactId>
             <version>${graalvm.version}</version>
         </dependency>
 
@@ -60,7 +55,7 @@
                 <configuration>
                     <compilerArgs>
                         <arg>--add-exports</arg>
-                        <arg>jdk.internal.vm.ci/jdk.vm.ci.services=ALL-UNNAMED</arg>
+                        <arg>jdk.internal.vm.ci/jdk.vm.ci.services=org.example.substrateunit</arg>
                         <arg>--add-modules</arg>
                         <arg>jdk.internal.vm.ci</arg>
                     </compilerArgs>
@@ -71,7 +66,11 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M5</version>
                 <configuration>
-                    <argLine>-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI --add-exports=jdk.internal.vm.ci/jdk.vm.ci.services=ALL-UNNAMED</argLine>
+                    <argLine>
+                        -XX:+UnlockExperimentalVMOptions
+                        -XX:+EnableJVMCI
+                        --add-exports=jdk.internal.vm.ci/jdk.vm.ci.services=org.example.substrateunit
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>
