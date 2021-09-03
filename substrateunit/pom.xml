@@ -14,6 +14,8 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <module.name>org.example.substrateunit</module.name>
+
         <hamcrest.version>2.2</hamcrest.version>
         <junit.version>5.7.2</junit.version>
         <graalvm.version>21.2.0</graalvm.version>
@@ -56,13 +58,13 @@
                     <compilerArgs>
                         <arg>-verbose</arg>
                         <arg>--add-exports</arg>
-                        <arg>jdk.internal.vm.ci/jdk.vm.ci.services=org.example.substrateunit</arg>
+                        <arg>jdk.internal.vm.ci/jdk.vm.ci.services=${module.name}</arg>
                         <arg>--add-exports</arg>
-                        <arg>jdk.internal.vm.compiler/org.graalvm.compiler.serviceprovider=org.example.substrateunit</arg>
+                        <arg>jdk.internal.vm.compiler/org.graalvm.compiler.serviceprovider=${module.name}</arg>
                         <arg>--add-modules</arg>
                         <arg>jdk.internal.vm.ci</arg>
                         <arg>--upgrade-module-path</arg>
-                        <arg>${settings.localRepository}/org/graalvm/compiler/compiler/21.2.0</arg>
+                        <arg>${settings.localRepository}/org/graalvm/compiler/compiler/${graalvm.version}</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -74,8 +76,8 @@
                     <argLine>
                         -XX:+UnlockExperimentalVMOptions
                         -XX:+EnableJVMCI
-                        --add-exports=jdk.internal.vm.ci/jdk.vm.ci.services=org.example.substrateunit
-                        --add-exports=jdk.internal.vm.compiler/org.graalvm.compiler.serviceprovider=org.example.substrateunit
+                        --add-exports=jdk.internal.vm.ci/jdk.vm.ci.services=${module.name}
+                        --add-exports=jdk.internal.vm.compiler/org.graalvm.compiler.serviceprovider=${module.name}
                         --upgrade-module-path ${settings.localRepository}/org/graalvm/compiler/compiler/21.2.0
                     </argLine>
                 </configuration>
