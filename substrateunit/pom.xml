@@ -54,10 +54,15 @@
                 <version>3.8.1</version>
                 <configuration>
                     <compilerArgs>
+                        <arg>-verbose</arg>
                         <arg>--add-exports</arg>
                         <arg>jdk.internal.vm.ci/jdk.vm.ci.services=org.example.substrateunit</arg>
+                        <arg>--add-exports</arg>
+                        <arg>jdk.internal.vm.compiler/org.graalvm.compiler.serviceprovider=org.example.substrateunit</arg>
                         <arg>--add-modules</arg>
                         <arg>jdk.internal.vm.ci</arg>
+                        <arg>--upgrade-module-path</arg>
+                        <arg>/Users/g/.m2/repository/org/graalvm/compiler/compiler/21.2.0</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -67,9 +72,12 @@
                 <version>3.0.0-M5</version>
                 <configuration>
                     <argLine>
+                        -verbose
                         -XX:+UnlockExperimentalVMOptions
                         -XX:+EnableJVMCI
                         --add-exports=jdk.internal.vm.ci/jdk.vm.ci.services=org.example.substrateunit
+                        --add-exports=jdk.internal.vm.compiler/org.graalvm.compiler.serviceprovider=org.example.substrateunit
+                        --upgrade-module-path /Users/g/.m2/repository/org/graalvm/compiler/compiler/21.2.0
                     </argLine>
                 </configuration>
             </plugin>
