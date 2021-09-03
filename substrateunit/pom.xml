@@ -76,7 +76,7 @@
                         -XX:+EnableJVMCI
                         --add-exports=jdk.internal.vm.ci/jdk.vm.ci.services=${module.name}
                         --add-exports=jdk.internal.vm.compiler/org.graalvm.compiler.serviceprovider=${module.name}
-                        --upgrade-module-path ${settings.localRepository}/org/graalvm/compiler/compiler/21.2.0
+                        --upgrade-module-path ${settings.localRepository}/org/graalvm/compiler/compiler/${graalvm.version}
                     </argLine>
                 </configuration>
             </plugin>
