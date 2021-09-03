@@ -61,8 +61,6 @@
                         <arg>jdk.internal.vm.ci/jdk.vm.ci.services=${module.name}</arg>
                         <arg>--add-exports</arg>
                         <arg>jdk.internal.vm.compiler/org.graalvm.compiler.serviceprovider=${module.name}</arg>
-                        <arg>--add-modules</arg>
-                        <arg>jdk.internal.vm.ci</arg>
                         <arg>--upgrade-module-path</arg>
                         <arg>${settings.localRepository}/org/graalvm/compiler/compiler/${graalvm.version}</arg>
                     </compilerArgs>
