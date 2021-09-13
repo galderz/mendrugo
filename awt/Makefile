@@ -46,8 +46,10 @@ $(program): $(jar) $(bin_native_image)
 $(jar): $(classfiles)
 > $(bin)/jar cvfe $@ Example $(classfiles)
 > $(bin)/java -agentlib:native-image-agent=config-output-dir=META-INF/native-image -jar $@
+> rm -f img.png
 > $(bin)/jar cvfe $@ Example $(classfiles) META-INF
 > $(bin)/java -jar $@
+> rm -f img.png
 
 %.class: %.java
 > $(bin)/javac -d . $<
@@ -56,4 +58,5 @@ clean:
 > rm -f a.out
 > rm -f *.jar
 > rm -f *.class
+> rm -f *.png
 .PHONY: clean
