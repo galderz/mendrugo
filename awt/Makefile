@@ -11,39 +11,42 @@ endif
 .RECIPEPREFIX = >
 
 # GraalVM
+bin = $(graalvm_home)/bin
 #graalvm_home = $(MANDREL_HOME)/sdk/latest_graalvm_home
-graalvm_home = /opt/graalvm-ce-java11-21.2.0
-bin_jar = $(graalvm_home)/bin/jar
-bin_javac = $(graalvm_home)/bin/javac
-bin_native_image = $(graalvm_home)/bin/native-image
-#image_agent = $(graalvm_home)/lib/libnative-image-agent.so
+graalvm_home := /opt/graalvm-ce-java11-21.2.0
 
-do_native_image += $(bin_native_image)
-do_native_image += -H:+ReportExceptionStackTraces
-do_native_image += --no-fallback
+native_image += $(bin)/native-image
+native_image += -H:+ReportExceptionStackTraces
+native_image += --no-fallback
 
 ifdef VERBOSE
-  do_native_image += --verbose
+  native_image += --verbose
 endif
 
 ifeq ($(DEBUG),driver)
-  do_native_image += --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
+  native_image += --vm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
 else ifdef DEBUG
-  do_native_image += --debug-attach=*:8000
+  native_image += --debug-attach=*:8000
 endif
 
 # Project
-classfiles = $(patsubst %.java, %.class, $(wildcard *.java))
-jar = example.jar
-program = a.out
+classfiles := $(patsubst %.java, %.class, $(wildcard *.java))
+jar := example.jar
+program := a.out
 
 $(program): $(jar) $(bin_native_image)
-> $(do_native_image) -jar $(jar) $(program)
+> $(native_image) -jar $(jar) $(program)
 > ./$(program)
+.PHONY: $(program)
 
 $(jar): $(classfiles)
-> $(bin_jar) cvfe $@ Example $(classfiles)
+> $(bin)/jar cvfe $@ Example $(classfiles)
 
 %.class: %.java
-> $(bin_javac) -d . $<
+> $(bin)/javac -d . $<
 
+clean:
+> rm -f a.out
+> rm -f *.jar
+> rm -f *.class
+.PHONY: clean
