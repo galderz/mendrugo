@@ -29,7 +29,7 @@ mvn += JAVA_HOME=$(java_home)
 mvn += ./mvnw
 
 $(exec): $(sources)
-> $(mvn) package -Dnative
+> $(mvn) package -Dnative -Dquarkus.native.additional-build-args=-Dawt.toolkit=sun.awt.HeadlessToolkit
 > ./$(exec)
 
 $(jar): $(sources)
