@@ -12,7 +12,7 @@ endif
 
 comma := ,
 
-GRAALVM_HOME ?= graalvm-21.2-dev
+GRAALVM_HOME ?= graalvm-ce-java11-21.3-dev
 AP_HOME ?= /opt/async-profiler
 NAME ?= $(GRAALVM_HOME)
 EXTRA_ARGS ?=
@@ -45,7 +45,7 @@ $(target_dir):
 
 reports: $(classfiles)
 > cd $(target_dir)
-> $(vm)/bin/native-image $(main) $(args) -H:+PrintAnalysisCallTree
+> $(vm)/bin/native-image $(main) $(args) -H:+PrintAnalysisCallTree -H:+PrintPointsToStatistics
 > wc -l reports/used_methods*.txt
 > wc -l reports/used_classes*.txt
 > wc -l reports/used_packages*.txt

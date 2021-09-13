@@ -38,6 +38,7 @@ bench:
 > $(mvn) package -DskipTests -Pnative
 .PHONY: bench
 
+# Can be useful but slow: -Dquarkus.native.additional-build-args=-H:+PrintPointsToStatistics
 reports: $(mvnw)
 > cd $(app)
 > $(mvn) package -DskipTests -Pnative -Dquarkus.native.enable-reports
