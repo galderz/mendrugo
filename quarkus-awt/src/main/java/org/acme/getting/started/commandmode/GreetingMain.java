@@ -11,6 +11,9 @@ public class GreetingMain implements QuarkusApplication {
     @Inject
     GreetingService service;
 
+    @Inject
+    ImageService imageService;
+
     @Override
     public int run(String... args) {
 
@@ -19,6 +22,8 @@ public class GreetingMain implements QuarkusApplication {
         } else {
             System.out.println(service.greeting("commando"));
         }
+
+        imageService.resize();
 
         return 0;
     }
