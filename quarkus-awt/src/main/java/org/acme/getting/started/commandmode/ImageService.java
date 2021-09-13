@@ -2,7 +2,9 @@ package org.acme.getting.started.commandmode;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.imageio.ImageIO;
-import java.awt.*;
+
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
