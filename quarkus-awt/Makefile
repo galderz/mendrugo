@@ -11,31 +11,33 @@ endif
 .RECIPEPREFIX = >
 
 # Shared
+JAVA_HOME ?= /opt/graalvm-ce-java11-21.2.0
 
 # Mandrel
 
 # Quarkus
 
 # Project
-java_home := /opt/graalvm-ce-java11-21.2.0
-sources := $(shell find src -type f -name '*')
-sources += pom.xml
-target_dir = target
-
-exec := $(target_dir)/quarkus-awt-1.0.0-SNAPSHOT-runner
-jar := $(target_dir)/quarkus-app/quarkus-run.jar
-java := $(java_home)/bin/java
-mvn += JAVA_HOME=$(java_home)
+exec = $(target_dir)/quarkus-awt-1.0.0-SNAPSHOT-runner
+jar = $(target_dir)/quarkus-app/quarkus-run.jar
+java = $(JAVA_HOME)/bin/java
+mvn += JAVA_HOME=$(JAVA_HOME)
 mvn += ./mvnw
+sources += $(shell find src -type f -name '*')
+sources += pom.xml
+target_dir := target
 
 $(exec): $(sources)
-> $(mvn) package -Dnative -Dquarkus.native.additional-build-args=-Dawt.toolkit=sun.awt.HeadlessToolkit
-> ./$(exec)
+> $(mvn) package -Dnative
+> ./$@
+
+run-jar: $(jar)
+> $(java) -jar $<
+.PHONY: run-jar
 
 $(jar): $(sources)
 > $(mvn) package
-> touch $(jar)
-> $(java) -jar $(jar)
+> touch $@
 
 clean:
 > $(mvn) clean
