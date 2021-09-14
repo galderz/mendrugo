@@ -24,6 +24,11 @@ quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
 quarkus_version := 999-SNAPSHOT
 
+ifndef VALIDATE
+  quarkus_args += -Denforcer.skip
+  quarkus_args += -Dformat.skip
+endif
+
 # Mandrel
 
 # Project
@@ -58,7 +63,7 @@ clean:
 # Quarkus Targets
 $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)
-> $(mvn) install -DskipTests -pl core/runtime,devtools/maven,extensions/arc/deployment -am -Denforcer.skip -Dformat.skip
+> $(mvn) install -DskipTests -pl core/runtime,devtools/maven,extensions/arc/deployment -am $(quarkus_args)
 > touch $@
 
 clean-quarkus:
