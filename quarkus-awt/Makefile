@@ -16,8 +16,11 @@ mvn += JAVA_HOME=$(JAVA_HOME)
 mvn += ./mvnw
 
 # Quarkus Variables
+TEST ?= awt
+
 quarkus_home := /opt/quarkus-quarkus
 quarkus_jar_core = $(quarkus_home)/core/runtime/target/quarkus-core-$(quarkus_version).jar
+quarkus_it_test = $(quarkus_home)/integration-tests/$(TEST)/target/quarkus-integration-test-$(TEST)-$(quarkus_version).jar
 quarkus_overrides += -Dquarkus-plugin.version=$(quarkus_version)
 quarkus_overrides += -Dquarkus.platform.version=$(quarkus_version)
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
@@ -35,17 +38,20 @@ endif
 exec = $(target_dir)/quarkus-awt-1.0.0-SNAPSHOT-runner
 jar = $(target_dir)/quarkus-app/quarkus-run.jar
 java = $(JAVA_HOME)/bin/java
-native_args := -Dnative
+quarkus_native_args := -Dnative
 sources += $(shell find src -type f -name '*')
 sources += pom.xml
 target_dir := target
 
-ifdef VERBOSE
-  native_args += -Dquarkus.native.additional-build-args=-H:+PrintClassInitialization
+# Double escape for native arguments containing `,`:
+# E.g. NATIVE_ARGS=--trace-class-initialization=sun.awt.AWTAccessor\\\\,java.awt.Toolkit\\\\,java.awt.Color make test-tika
+# Or: NATIVE_ARGS=-H:+PrintAnalysisCallTree
+ifdef NATIVE_ARGS
+  quarkus_native_args += -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
 endif
 
 $(exec): $(sources) $(quarkus_jar_core)
-> $(mvn) package $(quarkus_overrides) $(native_args)
+> $(mvn) package $(quarkus_overrides) $(quarkus_native_args)
 > ./$@
 
 run-jar: $(jar)
@@ -57,14 +63,24 @@ $(jar): $(sources) $(quarkus_jar_core) $(quarkus_jar_maven)
 > touch $@
 
 clean:
-> $(mvn) clean
+> $(mvn) clean $(quarkus_overrides)
 .PHONY: clean
 
 # Quarkus Targets
 $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)
-> $(mvn) install -DskipTests -pl core/runtime,devtools/maven,extensions/arc/deployment -am $(quarkus_args)
+> $(mvn) install -pl core/runtime,devtools/maven,extensions/arc/deployment,extensions/awt/deployment -DskipTests -am $(quarkus_args) $(quarkus_native_args)
 > touch $@
+
+$(quarkus_it_test): $(quarkus_sources)
+> cd $(quarkus_home)
+> $(mvn) install -pl integration-tests/$(TEST) -DskipTests -am $(quarkus_args)
+> touch $@
+
+test: $(quarkus_it_test)
+> cd $(quarkus_home)
+> $(mvn) install -pl integration-tests/$(TEST) -Dnative -Dquarkus.log.level=TRACE $(quarkus_args) $(quarkus_native_args)
+.PHONY: test
 
 clean-quarkus:
 > cd $(quarkus_home)
