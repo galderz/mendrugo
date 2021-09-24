@@ -39,10 +39,6 @@ $(program): $(jar) $(bin_native_image)
 > ./$(program)
 .PHONY: $(program)
 
-# Even if environment is headless,
-# default toolkit in JVM is set to sun.awt.X11.XToolkit,
-# and that needs to be looked up by reflection,
-# even if in the end it uses sun.awt.HeadlessToolkit.
 $(jar): $(classfiles)
 > $(bin)/jar cvfe $@ Example $(classfiles)
 > $(bin)/java -agentlib:native-image-agent=config-output-dir=META-INF/native-image -jar $@
