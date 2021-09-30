@@ -47,6 +47,9 @@ $(program): $(jar) $(native_image)
 > ./$(program)
 .PHONY: $(program)
 
+# Example use for NO_AGENT:
+# rm -f example.jar && MANDREL_BIN=/opt/mandrel-java11-21.2.0.1-Final NO_AGENT=true make
+
 $(jar): $(classfiles)
 ifndef NO_AGENT
 > $(bin)/jar cvfe $@ Example $(classfiles)
