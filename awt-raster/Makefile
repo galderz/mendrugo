@@ -48,8 +48,10 @@ $(program): $(jar) $(native_image)
 .PHONY: $(program)
 
 $(jar): $(classfiles)
+ifndef NO_AGENT
 > $(bin)/jar cvfe $@ Example $(classfiles)
 > $(bin)/java -agentlib:native-image-agent=config-output-dir=META-INF/native-image -jar $@
+endif
 > $(bin)/jar cvfe $@ Example $(classfiles) META-INF
 > $(bin)/java -jar $@
 
