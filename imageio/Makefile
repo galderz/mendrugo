@@ -8,7 +8,11 @@ source-read = $(main-read).java
 exec-read = $(shell echo $(main-read) | tr A-Z a-z)
 folder-read = read
 
-all: build-write native-config-write native-write run-write build-read native-config-read native-read run-read
+all: write read
+
+write: build-write native-config-write native-write run-write
+
+read: build-read native-config-read native-read run-read
 
 build-write:
 	$(call build,$(folder-write),$(source-write))
@@ -41,7 +45,7 @@ native-read:
 
 define native
 cd ${1} && \
-    native-image ${2} ${3}
+    native-image ${2} -g ${3}
 endef
 
 run-write:
