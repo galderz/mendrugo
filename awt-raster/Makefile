@@ -26,6 +26,7 @@ substrate_java_files = $(shell find $(substrate)/ -type f -name '*.java')
 call_native += $(bin)/native-image
 call_native += -H:+ReportExceptionStackTraces
 call_native += --no-fallback
+call_native += -H:+TraceNativeToolUsage
 
 ifdef VERBOSE
   call_native += --verbose
@@ -42,8 +43,8 @@ classfiles := $(patsubst %.java, %.class, $(wildcard *.java))
 jar := example.jar
 program := a.out
 
-$(program): $(jar) $(native_image)
-> $(native_image) -jar $(jar) $(program)
+$(program): $(native_image) $(jar)
+> $(call_native) -jar $(jar) $(program)
 > ./$(program)
 .PHONY: $(program)
 
@@ -66,3 +67,14 @@ clean:
 > rm -f *.jar
 > rm -f *.class
 .PHONY: clean
+
+# Mandrel Targets
+# $(native_image): $(substrate_java_files)
+# > cd /opt
+# > JAVA_HOME=$(MANDREL_BOOT) \
+# > $(MANDREL_BOOT)/bin/java \
+# > -ea \
+# > $(MANDREL_PACKAGING)/build.java \
+# > --mx-home $(MX_HOME) \
+# > --mandrel-repo $(MANDREL_HOME) \
+# > --mandrel-home $(MANDREL_BIN)
