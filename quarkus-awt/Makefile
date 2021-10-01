@@ -10,9 +10,21 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+# Mandrel
+MANDREL_BIN ?= /opt/mandrel-java11-21.2
+MANDREL_BOOT ?= /opt/adopt-11.0.12+7
+MANDREL_HOME ?= /opt/mandrel-21.2
+MANDREL_PACKAGING ?= /opt/mandrel-packaging
+MX_HOME ?= /opt/mx
+
+mx = $(MX_HOME)/mx
+native_image = $(MANDREL_BIN)/bin/native-image
+substrate := $(MANDREL_HOME)/substratevm
+substrate_java_files = $(shell find $(substrate)/ -type f -name '*.java')
+
 # Shared
-JAVA_HOME ?= /opt/graalvm-ce-java11-21.2.0
-mvn += JAVA_HOME=$(JAVA_HOME)
+#JAVA_HOME ?= /opt/graalvm-ce-java11-21.2.0
+mvn += JAVA_HOME=$(MANDREL_BIN)
 mvn += ./mvnw
 
 # Quarkus Variables
@@ -32,13 +44,12 @@ ifndef VALIDATE
   quarkus_args += -Dformat.skip
 endif
 
-# Mandrel
-
 # Project
 exec = $(target_dir)/quarkus-awt-1.0.0-SNAPSHOT-runner
 jar = $(target_dir)/quarkus-app/quarkus-run.jar
 java = $(JAVA_HOME)/bin/java
-quarkus_native_args := -Dnative
+quarkus_native_args += -Dnative
+quarkus_native_args += -Dquarkus.native.debug.enabled=true
 sources += $(shell find src -type f -name '*')
 sources += pom.xml
 target_dir := target
@@ -66,6 +77,18 @@ clean:
 > $(mvn) clean $(quarkus_overrides)
 .PHONY: clean
 
+# Mandrel Targets
+# $(native_image): $(substrate_java_files)
+# > cd /opt
+# > JAVA_HOME=$(MANDREL_BOOT) \
+# > $(MANDREL_BOOT)/bin/java \
+# > -ea \
+# > $(MANDREL_PACKAGING)/build.java \
+# > --mx-home $(MX_HOME) \
+# > --mandrel-repo $(MANDREL_HOME) \
+# > --mandrel-home $(MANDREL_BIN) \
+# > --skip-native-agents
+
 # Quarkus Targets
 $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)
@@ -77,10 +100,26 @@ $(quarkus_it_test): $(quarkus_sources)
 > $(mvn) install -pl integration-tests/$(TEST) -DskipTests -am $(quarkus_args)
 > touch $@
 
-test: $(quarkus_it_test)
+test: $(native_image) $(quarkus_it_test)
 > cd $(quarkus_home)
 > $(mvn) install -pl integration-tests/$(TEST) -Dnative -Dquarkus.log.level=TRACE $(quarkus_args) $(quarkus_native_args)
 .PHONY: test
+
+ifdef GDB
+  runner += gdb
+endif
+
+exec-runner:
+> $(runner) $(quarkus_home)/integration-tests/$(TEST)/target/quarkus-integration-test-$(TEST)-999-SNAPSHOT-runner
+.PHONY: exec-runner
+
+curl-tika-runner:
+> curl \
+> -X POST \
+> -H "Content-Type: application/pdf" \
+> -F "file=@/$(quarkus_home)/integration-tests/tika/src/main/resources/invoice.pdf" \
+> http://localhost:8080/invoice/text
+.PHONY: curl-tika-runner
 
 clean-quarkus:
 > cd $(quarkus_home)
