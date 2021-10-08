@@ -38,18 +38,24 @@ endif
 
 # Optaplanner
 opta_home := /opt/optaplanner
-opta_jar_it = $(opta_home)/optaplanner-quarkus-integration/optaplanner-quarkus/integration-test/target/optaplanner-quarkus-integration-test-8.12.0-SNAPSHOT-tests.jar
+opta_jar_it = $(opta_home)/optaplanner-quarkus-integration/optaplanner-quarkus/integration-test/target/optaplanner-quarkus-integration-test-$(opta_version)-tests.jar
+opta_pl = optaplanner-quarkus-integration/optaplanner-quarkus/integration-test$\
+,optaplanner-quarkus-integration/optaplanner-quarkus/devui-integration-test$\
+,optaplanner-quarkus-integration/optaplanner-quarkus/drl-integration-test$\
+,optaplanner-quarkus-integration/optaplanner-quarkus-jackson/integration-test$\
+,optaplanner-quarkus-integration/optaplanner-quarkus-jsonb/integration-test
 opta_sources += $(shell find $(opta_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 opta_sources += $(shell find $(opta_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
+opta_version := 8.12.0-SNAPSHOT
 
 test: $(native_image) $(opta_jar_it)
 > cd $(opta_home)
-> $(mvn) install -pl optaplanner-quarkus-integration/optaplanner-quarkus/integration-test -Dversion.io.quarkus=$(quarkus_version) -Dnative -Dquarkus.log.level=TRACE $(quarkaus_args) $(quarkus_native_args)
+> $(mvn) install -pl $(opta_pl) -Dversion.io.quarkus=$(quarkus_version) -Dnative -Dquarkus.log.level=TRACE $(quarkaus_args) $(quarkus_native_args)
 .PHONY: test
 
 $(opta_jar_it): $(opta_sources) $(quarkus_jar_core)
 > cd $(opta_home)
-> $(mvn) install -pl optaplanner-quarkus-integration/optaplanner-quarkus/integration-test -Dversion.io.quarkus=$(quarkus_version) -DskipTests -am
+> $(mvn) install -pl $(opta_pl) -Dversion.io.quarkus=$(quarkus_version) -DskipTests -am
 > touch $@
 
 clean:
