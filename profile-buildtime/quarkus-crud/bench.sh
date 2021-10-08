@@ -13,7 +13,7 @@ homeBench()
     touch "target/$graalvm_home/console.log"
 
     GRAALVM_HOME=$graalvm_home make reports
-    cp -r hibernate-orm-quickstar/target/hibernate-orm-quickstar-1.0.0-SNAPSHOT-native-image-source-jar/reports "target/$graalvm_home"
+    cp -r hibernate-orm-quickstart/target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/reports "target/$graalvm_home"
 
     for i in `seq 1 10`
     do

@@ -65,6 +65,7 @@ profiling: $(mvnw)
 
 clean:
 > rm -drf $(app)
+> rm -drf /tmp/quarkus-quickstarts
 .PHONY: clean
 
 clean-all:
