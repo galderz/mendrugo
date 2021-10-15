@@ -14,7 +14,7 @@ NEO_HOME ?= /opt/neo4j-home
 NEO_USER ?= neo4j
 NEO_PASS ?= test
 
-GRAALVM_HOME ?= graalvm-ce-java11-21.3.0-dev
+GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.3.0-dev
 
 app := hibernate-orm-quickstart
 native_dir = $(app)/$(target_dir)/$(app)-1.0.0-SNAPSHOT-native-image-source-jar
@@ -24,7 +24,7 @@ mvnw = $(app)/mvnw
 reports = $(native_dir)/reports
 runner = $(app)/$(target_dir)/$(app)-1.0.0-SNAPSHOT-runner
 target_dir := target
-vm := /opt/$(GRAALVM_HOME)
+vm := $(GRAALVM_HOME)
 
 import: $(runner)
 > docker cp $(reports) testneo4j:/var/lib/neo4j/import
@@ -54,10 +54,6 @@ run: $(NEO_HOME)
 > --name testneo4j \
 > -p7474:7474 -p7687:7687 \
 > -d \
-> -v $(NEO_HOME)/data:/data \
-> -v $(NEO_HOME)/logs:/logs \
-> -v $(NEO_HOME)/import:/var/lib/neo4j/import \
-> -v $(NEO_HOME)/plugins:/plugins \
 > --env NEO4J_AUTH=$(NEO_USER)/$(NEO_PASS) \
 > neo4j:latest
 .PHONY: run
