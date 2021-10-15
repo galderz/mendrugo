@@ -11,24 +11,31 @@ endif
 .RECIPEPREFIX = >
 
 # Params
+BYTEMAN_HOME ?= /opt/byteman
 GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.3.0-dev
 MVN_HOME ?= /opt/maven
 
 mvn += JAVA_HOME=$(GRAALVM_HOME)
 mvn += $(MVN_HOME)/bin/mvn
 
+print = echo '$(1)'
+comma := ,
+
 # GraalVM
 bin = $(GRAALVM_HOME)/bin
-
+byteman_jar := $(BYTEMAN_HOME)/lib/byteman.jar
+byteman_scripts = script:$(resources_dir)/graalvm.btm
 native_image += $(bin)/native-image
 native_image += -H:+ReportExceptionStackTraces
 native_image += -H:+PrintAnalysisCallTree
 native_image += -H:NeverInline=numberOfArgs
-#native_image += -H:-ConfigureReflectionMetadata
 native_image += --no-fallback
+native_image += -J-javaagent:$(byteman_jar)=boot:$(byteman_jar)$(comma)$(byteman_scripts)
+resources_dir := src/main/resources
 
 ifdef VERBOSE
   native_image += --verbose
+  mvn += -X
 endif
 
 ifeq ($(DEBUG),driver)
@@ -38,7 +45,8 @@ else ifdef DEBUG
 endif
 
 # Project
-sources = $(shell find src/ -type f -name '*.java')
+sources += $(shell find src/ -type f -name '*.java')
+sources += $(shell find src/ -type f -name '*.btm')
 jar := target/example.jar
 program := target/a.out
 

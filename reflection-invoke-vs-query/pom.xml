@@ -11,9 +11,11 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <graal-sdk.version>21.2.0</graal-sdk.version>
+        <byteman.version>4.0.16</byteman.version>
     </properties>
 
     <dependencies>
@@ -22,6 +24,8 @@
             <artifactId>svm</artifactId>
             <version>${graal-sdk.version}</version>
             <scope>provided</scope>
+            <!--
+            -->
         </dependency>
     </dependencies>
 
@@ -30,7 +34,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>${maven-jar-plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -38,6 +42,30 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman-rulecheck-maven-plugin</artifactId>
+                <version>${byteman.version}</version>
+                <executions>
+                    <execution>
+                        <id>rulecheck</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>rulecheck</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*.btm</include>
+                            </includes>
+                            <packages>
+                                <package>org.qbicc.plugin.opt.ea</package>
+                            </packages>
+                            <scriptDir>${project.build.outputDirectory}</scriptDir>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
