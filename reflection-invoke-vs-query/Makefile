@@ -11,7 +11,11 @@ endif
 .RECIPEPREFIX = >
 
 # Params
-GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.2.0
+GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.3.0-dev
+MVN_HOME ?= /opt/maven
+
+mvn += JAVA_HOME=$(GRAALVM_HOME)
+mvn += $(MVN_HOME)/bin/mvn
 
 # GraalVM
 bin = $(GRAALVM_HOME)/bin
@@ -34,23 +38,18 @@ else ifdef DEBUG
 endif
 
 # Project
-classfiles := $(patsubst %.java, %.class, $(wildcard *.java))
-jar := example.jar
-program := a.out
+sources = $(shell find src/ -type f -name '*.java')
+jar := target/example.jar
+program := target/a.out
 
 $(program): $(jar) $(bin_native_image)
 > $(native_image) -jar $(jar) $(program)
 > ./$(program)
 .PHONY: $(program)
 
-$(jar): $(classfiles)
-> $(bin)/jar cvfe $@ Example $(classfiles)
+$(jar): pom.xml $(sources)
+> $(mvn) package
  
-%.class: %.java
-> $(bin)/javac -d . $<
-
 clean:
-> rm -f a.out
-> rm -f *.jar
-> rm -f *.class
+> $(mvn) clean
 .PHONY: clean
