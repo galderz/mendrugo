@@ -1,4 +1,4 @@
-RULE register class for reflection
+RULE register data builder constructor
 CLASS com.oracle.svm.reflect.hosted.ReflectionDataBuilder
 METHOD <init>
 AT ENTRY
@@ -6,8 +6,26 @@ IF TRUE
 DO traceln("(" + Thread.currentThread().getName() + ") [reflection] ReflectionDataBuilder.<init>")
 ENDRULE
 
-#METHOD register(ConfigurationCondition, Class[])
-#AT ENTRY
-#IF TRUE
-#DO traceln("(" + Thread.currentThread().getName() + ") [reflection] register class: " + Arrays.toString($2))
-#ENDRULE
+RULE register classes for reflection
+CLASS com.oracle.svm.reflect.hosted.ReflectionDataBuilder
+METHOD register(ConfigurationCondition, Class[])
+AT ENTRY
+IF TRUE
+DO traceln("(" + Thread.currentThread().getName() + ") [reflection] register classes: " + java.util.Arrays.toString($2))
+ENDRULE
+
+RULE register methods for reflection
+CLASS com.oracle.svm.reflect.hosted.ReflectionDataBuilder
+METHOD register(ConfigurationCondition, boolean, Executable[])
+AT ENTRY
+IF TRUE
+DO traceln("(" + Thread.currentThread().getName() + ") [reflection] register methods: " + java.util.Arrays.toString($3) + " queryOnly=" + $2)
+ENDRULE
+
+RULE register fields for reflection
+CLASS com.oracle.svm.reflect.hosted.ReflectionDataBuilder
+METHOD register(ConfigurationCondition, boolean, Field[])
+AT ENTRY
+IF TRUE
+DO traceln("(" + Thread.currentThread().getName() + ") [reflection] register fields: " + java.util.Arrays.toString($3) + " finalIsWritable=" + $2)
+ENDRULE

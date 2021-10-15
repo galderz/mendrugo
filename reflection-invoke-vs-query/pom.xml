@@ -14,18 +14,49 @@
         <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <graal-sdk.version>21.2.0</graal-sdk.version>
+        <!--
+        <graalvm.version>21.2.0</graalvm.version>
+        -->
+        <graalvm.version>21.3.0-SNAPSHOT</graalvm.version>
         <byteman.version>4.0.16</byteman.version>
     </properties>
 
     <dependencies>
         <dependency>
+            <groupId>org.graalvm.compiler</groupId>
+            <artifactId>compiler</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>objectfile</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>pointsto</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.graalvm.nativeimage</groupId>
             <artifactId>svm</artifactId>
-            <version>${graal-sdk.version}</version>
+            <version>${graalvm.version}</version>
             <scope>provided</scope>
-            <!--
-            -->
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.truffle</groupId>
+            <artifactId>truffle-api</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -58,9 +89,6 @@
                             <includes>
                                 <include>**/*.btm</include>
                             </includes>
-                            <packages>
-                                <package>org.qbicc.plugin.opt.ea</package>
-                            </packages>
                             <scriptDir>${project.build.outputDirectory}</scriptDir>
                             <verbose>true</verbose>
                         </configuration>
