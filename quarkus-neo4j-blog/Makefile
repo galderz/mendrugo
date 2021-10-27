@@ -17,27 +17,20 @@ NEO_PASS ?= test
 GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.3.0-dev
 
 app := hibernate-orm-quickstart
-native_dir = $(app)/$(target_dir)/$(app)-1.0.0-SNAPSHOT-native-image-source-jar
 mvn += JAVA_HOME=$(vm)
 mvn += ./mvnw
 mvnw = $(app)/mvnw
-reports = $(native_dir)/reports
 runner = $(app)/$(target_dir)/$(app)-1.0.0-SNAPSHOT-runner
 target_dir := target
 vm := $(GRAALVM_HOME)
 
-import: $(runner)
-> docker cp $(reports) testneo4j:/var/lib/neo4j/import
-> docker cp import.cypher testneo4j:/var/lib/neo4j
-> docker exec testneo4j /var/lib/neo4j/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "MATCH(n) DETACH DELETE n" || true
-> docker exec testneo4j /var/lib/neo4j/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "DROP CONSTRAINT unique_vm_id" || true
-> docker exec testneo4j /var/lib/neo4j/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "DROP CONSTRAINT unique_method_id" || true
-> docker exec testneo4j /bin/bash -c "time cat import.cypher | /var/lib/neo4j/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS)"
-.PHONY:import
-
 $(runner): $(mvnw)
 > cd $(app)
-> $(mvn) package -DskipTests -Pnative -Dquarkus.native.enable-reports
+> $(mvn) package -DskipTests \
+> -Pnative \
+> -Dquarkus.native.container-build=true \
+> -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel:21.3-java11 \
+> -Dquarkus.native.enable-reports
 
 $(mvnw):
 > pushd /tmp
@@ -45,15 +38,25 @@ $(mvnw):
 > popd
 > cp -r /tmp/quarkus-quickstarts/hibernate-orm-quickstart .
 
-#import:
-#> cp reports/*.csv ${NEO_HOME}/import
-#> time cat $(shell find reports -name '*.cypher') | $(NEO_HOME)/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS)
+# For timing the import, you can do:
+# $ podman exec testneo4j /bin/bash -c "time cat import.cypher | /var/lib/neo4j/bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS)"
+import: $(runner)
+> cd $(app)
+> podman cp target/*-native-image-source-jar/reports testneo4j:/var/lib/neo4j/import
+> cd ..
+> podman cp import.cypher testneo4j:/var/lib/neo4j
+> podman exec testneo4j bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "MATCH(n) DETACH DELETE n" || true
+> podman exec testneo4j bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "DROP CONSTRAINT unique_vm_id" || true
+> podman exec testneo4j bin/cypher-shell -u $(NEO_USER) -p $(NEO_PASS) "DROP CONSTRAINT unique_method_id" || true
+> podman exec testneo4j bin/cypher-shell -u neo4j -p ${NEO_PASS} -f import.cypher
+.PHONY:import
 
 run: $(NEO_HOME)
-> docker run \
+> podman run \
+> --detach \
+> --rm \
 > --name testneo4j \
 > -p7474:7474 -p7687:7687 \
-> -d \
 > --env NEO4J_AUTH=$(NEO_USER)/$(NEO_PASS) \
 > neo4j:latest
 .PHONY: run
@@ -62,8 +65,7 @@ $(NEO_HOME):
 > mkdir -p $(NEO_HOME)/import
 
 stop:
-> docker stop testneo4j
-> docker rm testneo4j
+> podman kill testneo4j
 .PHONY: stop
 
 browser:
