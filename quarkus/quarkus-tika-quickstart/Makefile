@@ -17,13 +17,15 @@ GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.3.0-dev
 # Doesn't work with 2.4.0.CR1
 QUARKUS_VERSION ?= 2.4.0.CR1
 
-# Quarkus Tika Quickstart
-
-app = $(target_dir)/tika-quickstart-$(QUARKUS_VERSION)
+base := /tmp
+project = $(base)/mendrugo/$(project_name)
+project_name = quarkus-quickstarts-$(QUARKUS_VERSION)
+app := tika-quickstart
+mendrugo = $(base)/mendrugo
 mvn += JAVA_HOME=$(vm)
 mvn += ./mvnw
-mvnw = $(app)/mvnw
-runner = $(app)/$(target_dir)/$(app)-1.0.0-SNAPSHOT-runner
+mvnw = $(project)/mvnw
+runner = $(project)/$(app)/$(target_dir)/$(app)-1.0.0-SNAPSHOT-runner
 target_dir := target
 vm := $(GRAALVM_HOME)
 
@@ -32,26 +34,24 @@ ifdef VERBOSE
 endif
 
 $(runner): $(mvnw)
-> cd $(app)
+> cd $(project)/$(app)
 > $(mvn) install \
 > -Dquarkus-plugin.version=$(QUARKUS_VERSION) \
 > -Dquarkus.platform.version=$(QUARKUS_VERSION) \
 > -Pnative \
 > -Dquarkus.native.add-all-charsets=false \
-> -Dquarkus.native.enable-reports \
+> -Dquarkus.native.enable-reports
 
 $(mvnw):
-> pushd /tmp
-> git clone https://github.com/quarkusio/quarkus-quickstarts || true
-> popd
-> mkdir -p $(target_dir)
-> cp -r /tmp/quarkus-quickstarts/tika-quickstart $(app)
+> mkdir -p $(mendrugo)
+> pushd $(mendrugo)
+> git clone --depth 1 https://github.com/quarkusio/quarkus-quickstarts $(project_name)|| true
 
 clean:
-> cd $(app)
+> cd $(project)
 > $(mvn) clean
 .PHONY: clean
 
 clean-all:
-> rm -drf $(target_dir)
+> rm -drf $(mendrugo)
 .PHONY: clean-all
