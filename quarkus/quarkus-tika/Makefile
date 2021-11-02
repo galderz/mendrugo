@@ -20,14 +20,19 @@ vm := $(GRAALVM_HOME)
 sources += $(shell find $(project)/ -type f -name '*.java' | sed 's: :\\ :g')
 sources += $(shell find $(project)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
 
-modules = integration-tests/tika$\
-,bom/application$\
+jar_modules = bom/application$\
 ,devtools/maven$\
 ,independent-projects/bootstrap/bom$\
 ,independent-projects/bootstrap/bom-test$\
-,independent-projects/bootstrap/core
+,independent-projects/bootstrap/core$\
+,integration-tests/tika
+test_modules = integration-tests/tika
 
 jar += $(project)/integration-tests/tika/target/quarkus-integration-test-tika-999-SNAPSHOT.jar
+
+ifdef VERBOSE
+  mvn += -X
+endif  
 
 ifdef NATIVE_ARGS
   native_args += -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
@@ -38,8 +43,8 @@ test: $(jar)
 > $(mvn) \
 >   -Dformat.skip \
 >   -Denforcer.skip \
->   --projects $(modules) \
->   -Pnative \
+>   --projects $(test_modules) \
+>   -Dnative \
 >   $(native_args) \
 >   install
 
@@ -48,7 +53,7 @@ $(jar): $(mvnw) $(sources)
 > $(mvn) \
 >   -Dformat.skip \
 >   -Denforcer.skip \
->   --projects $(modules) \
+>   --projects $(jar_modules) \
 >   -DskipTests \
 >   --also-make \
 >   install
@@ -57,7 +62,7 @@ $(jar): $(mvnw) $(sources)
 dependency-tree:
 > cd $(project)
 > $(mvn) \
->   --projects $(modules) \
+>   --projects $(test_modules) \
 >   dependency:tree
 .PHONY: dependency-tree
 
