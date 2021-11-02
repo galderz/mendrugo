@@ -26,28 +26,28 @@ runner = $(project)/$(app)/$(target_dir)/$(app)-1.0.0-SNAPSHOT-runner
 target_dir := target
 vm := $(GRAALVM_HOME)
 
-camel_pl = integration-tests/tika
+modules = integration-tests/tika
 jar += $(project)/integration-tests/tika/target/camel-quarkus-integration-test-tika-2.5.0-SNAPSHOT.jar
 
 test: $(jar)
 > cd $(project)
 > $(mvn) \
-> -Dquarkus.version=$(QUARKUS_VERSION) \
-> -Dformat.skip \
-> -Denforcer.skip \
-> --projects $(camel_pl) \
-> -Pnative \
+>   -Dquarkus.version=$(QUARKUS_VERSION) \
+>   -Dformat.skip \
+>   -Denforcer.skip \
+>   --projects $(modules) \
+>   -Pnative \
 > install
 
 $(jar): $(mvnw)
 > cd $(project)
 > $(mvn) \
-> -Dquarkus.version=$(QUARKUS_VERSION) \
-> -Dformat.skip \
-> -Denforcer.skip \
-> --projects $(camel_pl) \
-> -DskipTests \
-> --also-make \
+>   -Dquarkus.version=$(QUARKUS_VERSION) \
+>   -Dformat.skip \
+>   -Denforcer.skip \
+>   --projects $(modules) \
+>   -DskipTests \
+>   --also-make \
 > install
 
 $(mvnw):

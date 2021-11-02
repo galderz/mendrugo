@@ -36,11 +36,11 @@ endif
 $(runner): $(mvnw)
 > cd $(project)/$(app)
 > $(mvn) install \
-> -Dquarkus-plugin.version=$(QUARKUS_VERSION) \
-> -Dquarkus.platform.version=$(QUARKUS_VERSION) \
-> -Pnative \
-> -Dquarkus.native.add-all-charsets=false \
-> -Dquarkus.native.enable-reports
+>   -Dquarkus-plugin.version=$(QUARKUS_VERSION) \
+>   -Dquarkus.platform.version=$(QUARKUS_VERSION) \
+>   -Pnative \
+>   -Dquarkus.native.add-all-charsets=false \
+>   -Dquarkus.native.enable-reports
 
 $(mvnw):
 > mkdir -p $(mendrugo)

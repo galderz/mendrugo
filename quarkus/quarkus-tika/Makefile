@@ -21,6 +21,7 @@ sources += $(shell find $(project)/ -type f -name '*.java' | sed 's: :\\ :g')
 sources += $(shell find $(project)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
 
 jar_modules = bom/application$\
+,bom/test$\
 ,devtools/maven$\
 ,independent-projects/bootstrap/bom$\
 ,independent-projects/bootstrap/bom-test$\
@@ -47,6 +48,9 @@ test: $(jar)
 >   -Dnative \
 >   $(native_args) \
 >   install
+
+jars: $(jar)
+.PHONY: jars
 
 $(jar): $(mvnw) $(sources)
 > cd $(project)
