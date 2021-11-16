@@ -1,5 +1,5 @@
-quarkus-version := 1.13.7.Final
-mandrel-version := 21.0
+quarkus-version := 2.2.3.Final
+mandrel-version := 21.3
 project := code-with-quarkus
 zip := $(project).zip
 executable := ./$(project)/target/$(project)-1.0.0-SNAPSHOT-runner
@@ -66,7 +66,7 @@ record: $(executable)
 	perf record -F 1009 -g -a ./$(executable)
 
 trace-object-instantiation: $(pom)
-	cd $(project) && $(mvn-native) -Dquarkus.native.additional-build-args=--trace-object-instantiation=sun.security.provider.NativePRNG
+	cd $(project) && $(mvn-native) -Dquarkus.native.additional-build-args=--trace-object-instantiation=java.security.SecureRandom
 .PHONY: trace-object-instantiation
 
 # There are other reporting flags, but not used as much as the call tree one.
@@ -74,6 +74,33 @@ trace-object-instantiation: $(pom)
 expert-options:
 	podman run $(image) --expert-options-all
 .PHONY: expert-options
+
+NEO_PASS ?= test
+
+import:
+	cd $(project) && \
+	podman cp \
+		target/*-native-image-source-jar/reports \
+		testneo4j:/var/lib/neo4j/import
+	podman cp import.cypher testneo4j:/var/lib/neo4j
+	podman exec testneo4j bin/cypher-shell -u neo4j -p $(NEO_PASS) -f import.cypher
+.PHONY: import
+
+neo4j-clear:
+	podman exec testneo4j bin/cypher-shell -u neo4j -p $(NEO_PASS) "MATCH(n) DETACH DELETE n" || true
+	podman exec testneo4j bin/cypher-shell -u neo4j -p $(NEO_PASS) "DROP CONSTRAINT unique_vm_id" || true
+	podman exec testneo4j bin/cypher-shell -u neo4j -p $(NEO_PASS) "DROP CONSTRAINT unique_method_id" || true
+.PHONY: neo4j-clear
+
+neo4j:
+	podman run \
+		--detach \
+		--rm \
+		--name testneo4j \
+		-p7474:7474 -p7687:7687 \
+		--env NEO4J_AUTH=neo4j/$(NEO_PASS) \
+		neo4j:latest
+.PHONY: neo4j
 
 # Generate and inspect reports.
 # Notice how reports are generated in a folder inside the container that is mapped locally.
@@ -128,7 +155,7 @@ $(executable): $(pom)
 	cd $(project) && $(mvn-native)
 
 $(pom):
-	true | mvn io.quarkus:quarkus-maven-plugin:$(quarkus-version):create
+	yes '' | mvn io.quarkus:quarkus-maven-plugin:$(quarkus-version):create
 	touch $(pom)
 
 clean:
