@@ -16,6 +16,7 @@ mvn += JAVA_HOME=$(vm)
 mvn += ./mvnw
 project = /opt/quarkus-quarkus
 target_dir = target
+vm := $(GRAALVM_HOME)
 
 sources += $(shell find $(project)/ -type f -name '*.java' | sed 's: :\\ :g')
 sources += $(shell find $(project)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
@@ -38,6 +39,7 @@ test: $(jar) $(target_dir)
 >   -Denforcer.skip \
 >   -Dnative \
 >   $(native_args) \
+>   --fail-at-end \
 >   install \
 >  | tee $(target_dir)/console-test.log
 
