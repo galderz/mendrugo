@@ -24,9 +24,9 @@ run-jvm: $(executable)
 	java -jar code-with-quarkus/target/code-with-quarkus-1.0.0-SNAPSHOT-native-image-source-jar/code-with-quarkus-1.0.0-SNAPSHOT-runner.jar
 .PHONY: run-jvm
 
-preserve-fp: $(pom)
-	cd $(project) && $(mvn-native) -Dquarkus.native.additional-build-args=-H:+PreserveFramePointer,-H:-DeleteLocalSymbols
-.PHONY: preserve-fp
+debug-info:
+	cd $(project) && $(mvn-native) -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
+.PHONY: debug-info
 
 gdb-run: $(executable)
 	gdb $(executable)
@@ -46,9 +46,9 @@ record-dwarf: $(executable)
 	perf record -F 1009 --call-graph dwarf -a $(executable)
 .PHONY: perf-record-dwarf
 
-debug-info: $(pom)
-	cd $(project) && $(mvn-native) -Dquarkus.native.debug.enabled
-.PHONY: debug-info
+symbols-debug:
+	cd $(project) && $(mvn-native) -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols
+.PHONY: symbols-debug
 
 query-symbols: $(executable)
 	objdump -t $(executable) | grep GreetingResource || true
@@ -64,6 +64,7 @@ flamegraph:
 # -a for all cpus
 record: $(executable)
 	perf record -F 1009 -g -a ./$(executable)
+.PHONY: record
 
 trace-object-instantiation: $(pom)
 	cd $(project) && $(mvn-native) -Dquarkus.native.additional-build-args=--trace-object-instantiation=java.security.SecureRandom
