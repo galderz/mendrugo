@@ -12,8 +12,7 @@ endif
 
 GRAALVM_HOME ?= /opt/mandrel-java11-21.3.0.1-dev
 
-mvn += JAVA_HOME=$(vm)
-mvn += ./mvnw
+current_dir = $(shell pwd)
 project = /opt/quarkus-quarkus
 target_dir = target
 vm := $(GRAALVM_HOME)
@@ -28,20 +27,22 @@ ifdef VERBOSE
   mvn += -X
 endif
 
-ifdef NATIVE_ARGS
-  native_args += -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
-endif
+native_args += -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
+# ifdef NATIVE_ARGS
+# else
+#   native_args = ""
+# endif
 
 test: $(jar) $(target_dir)
 > cd $(project)/integration-tests
-> $(mvn) \
+> JAVA_HOME=$(vm) ../mvnw \
 >   -Dformat.skip \
 >   -Denforcer.skip \
 >   -Dnative \
 >   $(native_args) \
 >   --fail-at-end \
 >   install \
->  | tee $(target_dir)/console-test.log
+>  | tee $(current_dir)/$(target_dir)/console-test.log
 
 $(target_dir):
 > mkdir $@
@@ -51,7 +52,7 @@ jars: $(jar)
 
 $(jar): $(mvnw) $(sources)
 > cd $(project)
-> $(mvn) \
+> JAVA_HOME=$(vm) ./mvnw \
 >   -Dformat.skip \
 >   -Denforcer.skip \
 >   -DskipTests \
