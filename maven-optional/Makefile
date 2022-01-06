@@ -10,10 +10,19 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+# To test:
+# $ make build
+# $ make datetime
+# $ make number
+
 java += java
 java += -cp
 java += main-project/target/main-project-0.0.1-SNAPSHOT.jar:project-with-optionals/target/project-with-optionals-0.0.1-SNAPSHOT.jar
 java += org.example.main.Main
+
+native_image += /opt/graalvm-21.3/graalvm_home/bin/native-image
+native_image += -H:+ReportExceptionStackTraces
+native_image += --no-fallback
 
 build:
 > mvn -DskipTests=true install
@@ -26,3 +35,11 @@ datetime:
 number:
 > $(java) 1234
 .PHONY: number
+
+native:
+> $(native_image) \
+> -cp \
+> main-project/target/main-project-0.0.1-SNAPSHOT.jar:project-with-optionals/target/project-with-optionals-0.0.1-SNAPSHOT.jar \
+> org.example.main.Main \
+> target/a.out
+.PHONY: native

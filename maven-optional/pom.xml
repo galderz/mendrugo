@@ -13,5 +13,4 @@
         <module>project-with-optionals</module>
         <module>main-project</module>
     </modules>
-
 </project>
