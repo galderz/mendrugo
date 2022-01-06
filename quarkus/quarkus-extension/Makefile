@@ -10,12 +10,14 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+EXTENSION ?= tika
 GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.3.0-dev
 
-mvn += JAVA_HOME=$(vm)
-mvn += ./mvnw
-project = /opt/quarkus-quarkus
-vm := $(GRAALVM_HOME)
+mvn = JAVA_HOME=$(GRAALVM_HOME)
+mvn += $(mvnw)
+mvnw = $(project)/mvnw
+native_image := $(GRAALVM_HOME)/bin/native-image
+project := /opt/quarkus-quarkus
 
 sources += $(shell find $(project)/ -type f -name '*.java' | sed 's: :\\ :g')
 sources += $(shell find $(project)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
@@ -26,20 +28,18 @@ jar_modules = bom/application$\
 ,independent-projects/bootstrap/bom$\
 ,independent-projects/bootstrap/bom-test$\
 ,independent-projects/bootstrap/core$\
-,integration-tests/tika
-test_modules = integration-tests/tika
+,integration-tests/$(EXTENSION)
+test_modules = integration-tests/$(EXTENSION)
 
-jar += $(project)/integration-tests/tika/target/quarkus-integration-test-tika-999-SNAPSHOT.jar
+jar += $(project)/integration-tests/$(EXTENSION)/target/quarkus-integration-test-$(EXTENSION)-999-SNAPSHOT.jar
 
 ifdef VERBOSE
   mvn += -X
 endif  
 
-ifdef NATIVE_ARGS
-  native_args += -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
-endif
+native_args += -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
 
-test: $(jar)
+test: $(jar) $(native_image)
 > cd $(project)
 > $(mvn) \
 >   -Dformat.skip \
@@ -48,6 +48,9 @@ test: $(jar)
 >   -Dnative \
 >   $(native_args) \
 >   install
+
+$(native_image):
+> $(GRAALVM_HOME)/bin/gu install native-image
 
 jars: $(jar)
 .PHONY: jars
@@ -72,14 +75,6 @@ dependency-tree:
 
 clean:
 > cd $(project)
-> rm -drf integration-tests/tika/target
+> rm -drf integration-tests/$(EXTENSION)/target
 > $(mvn) clean
 .PHONY: clean
-
-poi := /opt/apache-poi
-
-poi-snapshot:
-> cd $(poi)
-> JAVA_HOME=$(vm) ./gradlew :main:build -xtest
-> cp ./build/main/build/libs/main-4.1.2-SNAPSHOT.jar ~/.m2/repository/org/apache/poi/poi/4.1.2/poi-4.1.2.jar
-.PHONY: poi-snapshot
