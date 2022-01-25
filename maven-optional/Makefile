@@ -10,6 +10,8 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+GRAALVM_HOME ?= /opt/graalvm-21.3/graalvm_home
+
 # To test:
 # $ make build
 # $ make datetime
@@ -20,9 +22,13 @@ java += -cp
 java += main-project/target/main-project-0.0.1-SNAPSHOT.jar:project-with-optionals/target/project-with-optionals-0.0.1-SNAPSHOT.jar
 java += org.example.main.Main
 
-native_image += /opt/graalvm-21.3/graalvm_home/bin/native-image
+native_image += $(GRAALVM_HOME)/bin/native-image
 native_image += -H:+ReportExceptionStackTraces
 native_image += --no-fallback
+
+ifdef DEBUG
+  native_image += --debug-attach=*:8000
+endif
 
 build:
 > mvn -DskipTests=true install

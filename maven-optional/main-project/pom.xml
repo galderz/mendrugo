@@ -23,5 +23,13 @@
             <artifactId>project-with-optionals</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
+        <!-- Just added to enable substitutions to be applied -->
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>optional-project</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
