@@ -12,7 +12,8 @@ endif
 
 native_image += native-image
 native_image += -H:+ReportExceptionStackTraces
-native_image += --initialize-at-build-time=Converters
+native_image += --initialize-at-build-time=SerialNumberFactory
+native_image += -H:+PrintClassInitialization
 native_image += --no-fallback
 
 $(APP).bin: $(APP).jar
@@ -25,5 +26,6 @@ $(APP).jar:
 
 clean:
 > rm -f *.bin*
+> rm -drf reports
 > rm -f *.jar
 .PHONY: clean

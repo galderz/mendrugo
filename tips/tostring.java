@@ -1,34 +1,28 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //JAVA 17+
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class tostring
 {
     public static void main(String... args)
     {
-        final TrainType favouriteTrain = new TrainType(
-            "Rio Grande Standard"
-            , 87
-            , LocalDate.of(1949, 1, 1)
-        );
-
-        System.out.println(favouriteTrain.name);
+        final TrainType favouriteTrain = new TrainType("Rio Grande Standard", 87.0);
         System.out.println(favouriteTrain.speed);
     }
 }
 
-class TrainType
+final class TrainType
 {
     final String name;
-    final int speed;
-    final LocalDate released;
+    final double speed;
 
-    TrainType(String name, int speed, LocalDate released) {
+    TrainType(String name, double speed)
+    {
         this.name = name;
         this.speed = speed;
-        this.released = released;
     }
 
     @Override
@@ -37,35 +31,31 @@ class TrainType
         return "TrainType{" +
             "name='" + name + '\'' +
             ", speed=" + speed +
-            ", released=" + Converters.DATE_CONVERTER.format(released) +
-            '}';
+            ", serialNumber=" + serialNumber();
+    }
+
+    private String serialNumber()
+    {
+        return SerialNumbers.lookup(name);
     }
 }
 
-class Converters
+final class SerialNumbers
 {
-    static final Converter<LocalDate> DATE_CONVERTER = new DateConverter();
-}
+    static final Map<String, String> SERIAL_NUMBERS = new HashMap<>();
 
-interface Converter<T>
-{
-    T parse(String s);
-    String format(T t);
-}
-
-final class DateConverter implements Converter<LocalDate>
-{
-    static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
-
-    @Override
-    public LocalDate parse(String s)
+    static String lookup(String name)
     {
-        return LocalDate.parse(s, DATE_FORMATTER);
+        return SERIAL_NUMBERS.computeIfAbsent(name, SerialNumberFactory::create);
     }
+}
 
-    @Override
-    public String format(LocalDate localDate)
+class SerialNumberFactory
+{
+    static final Random R = new Random();
+
+    static String create(String name)
     {
-        return localDate.format(DATE_FORMATTER);
+        return R.nextInt(name.length() * 100) + "-" + R.nextInt(name.length() * 100);
     }
 }
