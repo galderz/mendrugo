@@ -12,13 +12,16 @@ endif
 
 native_image += native-image
 native_image += -H:+ReportExceptionStackTraces
+native_image += --initialize-at-build-time=Converters
 native_image += --no-fallback
 
 $(APP).bin: $(APP).jar
 > $(native_image) -jar $< $@
+> ./$@
 
 $(APP).jar:
 > jbang export local $(APP).java
+> java -jar $@
 
 clean:
 > rm -f *.bin*
