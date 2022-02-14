@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -21,13 +22,16 @@ import org.jboss.resteasy.annotations.jaxrs.PathParam;
 @ApplicationScoped
 public class singleton
 {
+    @Inject
+    CdiSingleton cdiSingleton;
+    
     @GET
-    @Path("/static")
-    public long withStatic()
+    @Path("/cdi")
+    public long withCdi()
     {
-	return StaticSingleton.startTime();
+	return cdiSingleton.startTime();
     }
- 
+    
     @GET
     @Path("/enum")
     public long withEnum()
@@ -35,9 +39,27 @@ public class singleton
 	return EnumSingleton.INSTANCE.startTime();
     }
    
+    @GET
+    @Path("/static")
+    public long withStatic()
+    {
+	return StaticSingleton.startTime();
+    }
+ 
     public static void main(String[] args)
     {
         Quarkus.run(args);
+    }
+}
+
+@Singleton
+class CdiSingleton
+{
+    final long startTime = System.currentTimeMillis();
+    
+    long startTime()
+    {
+	return startTime;
     }
 }
 
