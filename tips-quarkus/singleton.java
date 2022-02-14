@@ -18,6 +18,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
+/**
+ * Compare values of executing:
+ * curl -w '\n' http://localhost:8080/singleton/start-time/static && curl -w '\n' http://localhost:8080/singleton/start-time/enum && curl -w '\n' http://localhost:8080/singleton/start-time/cdi
+ */
 @Path("/singleton/start-time")
 @ApplicationScoped
 public class singleton
