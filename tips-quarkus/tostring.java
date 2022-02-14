@@ -2,6 +2,7 @@
 //DEPS io.quarkus:quarkus-resteasy:2.7.1.Final
 //JAVAC_OPTIONS -parameters
 //JAVA_OPTIONS -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+//Q:CONFIG quarkus.native.enable-reports=true
 
 import io.quarkus.runtime.Quarkus;
 import java.util.HashMap;

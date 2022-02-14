@@ -11,7 +11,7 @@ endif
 .RECIPEPREFIX = >
 
 run:
-> jbang --native $(APP).java
+> jbang --verbose --native $(APP).java
 .PHONY: run
 
 run-java:
