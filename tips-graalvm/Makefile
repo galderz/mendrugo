@@ -14,6 +14,7 @@ native_image += native-image
 native_image += -H:+ReportExceptionStackTraces
 native_image += --initialize-at-build-time=SerialNumberFactory
 native_image += -H:+PrintClassInitialization
+native_image += -H:+PrintAnalysisCallTree
 native_image += --no-fallback
 
 $(APP).bin: $(APP).jar
