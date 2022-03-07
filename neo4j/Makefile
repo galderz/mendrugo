@@ -34,7 +34,7 @@ run:
 	./helloworld
 
 call-tree: build
-	native-image -H:+PrintAnalysisCallTree HelloWorld
+	native-image -H:+PrintAnalysisCallTree -H:PrintAnalysisCallTreeType=CSV HelloWorld
 
 jar:
 	jar cvfe helloworld.jar HelloWorld HelloWorld.class
