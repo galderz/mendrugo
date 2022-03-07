@@ -21,7 +21,10 @@ homeBench()
     done
 }
 
-for graalvm_home in graalvm-ce-java11-21.3.0-dev graalvm-ce-java11-21.2.0 graalvm-ce-java11-21.1.0 graalvm-ce-java11-21.0.0.2 graalvm-ce-java11-20.3.3
+for graalvm_home in \
+    graalvm-b53173b56c-java11-22.1.0-dev \
+    graalvm-ce-java11-22.0.0.2 \
+    graalvm-ce-java11-21.3.1
 do
     homeBench $graalvm_home
 done
