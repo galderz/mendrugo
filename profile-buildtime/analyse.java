@@ -51,6 +51,8 @@ class analyse implements Callable<Integer>
             .map(this::toJobResult)
             .collect(Collectors.toList());
 
+        System.out.println(jobResults);
+
         writeCsvFile(toTotalCsv(jobResults, tr -> tr.duration.toString()));
         writeCsvFile(toTotalCsv(jobResults, tr -> String.valueOf(tr.maxRss)));
         writeCsvFile(toUsedReports(jobResults));
@@ -192,6 +194,8 @@ class analyse implements Callable<Integer>
                     || line.contains("wall clock")
                     || line.contains("Maximum resident set size")
             ).collect(Collectors.groupingBy(ignore -> index.getAndIncrement() / groupBy));
+
+        System.out.println(rawResults);
 
         return rawResults.values().stream()
             .map(this::toTrialResult)

@@ -70,4 +70,5 @@ clean:
 
 clean-all:
 > rm -drf $(target_dir)
+> rm -f /tmp/times.log
 .PHONY: clean-all

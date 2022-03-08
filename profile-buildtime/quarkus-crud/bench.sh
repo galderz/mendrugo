@@ -19,6 +19,8 @@ homeBench()
     do
         GRAALVM_HOME=$graalvm_home make bench | tee -a "target/$graalvm_home/console.log"
     done
+
+    mv /tmp/times.log target/$graalvm_home
 }
 
 for graalvm_home in \
