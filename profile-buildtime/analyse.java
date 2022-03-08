@@ -205,8 +205,7 @@ class analyse implements Callable<Integer>
         if (commandLine.contains("runner.jar"))
         {
             final String wallClockLine = values.get(1);
-            final LocalTime time = LocalTime.parse(lastOf(wallClockLine), DateTimeFormatter.ofPattern("m:ss"));
-            final Duration wallClock = Duration.between(LocalTime.MIN, time);
+            final Duration wallClock = parseDuration(lastOf(wallClockLine));
 
             final String maxRssLine = values.get(2);
             final String maxRssKbytes = lastOf(maxRssLine);
@@ -216,6 +215,15 @@ class analyse implements Callable<Integer>
         }
 
         return new TrialResult(Duration.ZERO, -1);
+    }
+
+    public static Duration parseDuration(String duration)
+    {
+        return Duration.parse(
+            "PT"
+                + duration.replace(':', 'M')
+                + "S"
+        );
     }
 
     String lastOf(String line)
