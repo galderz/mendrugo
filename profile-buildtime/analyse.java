@@ -12,8 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -202,7 +200,7 @@ class analyse implements Callable<Integer>
     TrialResult toTrialResult(List<String> values)
     {
         final String commandLine = values.get(0);
-        if (commandLine.contains("runner.jar"))
+        if (commandLine.contains("runner.jar") && !commandLine.contains("-H:+PrintAnalysisCallTree"))
         {
             final String wallClockLine = values.get(1);
             final Duration wallClock = parseDuration(lastOf(wallClockLine));
