@@ -49,9 +49,9 @@ class analyse implements Callable<Integer>
             .map(this::toJobResult)
             .collect(Collectors.toList());
 
-        writeCsvFile(toTotalCsv(jobResults, tr -> tr.duration.toString()));
-        writeCsvFile(toTotalCsv(jobResults, tr -> String.valueOf(tr.maxRss)));
+        writeCsvFile(toTotalCsv(jobResults, tr -> String.valueOf(tr.duration.toSeconds())));
         writeCsvFile(toUsedReports(jobResults));
+        writeCsvFile(toTotalCsv(jobResults, tr -> String.format("%.1f", tr.maxRss)));
         return 0;
     }
 
@@ -81,7 +81,7 @@ class analyse implements Callable<Integer>
             .collect(Collectors.joining(",", "Used Methods,", ""));
 
         final String usedPackages = jobs.stream()
-            .map(JobResult::usedMethods)
+            .map(JobResult::usedPackages)
             .map(String::valueOf)
             .collect(Collectors.joining(",", "Used Packages,", ""));
 
