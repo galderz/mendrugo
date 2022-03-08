@@ -50,7 +50,9 @@ class analyse implements Callable<Integer>
             .collect(Collectors.toList());
 
         writeCsvFile(toTotalCsv(jobResults, tr -> String.valueOf(tr.duration.toSeconds())));
-        writeCsvFile(toUsedReports(jobResults));
+        writeCsvFile(toUsedClasses(jobResults));
+        writeCsvFile(toUsedMethods(jobResults));
+        writeCsvFile(toUsedPackages(jobResults));
         writeCsvFile(toTotalCsv(jobResults, tr -> String.format("%.1f", tr.maxRss)));
         return 0;
     }
@@ -68,18 +70,38 @@ class analyse implements Callable<Integer>
         }
     }
 
-    Csv toUsedReports(List<JobResult> jobs)
+    Csv toUsedClasses(List<JobResult> jobs)
     {
         final String usedClasses = jobs.stream()
             .map(JobResult::usedClasses)
             .map(String::valueOf)
             .collect(Collectors.joining(",", "Used Classes,", ""));
 
+        final String header = jobs.stream()
+            .map(JobResult::name)
+            .collect(Collectors.joining(",", ",", ""));
+
+        List<String> result = List.of(header, usedClasses);
+        return new Csv("native-image-totals", result);
+    }
+
+    Csv toUsedMethods(List<JobResult> jobs)
+    {
         final String usedMethods = jobs.stream()
             .map(JobResult::usedMethods)
             .map(String::valueOf)
             .collect(Collectors.joining(",", "Used Methods,", ""));
 
+        final String header = jobs.stream()
+            .map(JobResult::name)
+            .collect(Collectors.joining(",", ",", ""));
+
+        List<String> result = List.of(header, usedMethods);
+        return new Csv("native-image-totals", result);
+    }
+
+    Csv toUsedPackages(List<JobResult> jobs)
+    {
         final String usedPackages = jobs.stream()
             .map(JobResult::usedPackages)
             .map(String::valueOf)
@@ -89,7 +111,7 @@ class analyse implements Callable<Integer>
             .map(JobResult::name)
             .collect(Collectors.joining(",", ",", ""));
 
-        List<String> result = List.of(header, usedClasses, usedMethods, usedPackages);
+        List<String> result = List.of(header, usedPackages);
         return new Csv("native-image-totals", result);
     }
 
