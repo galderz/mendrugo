@@ -12,7 +12,11 @@ prepare()
         $graalvm_home/bin/gu install native-image
     fi
 
-    mv $graalvm_home/bin/native-image $graalvm_home/bin/native-image.real
+    pushd $graalvm_home/bin
+    rm -f native-image.link
+    ln -s ../lib/svm/bin/native-image native-image.link
+    popd
+    rm $graalvm_home/bin/native-image
     cp native-image.sh $graalvm_home/bin/native-image
 }
 
