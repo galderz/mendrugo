@@ -13,8 +13,8 @@ mvn-native += package
 mvn-native += -DskipTests
 mvn-native += -Pnative
 mvn-native += -Dquarkus.native.container-build=true
-mvn-native += -Dquarkus.container-image.build=true
 mvn-native += -Dquarkus.native.builder-image=$(image)
+mvn-native += -Dquarkus.container-image.build=true
 
 ldd_cmd += ldd
 ldd_cmd += /data/$(executable)
@@ -37,7 +37,7 @@ readelf_cmd += readelf
 readelf_cmd += -SW
 readelf_cmd += /data/$(executable)
 
-# Then head to http://localhost:8080/hello-resteasy
+# Then head to http://localhost:8080/hello
 run: $(artifact)
 	docker run -i --rm -p 8080:8080 g/$(project):1.0.0-SNAPSHOT
 .PHONY: run
@@ -104,6 +104,14 @@ $(pom):
 clean:
 	cd $(project) && mvn clean
 .PHONY: clean
+
+colima-start:
+	colima start --cpu 4 --memory 8
+.PHONY: colima-start
+
+colima-stop:
+	colima stop
+.PHONY: colima-stop
 
 clean-all:
 	rm -drf $(project)
