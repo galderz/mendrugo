@@ -11,6 +11,7 @@ endif
 .RECIPEPREFIX = >
 
 AP_HOME ?= /opt/async-profiler
+NATIVE_ARGS ?=
 GRAALVM_HOME ?= graalvm-ce-java11-21.3.0-dev
 QUARKUS_VERSION ?= 2.3.0.Final
 
@@ -36,13 +37,13 @@ $(mvnw):
 
 bench:
 > cd $(app)
-> $(mvn) package -DskipTests -Pnative
+> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
 .PHONY: bench
 
 # Can be useful but slow: -Dquarkus.native.additional-build-args=-H:+PrintPointsToStatistics
 reports: $(mvnw)
 > cd $(app)
-> $(mvn) package -DskipTests -Pnative -Dquarkus.native.enable-reports
+> $(mvn) package -DskipTests -Pnative -Dquarkus.native.enable-reports -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
 .PHONY: reports
 
 analyse:
