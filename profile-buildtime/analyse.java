@@ -4,6 +4,7 @@
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,9 @@ import java.util.stream.Stream;
     description = "analyse made with jbang")
 class analyse implements Callable<Integer>
 {
+    @Option(names = { "-t", "--trials" }, defaultValue = "10", description = "Number of trials to execute per job")
+    private int numTrials;
+
     public static void main(String... args)
     {
         int exitCode = new CommandLine(new analyse()).execute(args);
@@ -118,7 +122,6 @@ class analyse implements Callable<Integer>
     Csv toTotalCsv(List<JobResult> jobs, Function<TrialResult, String> extractor)
     {
         final int numJobs = jobs.size();
-        final int numTrials = 10;
         final AtomicInteger counter = new AtomicInteger();
 
         final Map<Integer, List<TrialResult>> totals = jobs.stream()
