@@ -162,10 +162,6 @@ class analyse implements Callable<Integer>
         final long usedPackages = countLines("used_packages", reportsPath);
         final List<TrialResult> trialResults = toTrialResults(jobPath);
         return new JobResult(jobName, usedClasses, usedMethods, usedPackages, trialResults);
-        catch (IOException e)
-        {
-            throw new UncheckedIOException(e);
-        }
     }
 
     private long countLines(String prefix, Path path) {
@@ -197,23 +193,80 @@ class analyse implements Callable<Integer>
 
     private List<TrialResult> toTrialResults(Path jobPath)
     {
-        try(Stream<String> lines = Files.lines(jobPath.resolve("times.log")))
+        final Path timesLog = jobPath.resolve("times.log");
+        if (timesLog.toFile().exists())
         {
-            int groupBy = 3;
-            AtomicInteger index = new AtomicInteger(0);
+            try(Stream<String> lines = Files.lines(timesLog))
+            {
+                int groupBy = 3;
+                AtomicInteger index = new AtomicInteger(0);
 
-            final Map<Integer, List<String>> rawResults = lines
-                .filter(line ->
-                    line.contains("Command being timed")
-                        || line.contains("wall clock")
-                        || line.contains("Maximum resident set size")
-                ).collect(Collectors.groupingBy(ignore -> index.getAndIncrement() / groupBy));
+                final Map<Integer, List<String>> rawResults = lines
+                    .filter(line ->
+                        line.contains("Command being timed")
+                            || line.contains("wall clock")
+                            || line.contains("Maximum resident set size")
+                    ).collect(Collectors.groupingBy(ignore -> index.getAndIncrement() / groupBy));
 
-            return rawResults.values().stream()
-                .map(this::toTrialResult)
-                .filter(tr -> !tr.duration.equals(Duration.ZERO))
+                return rawResults.values().stream()
+                    .map(this::toTrialResult)
+                    .filter(tr -> !tr.duration.equals(Duration.ZERO))
+                    .toList();
+            }
+            catch (IOException e)
+            {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        // If times.log not present, try the old 21.3 and before method
+        try(Stream<String> lines = Files.lines(jobPath.resolve("console.log")))
+        {
+            final List<TrialResult> trialResults = lines
+                .filter(l -> l.contains("[total]"))
+                .map(this::toTrialResultPre22)
+                .toList();
+
+            if (!trialResults.isEmpty())
+                return trialResults;
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+
+        // Then we must be dealing with post 22.0 output
+        try(Stream<String> lines = Files.lines(jobPath.resolve("console.log")))
+        {
+            final int numItems = 2;
+            final AtomicInteger counter = new AtomicInteger();
+
+            return lines
+                .filter(l -> l.contains("Finished generating") || l.contains("Peak RSS"))
+                .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numItems))
+                .values()
+                .stream()
+                .map(this::toTrialResultPost22)
                 .toList();
         }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private TrialResult toTrialResultPost22(List<String> elements)
+    {
+        final double peakRss = Double.parseDouble(elements.get(0).split("\\s+")[12].replace("GB", ""));
+        final Duration wallClock = Duration.parse("PT" + elements.get(1).replace("m ", "M");
+        return new TrialResult(wallClock, peakRss);
+    }
+
+    private TrialResult toTrialResultPre22(String line)
+    {
+        final String[] elements = line.split("\\s+");
+        final String duration = elements[2].replace(",", "");
+        return new TrialResult(Duration.ofMillis(Math.round(Double.parseDouble(duration))), -1);
     }
 
     TrialResult toTrialResult(List<String> values)
