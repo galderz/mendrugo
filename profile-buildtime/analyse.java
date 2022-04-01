@@ -160,11 +160,8 @@ class analyse implements Callable<Integer>
         final long usedClasses = countLines("used_classes", reportsPath);
         final long usedMethods = countLines("used_methods", reportsPath);
         final long usedPackages = countLines("used_packages", reportsPath);
-        try(Stream<String> lines = Files.lines(jobPath.resolve("times.log")))
-        {
-            final List<TrialResult> trialResults = toTrialResults(lines);
-            return new JobResult(jobName, usedClasses, usedMethods, usedPackages, trialResults);
-        }
+        final List<TrialResult> trialResults = toTrialResults(jobPath);
+        return new JobResult(jobName, usedClasses, usedMethods, usedPackages, trialResults);
         catch (IOException e)
         {
             throw new UncheckedIOException(e);
@@ -176,10 +173,7 @@ class analyse implements Callable<Integer>
         final File[] found = directory.listFiles((x, name) -> name.startsWith(prefix));
         if (found == null)
         {
-            throw new IllegalStateException(String.format(
-                "Path %s not a directory"
-                , path
-            ));
+            return -1;
         }
 
         if (found.length != 1)
@@ -201,22 +195,25 @@ class analyse implements Callable<Integer>
         }
     }
 
-    private List<TrialResult> toTrialResults(Stream<String> lines)
+    private List<TrialResult> toTrialResults(Path jobPath)
     {
-        int groupBy = 3;
-        AtomicInteger index = new AtomicInteger(0);
+        try(Stream<String> lines = Files.lines(jobPath.resolve("times.log")))
+        {
+            int groupBy = 3;
+            AtomicInteger index = new AtomicInteger(0);
 
-        final Map<Integer, List<String>> rawResults = lines
-            .filter(line ->
-                line.contains("Command being timed")
-                    || line.contains("wall clock")
-                    || line.contains("Maximum resident set size")
-            ).collect(Collectors.groupingBy(ignore -> index.getAndIncrement() / groupBy));
+            final Map<Integer, List<String>> rawResults = lines
+                .filter(line ->
+                    line.contains("Command being timed")
+                        || line.contains("wall clock")
+                        || line.contains("Maximum resident set size")
+                ).collect(Collectors.groupingBy(ignore -> index.getAndIncrement() / groupBy));
 
-        return rawResults.values().stream()
-            .map(this::toTrialResult)
-            .filter(tr -> !tr.duration.equals(Duration.ZERO))
-            .toList();
+            return rawResults.values().stream()
+                .map(this::toTrialResult)
+                .filter(tr -> !tr.duration.equals(Duration.ZERO))
+                .toList();
+        }
     }
 
     TrialResult toTrialResult(List<String> values)

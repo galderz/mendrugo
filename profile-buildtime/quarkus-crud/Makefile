@@ -13,7 +13,6 @@ endif
 AP_HOME ?= /opt/async-profiler
 NATIVE_ARGS ?=
 GRAALVM_HOME ?= graalvm-ce-java11-21.3.0-dev
-QUARKUS_VERSION ?= 2.3.0.Final
 
 ap_agent = -J-agentpath:$(AP_HOME)/build/libasyncProfiler.so=start
 app := hibernate-orm-quickstart
@@ -25,6 +24,15 @@ runner = $(app)/$(target_dir)/$(app)-1.0.0-SNAPSHOT-runner
 target_dir := target
 vm := /opt/$(GRAALVM_HOME)
 
+bench_args += -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
+# Limit to same constraints found on GitHub Action runners:
+# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+ifdef BUILDER_IMAGE
+  bench_args += -Dquarkus.native.container-build=true
+  bench_args += -Dquarkus.native.container-runtime-options=--cpus=2,--memory=7g
+  bench_args += -Dquarkus.native.builder-image=$(BUILDER_IMAGE)
+endif
+
 $(runner): $(mvnw)
 > cd $(app)
 > $(mvn) package -DskipTests -Pnative
@@ -35,15 +43,15 @@ $(mvnw):
 > popd
 > cp -r /tmp/quarkus-quickstarts/hibernate-orm-quickstart .
 
-bench:
+bench: $(mvnw)
 > cd $(app)
-> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
+> $(mvn) package -DskipTests -Pnative $(bench_args)
 .PHONY: bench
 
 # Can be useful but slow: -Dquarkus.native.additional-build-args=-H:+PrintPointsToStatistics
 reports: $(mvnw)
 > cd $(app)
-> $(mvn) package -DskipTests -Pnative -Dquarkus.native.enable-reports -Dquarkus.native.additional-build-args=$(NATIVE_ARGS)
+> $(mvn) package -DskipTests -Pnative -Dquarkus.native.enable-reports $(bench_args)
 .PHONY: reports
 
 analyse:
