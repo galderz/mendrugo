@@ -258,7 +258,7 @@ class analyse implements Callable<Integer>
     private TrialResult toTrialResultPost22(List<String> elements)
     {
         final double peakRss = Double.parseDouble(elements.get(0).split("\\s+")[12].replace("GB", ""));
-        final Duration wallClock = Duration.parse("PT" + elements.get(1).replace("m ", "M");
+        final Duration wallClock = Duration.parse("PT" + elements.get(1).replace("m ", "M"));
         return new TrialResult(wallClock, peakRss);
     }
 
