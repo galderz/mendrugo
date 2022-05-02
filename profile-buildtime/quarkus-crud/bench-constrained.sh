@@ -16,6 +16,7 @@ homeBench()
     NATIVE_ARGS=${native_args} \
     make clean
 
+    # TODO add reports for easier analyse script
     mkdir -p $target_dir
     touch "$target_dir/console.log"
 

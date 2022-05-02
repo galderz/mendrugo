@@ -276,7 +276,7 @@ class analyse implements Callable<Integer>
     TrialResult toTrialResult(List<String> values)
     {
         final String commandLine = values.get(0);
-        if (commandLine.contains("runner.jar") && !commandLine.contains("-H:+PrintAnalysisCallTree"))
+        if (commandLine.contains("runner.jar") && !commandLine.contains("PrintAnalysisCallTree"))
         {
             final String wallClockLine = values.get(1);
             final Duration wallClock = parseDuration(lastOf(wallClockLine));

@@ -20,13 +20,12 @@ prepare()
     cp native-image.sh $graalvm_home/bin/native-image
 }
 
+#    graalvm-ce-java17-22.0.0.2 \
+#    graalvm-ce-java17-21.3.1 \
+#    graalvm-ce-java11-22.0.0.2 \
+#    graalvm-ce-java11-21.3.1
 for graalvm_home in \
-    graalvm-b53173b56c-java17-22.1.0-dev \
-    graalvm-ce-java17-22.0.0.2 \
-    graalvm-ce-java17-21.3.1 \
-    graalvm-b53173b56c-java11-22.1.0-dev \
-    graalvm-ce-java11-22.0.0.2 \
-    graalvm-ce-java11-21.3.1
+    graalvm-ce-java17-22.1.0
 do
     prepare $graalvm_home
 done
