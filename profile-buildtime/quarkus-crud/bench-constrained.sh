@@ -16,7 +16,6 @@ homeBench()
     NATIVE_ARGS=${native_args} \
     make clean
 
-    # TODO add reports for easier analyse script
     mkdir -p $target_dir
     touch "$target_dir/console.log"
 
@@ -31,5 +30,4 @@ homeBench()
 
 homeBench graalvm-ce-java17-21.3.1 "" "ubi-quarkus-native-image:21.3.1-java17"
 homeBench graalvm-ce-java17-22.0.0.2 "" "ubi-quarkus-native-image:22.0.0-java17"
-homeBench mandrel-java17-21.3.1.1-Final "" "ubi-quarkus-mandrel:21.3.1.1-Final-java17"
-homeBench mandrel-java17-22.0.0.2-Final "" "ubi-quarkus-mandrel:22.0.0.2-Final-java17"
+homeBench graalvm-ce-java17-22.1.0 "" "ubi-quarkus-native-image:22.1.0-java17"
