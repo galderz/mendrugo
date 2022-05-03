@@ -28,8 +28,7 @@ homeBench()
 }
 
 for graalvm_home in \
-    graalvm-b53173b56c-java17-22.1.0-dev \
-    graalvm-b53173b56c-java11-22.1.0-dev
+    graalvm-ce-java17-22.1.0
 do
     for native_args in \
         "-Ob" \
