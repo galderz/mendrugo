@@ -12,7 +12,7 @@ endif
 
 # Params
 BYTEMAN_HOME ?= /opt/byteman
-GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.3.0-dev
+GRAALVM_HOME ?= /opt/graalvm-ce-java11-21.3.1
 MVN_HOME ?= /opt/maven
 
 mvn += JAVA_HOME=$(GRAALVM_HOME)
