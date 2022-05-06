@@ -101,6 +101,31 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--
+            SVM jars not published for 22.1 any more.
+            Validation can be done manually installing maven artifacts in advance
+
+            <plugin>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman-rulecheck-maven-plugin</artifactId>
+                <version>4.0.18</version>
+                <executions>
+                    <execution>
+                        <id>rulecheck</id>
+                        <goals>
+                            <goal>rulecheck</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*.btm</include>
+                            </includes>
+                            <scriptDir>${project.build.outputDirectory}</scriptDir>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            -->
         </plugins>
     </build>
 
