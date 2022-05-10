@@ -56,8 +56,7 @@ IF
   )
 DO
   link("requireAnalysisIteration", true);
-  traceln(prefix + " analysis iteration required; reason: hosted map changed; hostedMap=" + $hostedMap.map.size() + ", runtimeMap.size=" + $hostedMap.runtimeMap.size());
-  traceln(prefix + " hosted map value type is " + $hostedMap.map.values().iterator().next().getClass());
+  traceln(prefix + " analysis iteration required; reason: hosted map changed");
 ENDRULE
 
 RULE image heap map needs update
@@ -70,8 +69,37 @@ BIND
 IF
   $!
 DO
-  traceln(prefix + " hosted map changed; hostedMap=" + $hostedMap.map.size() + ", runtimeMap.size=" + $hostedMap.runtimeMap.size());
-  traceln(prefix + " hosted map value type is " + $hostedMap.map.values().iterator().next().getClass());
+  traceln(prefix + " hosted map changed; hostedMap=" + $hostedMap.map.size() + ", runtimeMap.size=" + $hostedMap.runtimeMap.size() + "; types " + $hostedMap.map.keySet().iterator().next().getClass() + " => " + $hostedMap.map.values().iterator().next().getClass());
+ENDRULE
+
+RULE image heap map needs update print class maps
+CLASS com.oracle.svm.hosted.heap.ImageHeapMapFeature
+METHOD needsUpdate
+AT RETURN
+BIND
+  numIterations = readCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
+  # hostedClassNames = new java.util.HashSet($hostedMap.map.keySet());
+  hostedClassNames = new java.util.ArrayList($hostedMap.map.keySet());
+  runtimeClassNames : java.util.List = java.util.stream.StreamSupport.stream($hostedMap.runtimeMap.getKeys().spliterator(), false).collect(java.util.stream.Collectors.toList());
+IF
+  $!
+  AND
+  $hostedMap.map.values().iterator().next().getClass() == java.lang.Class.class
+DO
+  hostedClassNames.removeAll(runtimeClassNames);
+  hostedClassNames.sort(String.CASE_INSENSITIVE_ORDER);
+  traceln(prefix + " hosted map changed; added host class names: \n" + String.join("\n", hostedClassNames));
+ENDRULE
+
+RULE record class registration
+CLASS com.oracle.svm.core.hub.ClassForNameSupport
+METHOD registerClass
+HELPER org.acme.byteman.ClassAnalysisHelper
+AT RETURN
+IF TRUE
+DO
+  trackClass($clazz);
 ENDRULE
 
 RULE require analysis iteration because of analysis state modification
@@ -103,16 +131,6 @@ IF
 DO
   traceln(prefix + " analysis iteration required; reason: " + $verificationReachableTypes + " new types became reachable");
 ENDRULE
-
-#RULE require analysis iteration called
-#CLASS com.oracle.svm.hosted.FeatureImpl$DuringAnalysisAccessImpl
-#METHOD requireAnalysisIteration
-#AT ENTRY
-#IF
-#  !$this.requireAnalysisIteration
-#DO
-#  traceStack("(" + Thread.currentThread().getName() + ") [run-analysis] require analysis iteration invoked by:\n", 10)
-#ENDRULE
 
 RULE require analysis iteration called
 CLASS com.oracle.svm.hosted.FeatureImpl$DuringAnalysisAccessImpl
