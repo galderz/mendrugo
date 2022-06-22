@@ -14,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <graal.version>20.3.0</graal.version>
-        <wildfly-elytron.version>1.14.0.Final</wildfly-elytron.version>
+        <wildfly-elytron.version>1.15.5.Final</wildfly-elytron.version>
     </properties>
 
     <dependencies>
