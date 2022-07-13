@@ -53,12 +53,16 @@ DO
 ENDRULE
 
 RULE track bundle
-CLASS com.oracle.svm.core.LocalizationSupport
+CLASS com.oracle.svm.core.jdk.localization.LocalizationSupport
 METHOD prepareBundle
 HELPER org.acme.byteman.ReflectionRegistryHelper
 AT ENTRY
+BIND
+  numIterations = readCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
 IF TRUE
 DO
+  # traceln(prefix + " prepare bundle " + $1.toString());
   trackBundle($1);
 ENDRULE
 

@@ -3,11 +3,13 @@ package org.acme.byteman;
 import org.jboss.byteman.rule.Rule;
 import org.jboss.byteman.rule.helper.Helper;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -18,7 +20,6 @@ public class ReflectionRegistryHelper extends Helper
 
     static Object CONFIGURATION_LOCATION;
     static String BUNDLE_NAME;
-    static Locale BUNDLE_LOCALE;
 
     protected ReflectionRegistryHelper(Rule rule)
     {
@@ -86,16 +87,21 @@ public class ReflectionRegistryHelper extends Helper
         }
     }
 
-    public void printSummary()
+    public void printSummary() throws NoSuchAlgorithmException
     {
         final List<Map.Entry<Class<?>, Reason>> entries = new ArrayList<>(REFLECTION_REASONS.entrySet());
         entries.sort(Comparator.comparing(e -> e.getKey().toString()));
 
         final String summary = entries.stream()
-            .map(e -> "%d,%s,%s".formatted(e.getValue().iteration, e.getKey(), e.getValue().reason))
+            .map(e -> "%d,%s,%s".formatted(e.getValue().iteration, e.getKey().getCanonicalName(), e.getValue().reason))
             .collect(Collectors.joining("\n"));
 
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        final byte[] digest = md.digest(summary.getBytes(StandardCharsets.UTF_8));
+
+        System.out.printf("BEGIN %x%n", new BigInteger(1, digest));
         System.out.println(summary);
+        System.out.printf("END %x%n", new BigInteger(1, digest));
     }
 
     record Reason(int iteration, Class<?> clazz, String reason) {}
