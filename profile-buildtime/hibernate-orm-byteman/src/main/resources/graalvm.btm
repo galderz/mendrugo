@@ -1,4 +1,4 @@
-RULE finish at entry
+RULE start iteration
 CLASS com.oracle.graal.pointsto.PointsToAnalysis
 METHOD finish
 AT ENTRY
@@ -10,33 +10,27 @@ DO
   traceln(prefix + " ==> start iteration " + numIterations);
 ENDRULE
 
-#RULE report progress
-#CLASS com.oracle.svm.hosted.ProgressReporter$StagePrinter
-#METHOD reportProgress
-#AT ENTRY
-#IF TRUE
-#DO
-#  traceln("(" + Thread.currentThread().getName() + ") [printer] report progress with '*'")
-#  # traceStack("(" + Thread.currentThread().getName() + ") [printer] report progress with '*'\n", 10)
-#ENDRULE
-#
-#RULE num iterations at exit
-#CLASS com.oracle.graal.pointsto.PointsToAnalysis
-#METHOD runAnalysis
-#AT EXIT
-#IF TRUE
-#DO
-#  traceln("(" + Thread.currentThread().getName() + ") [run-analysis] completed with number of iterations: " + $numIterations)
-#ENDRULE
+RULE record class registration
+CLASS com.oracle.svm.core.hub.ClassForNameSupport
+METHOD registerClass
+HELPER org.acme.byteman.ClassAnalysisHelper
+AT RETURN
+BIND
+  numIterations = readCounter("numIterations");
+IF TRUE
+DO
+  trackClass(numIterations, $clazz);
+ENDRULE
 
-#RULE finish at return
-#CLASS com.oracle.graal.pointsto.PointsToAnalysis
-#METHOD finish
-#AT RETURN
-#IF TRUE
-#DO
-#  traceln("(" + Thread.currentThread().getName() + ") [run-analysis] did type flow update? " + $!)
-#ENDRULE
+RULE end run analysis
+CLASS com.oracle.graal.pointsto.PointsToAnalysis
+METHOD runAnalysis
+HELPER org.acme.byteman.ClassAnalysisHelper
+AT EXIT
+IF TRUE
+DO
+  complete();
+ENDRULE
 
 RULE image heap map needs update and requires analysis iteration
 CLASS com.oracle.svm.hosted.heap.ImageHeapMapFeature
@@ -92,16 +86,6 @@ DO
   traceln(prefix + " hosted map changed; added host class names: \n" + String.join("\n", hostedClassNames));
 ENDRULE
 
-RULE record class registration
-CLASS com.oracle.svm.core.hub.ClassForNameSupport
-METHOD registerClass
-HELPER org.acme.byteman.ClassAnalysisHelper
-AT RETURN
-IF TRUE
-DO
-  trackClass($clazz);
-ENDRULE
-
 RULE require analysis iteration because of analysis state modification
 CLASS com.oracle.graal.pointsto.heap.HeapSnapshotVerifier
 METHOD requireAnalysisIteration
@@ -141,3 +125,31 @@ IF
 DO
   link("requireAnalysisIteration", false);
 ENDRULE
+
+#RULE report progress
+#CLASS com.oracle.svm.hosted.ProgressReporter$StagePrinter
+#METHOD reportProgress
+#AT ENTRY
+#IF TRUE
+#DO
+#  traceln("(" + Thread.currentThread().getName() + ") [printer] report progress with '*'")
+#  # traceStack("(" + Thread.currentThread().getName() + ") [printer] report progress with '*'\n", 10)
+#ENDRULE
+#
+#RULE num iterations at exit
+#CLASS com.oracle.graal.pointsto.PointsToAnalysis
+#METHOD runAnalysis
+#AT EXIT
+#IF TRUE
+#DO
+#  traceln("(" + Thread.currentThread().getName() + ") [run-analysis] completed with number of iterations: " + $numIterations)
+#ENDRULE
+
+#RULE finish at return
+#CLASS com.oracle.graal.pointsto.PointsToAnalysis
+#METHOD finish
+#AT RETURN
+#IF TRUE
+#DO
+#  traceln("(" + Thread.currentThread().getName() + ") [run-analysis] did type flow update? " + $!)
+#ENDRULE
