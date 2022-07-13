@@ -25,6 +25,8 @@ ifdef DEBUG
 else
   args += -Dquarkus.native.additional-build-args=-J-javaagent:$(byteman_jar)=boot:$(byteman_jar)\\$(comma)$(byteman_scripts)\\$(comma)$(byteman_sysjar),-H:HeapVerifierVerbosity=1
 endif
+#args += -Dquarkus.native.additional-build-args=-J-javaagent:$(byteman_jar)=boot:$(byteman_jar)\\$(comma)$(byteman_scripts)\\$(comma)$(byteman_sysjar)\\$(comma)prop:org.jboss.byteman.verbose=true,-H:HeapVerifierVerbosity=1,--debug-attach=*:8000
+#args += -Dquarkus.native.additional-build-args=-J-javaagent:$(byteman_jar)=boot:$(byteman_jar)\\$(comma)$(byteman_scripts)\\$(comma)$(byteman_sysjar)\\$(comma)prop:org.jboss.byteman.verbose=true,-H:HeapVerifierVerbosity=1
 #args += -Dquarkus.native.enable-reports
 
 byteman_jar = $(BYTEMAN_HOME)/byteman-4.0.18.jar

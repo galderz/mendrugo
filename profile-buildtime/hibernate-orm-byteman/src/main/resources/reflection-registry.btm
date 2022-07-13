@@ -1,4 +1,4 @@
-RULE track reflection registrations
+RULE track reflection registrations via class
 CLASS com.oracle.svm.reflect.hosted.ReflectionDataBuilder
 METHOD register(ConfigurationCondition, boolean, Class)
 HELPER org.acme.byteman.ReflectionRegistryHelper
@@ -10,6 +10,21 @@ IF TRUE
 DO
   # traceln(prefix + " register for reflection " + $3);
   trackReflectionRegistration(numIterations, $3);
+ENDRULE
+
+RULE track reflection registrations via method
+CLASS com.oracle.svm.reflect.hosted.ReflectionDataBuilder
+METHOD registerMethods
+HELPER org.acme.byteman.ReflectionRegistryHelper
+AT INVOKE Set.add
+BIND
+  numIterations = readCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
+IF TRUE
+DO
+  # traceln(prefix + " register methods for reflection " + java.util.Arrays.toString($2));
+  # traceln(prefix + " register methods for reflection for class " + $@[1]);
+  trackReflectionRegistration(numIterations, $@[1]);
 ENDRULE
 
 RULE track configuration parsing

@@ -9,11 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ReflectionRegistryHelper extends Helper
 {
-    static final Map<Class<?>, Reason> REFLECTION_REASONS = new HashMap<>();
+    static final Map<Class<?>, Reason> REFLECTION_REASONS = new ConcurrentHashMap<>();
 
     static Object CONFIGURATION_LOCATION;
     static String BUNDLE_NAME;
@@ -34,8 +35,13 @@ public class ReflectionRegistryHelper extends Helper
         BUNDLE_NAME = bundleName;
     }
 
-    public void trackReflectionRegistration(int numIteration, Class<?> clazz)
+    public void trackReflectionRegistration(int numIteration, Object obj)
     {
+        Class<?> clazz = (Class<?>) obj;
+
+        if (REFLECTION_REASONS.containsKey(clazz))
+            return;
+
         final String stack = formatStack();
         if (stack.contains("org.hibernate.graalvm.internal.GraalVMStaticAutofeature"))
         {
@@ -65,6 +71,12 @@ public class ReflectionRegistryHelper extends Helper
         {
             REFLECTION_REASONS.put(clazz, new Reason(numIteration, clazz
                 , "Because GraalVM registers it for JNI access to Java NIO"
+            ));
+        }
+        else if (stack.contains("com.oracle.svm.reflect.hosted.ReflectionFeature.beforeAnalysis"))
+        {
+            REFLECTION_REASONS.put(clazz, new Reason(numIteration, clazz
+                , "Because GraalVM registers it for Object[]"
             ));
         }
         else
