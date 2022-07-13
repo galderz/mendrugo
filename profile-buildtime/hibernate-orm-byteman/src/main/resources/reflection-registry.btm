@@ -27,6 +27,21 @@ DO
   trackReflectionRegistration(numIterations, $@[1]);
 ENDRULE
 
+RULE track reflection registrations via field
+CLASS com.oracle.svm.reflect.hosted.ReflectionDataBuilder
+METHOD registerFields
+HELPER org.acme.byteman.ReflectionRegistryHelper
+AT INVOKE Set.add 2
+BIND
+  numIterations = readCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
+IF TRUE
+DO
+  # traceln(prefix + " register fields for reflection " + java.util.Arrays.toString($1));
+  # traceln(prefix + " register fields for reflection for class " + $@[1]);
+  trackReflectionRegistration(numIterations, $@[1]);
+ENDRULE
+
 RULE track configuration parsing
 CLASS com.oracle.svm.hosted.config.ConfigurationParserUtils
 METHOD doParseAndRegister
