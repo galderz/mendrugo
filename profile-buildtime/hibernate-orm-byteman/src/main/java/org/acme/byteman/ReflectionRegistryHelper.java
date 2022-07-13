@@ -90,7 +90,7 @@ public class ReflectionRegistryHelper extends Helper
     public void printSummary() throws NoSuchAlgorithmException
     {
         final List<Map.Entry<Class<?>, Reason>> entries = new ArrayList<>(REFLECTION_REASONS.entrySet());
-        entries.sort(Comparator.comparing(e -> e.getKey().toString()));
+        entries.sort(Comparator.comparing(e -> e.getKey().getCanonicalName()));
 
         final String summary = entries.stream()
             .map(e -> "%d,%s,%s".formatted(e.getValue().iteration, e.getKey().getCanonicalName(), e.getValue().reason))
