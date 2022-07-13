@@ -1,0 +1,55 @@
+RULE track reflection registrations
+CLASS com.oracle.svm.reflect.hosted.ReflectionDataBuilder
+METHOD register(ConfigurationCondition, boolean, Class)
+HELPER org.acme.byteman.ReflectionRegistryHelper
+AT ENTRY
+BIND
+  numIterations = readCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
+IF TRUE
+DO
+  # traceln(prefix + " register for reflection " + $3);
+  trackReflectionRegistration(numIterations, $3);
+ENDRULE
+
+RULE track configuration parsing
+CLASS com.oracle.svm.hosted.config.ConfigurationParserUtils
+METHOD doParseAndRegister
+HELPER org.acme.byteman.ReflectionRegistryHelper
+AT ENTRY
+IF TRUE
+DO
+  trackConfigurationParsing($3);
+ENDRULE
+
+RULE track bundle
+CLASS com.oracle.svm.core.LocalizationSupport
+METHOD prepareBundle
+HELPER org.acme.byteman.ReflectionRegistryHelper
+AT ENTRY
+IF TRUE
+DO
+  trackBundle($1);
+ENDRULE
+
+RULE print summary
+CLASS com.oracle.graal.pointsto.PointsToAnalysis
+METHOD runAnalysis
+HELPER org.acme.byteman.ReflectionRegistryHelper
+AT EXIT
+IF TRUE
+DO
+  printSummary();
+ENDRULE
+
+RULE increment iterations
+CLASS com.oracle.graal.pointsto.PointsToAnalysis
+METHOD finish
+AT ENTRY
+BIND
+  numIterations = incrementCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
+IF TRUE
+DO
+  traceln(prefix + " ==> start iteration " + numIterations);
+ENDRULE
