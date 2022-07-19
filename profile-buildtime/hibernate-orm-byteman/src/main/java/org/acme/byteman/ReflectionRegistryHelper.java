@@ -3,6 +3,9 @@ package org.acme.byteman;
 import org.jboss.byteman.rule.Rule;
 import org.jboss.byteman.rule.helper.Helper;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -22,6 +25,8 @@ public class ReflectionRegistryHelper extends Helper
 
     static final Map<Thread, Object> CONFIGURATION_LOCATIONS = new ConcurrentHashMap<>();
     static final Map<Thread, Object> BUNDLE_NAMES = new ConcurrentHashMap<>();
+    static final Map<Thread, Object> ANALYSIS_METHODS = new ConcurrentHashMap<>();
+    static final Map<Thread, Object> STATIC_METHODS = new ConcurrentHashMap<>();
 
     protected ReflectionRegistryHelper(Rule rule)
     {
@@ -36,6 +41,11 @@ public class ReflectionRegistryHelper extends Helper
     public void trackBundle(String bundleName)
     {
         BUNDLE_NAMES.put(Thread.currentThread(), bundleName);
+    }
+
+    public void trackAnalysisMethod(String methodName)
+    {
+        ANALYSIS_METHODS.put(Thread.currentThread(), methodName);
     }
 
     public void trackReflectionRegistration(int numIteration, Object obj)
@@ -82,13 +92,27 @@ public class ReflectionRegistryHelper extends Helper
                 , "Because GraalVM registers it for Object[]"
             ));
         }
+        else if (stack.contains("com.oracle.svm.hosted.snippets.SubstrateGraphBuilderPlugins.interceptUpdaterInvoke")
+            && stack.contains("org.graalvm.compiler.java.BytecodeParser.buildRootMethod"))
+        {
+            // System.out.printf("Known reflection registration of %s at %d iteration:%n%s%n", clazz, numIteration, formatStack());
+            REFLECTION_REASONS.putIfAbsent(clazz, new Reason(numIteration, clazz
+                , "Because root method %s calls AtomicIntegerFieldUpdater.newUpdater".formatted(ANALYSIS_METHODS.get(Thread.currentThread()))
+            ));
+        }
+//        else if (stack.contains("org.graalvm.compiler.java.BytecodeParser.buildRootMethod") && stack.contains("com.oracle.svm.methodhandles.MethodHandleFeature.registerMemberName"))
+//        {
+//            REFLECTION_REASONS.putIfAbsent(clazz, new Reason(numIteration, clazz
+//                , "Because method %s is a root entry point to the application".formatted(ANALYSIS_METHODS.get(Thread.currentThread()))
+//            ));
+//        }
         else
         {
             System.out.printf("Unknown reflection registration of %s at %d iteration:%n%s%n", clazz, numIteration, formatStack());
         }
     }
 
-    public void printSummary() throws NoSuchAlgorithmException
+    public void printSummary() throws NoSuchAlgorithmException, IOException
     {
         final List<Map.Entry<Class<?>, Reason>> entries = new ArrayList<>(REFLECTION_REASONS.entrySet());
         entries.sort(Comparator.comparing(e -> e.getKey().getCanonicalName()));
@@ -100,9 +124,17 @@ public class ReflectionRegistryHelper extends Helper
         MessageDigest md = MessageDigest.getInstance("MD5");
         final byte[] digest = md.digest(summary.getBytes(StandardCharsets.UTF_8));
 
-        System.out.printf("BEGIN %x%n", new BigInteger(1, digest));
+        final String header = "BEGIN %x".formatted(new BigInteger(1, digest));
+        final String footer = "END %x".formatted(new BigInteger(1, digest));
+        System.out.println(header);
         System.out.println(summary);
-        System.out.printf("END %x%n", new BigInteger(1, digest));
+        System.out.println(footer);
+
+        PrintWriter printWriter = new PrintWriter(new FileWriter("reflection-registry.csv"));
+        printWriter.println(header);
+        printWriter.println(summary);
+        printWriter.println(footer);
+        printWriter.close();
     }
 
     record Reason(int iteration, Class<?> clazz, String reason) {}

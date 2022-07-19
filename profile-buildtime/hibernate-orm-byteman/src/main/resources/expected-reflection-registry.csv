@@ -1,0 +1,227 @@
+BEGIN 7a075fb5b7bbe40db14e725173b9f868
+0,com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean,Because Quarkus registers it directly or via an extension
+0,com.arjuna.ats.internal.arjuna.coordinator.CheckedActionFactoryImple,Because Quarkus registers it directly or via an extension
+0,com.arjuna.ats.internal.arjuna.objectstore.ShadowNoFileLockStore,Because Quarkus registers it directly or via an extension
+0,com.arjuna.ats.internal.arjuna.utils.SocketProcessId,Because Quarkus registers it directly or via an extension
+0,com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple,Because Quarkus registers it directly or via an extension
+0,com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple,Because Quarkus registers it directly or via an extension
+0,com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple,Because Quarkus registers it directly or via an extension
+0,com.arjuna.ats.jta.common.JTAEnvironmentBean,Because Quarkus registers it directly or via an extension
+0,com.fasterxml.jackson.annotation.SimpleObjectIdResolver,Because Quarkus registers it directly or via an extension
+0,com.fasterxml.jackson.databind.deser.std.DateDeserializers.SqlDateDeserializer,Because Quarkus registers it directly or via an extension
+0,com.fasterxml.jackson.databind.deser.std.DateDeserializers.TimestampDeserializer,Because Quarkus registers it directly or via an extension
+0,com.fasterxml.jackson.databind.ser.std.SqlDateSerializer,Because Quarkus registers it directly or via an extension
+0,com.fasterxml.jackson.databind.ser.std.SqlTimeSerializer,Because Quarkus registers it directly or via an extension
+0,io.agroal.api.security.AgroalDefaultSecurityProvider,Because Quarkus registers it directly or via an extension
+0,io.agroal.api.security.AgroalKerberosSecurityProvider,Because Quarkus registers it directly or via an extension
+0,io.agroal.pool.ConnectionHandler,Because Quarkus registers it directly or via an extension
+0,io.agroal.pool.ConnectionHandler[],Because Quarkus registers it directly or via an extension
+1,io.netty.buffer.AbstractReferenceCountedByteBuf,Because root method io.netty.buffer.AbstractReferenceCountedByteBuf.<clinit> calls AtomicIntegerFieldUpdater.newUpdater
+0,io.netty.channel.socket.nio.NioDatagramChannel,Because Quarkus registers it directly or via an extension
+0,io.netty.channel.socket.nio.NioServerSocketChannel,Because it was defined in configuration file jar:file:/home/g/1/mendrugo/profile-buildtime/hibernate-orm-byteman/target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.netty.netty-transport-4.1.74.Final.jar!/META-INF/native-image/io.netty/transport/reflection-config.json
+0,io.netty.channel.socket.nio.NioSocketChannel,Because Quarkus registers it directly or via an extension
+1,io.netty.util.AbstractReferenceCounted,Because root method io.netty.util.AbstractReferenceCounted.<clinit> calls AtomicIntegerFieldUpdater.newUpdater
+0,io.quarkus.agroal.DataSource,Because Quarkus registers it directly or via an extension
+0,io.quarkus.agroal.runtime.DataSources,Because Quarkus registers it directly or via an extension
+0,io.quarkus.agroal.runtime.JdbcDriver,Because Quarkus registers it directly or via an extension
+0,io.quarkus.arc.All,Because Quarkus registers it directly or via an extension
+0,io.quarkus.arc.Lock,Because Quarkus registers it directly or via an extension
+0,io.quarkus.arc.impl.Identified,Because Quarkus registers it directly or via an extension
+0,io.quarkus.arc.log.LoggerName,Because Quarkus registers it directly or via an extension
+0,io.quarkus.bootstrap.logging.InitialConfigurator,Because Quarkus registers it directly or via an extension
+0,io.quarkus.bootstrap.logging.LateBoundMDCProvider,Because Quarkus registers it directly or via an extension
+0,io.quarkus.hibernate.orm.PersistenceUnit,Because Quarkus registers it directly or via an extension
+0,io.quarkus.hibernate.orm.PersistenceUnitExtension,Because Quarkus registers it directly or via an extension
+0,io.quarkus.hibernate.orm.runtime.TransactionSessions,Because Quarkus registers it directly or via an extension
+0,io.quarkus.jackson.runtime.ObjectMapperProducer,Because Quarkus registers it directly or via an extension
+0,io.quarkus.narayana.jta.RequestScopedTransaction,Because Quarkus registers it directly or via an extension
+0,io.quarkus.netty.BossEventLoopGroup,Because Quarkus registers it directly or via an extension
+0,io.quarkus.netty.MainEventLoopGroup,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.jackson.runtime.mappers.DefaultMismatchedInputException,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.jackson.runtime.mappers.NativeInvalidDefinitionExceptionMapper$GeneratedExceptionHandlerFor$InvalidDefinitionException$OfMethod$toResponse,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.jackson.runtime.serialisers.BasicServerJacksonMessageBodyWriter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.jackson.runtime.serialisers.ServerJacksonMessageBodyReader,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.jackson.runtime.serialisers.vertx.VertxJsonArrayMessageBodyReader,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.jackson.runtime.serialisers.vertx.VertxJsonArrayMessageBodyWriter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.jackson.runtime.serialisers.vertx.VertxJsonObjectMessageBodyReader,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.jackson.runtime.serialisers.vertx.VertxJsonObjectMessageBodyWriter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.server.runtime.exceptionmappers.AuthenticationCompletionExceptionMapper,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.server.runtime.exceptionmappers.AuthenticationFailedExceptionMapper$GeneratedExceptionHandlerFor$AuthenticationFailedException$OfMethod$handle,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.server.runtime.exceptionmappers.AuthenticationRedirectExceptionMapper,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.server.runtime.exceptionmappers.ForbiddenExceptionMapper,Because Quarkus registers it directly or via an extension
+0,io.quarkus.resteasy.reactive.server.runtime.exceptionmappers.UnauthorizedExceptionMapper$GeneratedExceptionHandlerFor$UnauthorizedException$OfMethod$handle,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runner.ApplicationImpl,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.annotations.CommandLineArguments,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.CharsetConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.CidrAddressConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.DurationConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.InetAddressConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.InetSocketAddressConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.LocaleConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.MemorySizeConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.PathConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.RegexConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.configuration.ZoneIdConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.runtime.logging.LevelConverter,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.core.runtime.VertxLogDelegateFactory,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.AllRequestHeadersAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.BytesSentAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.CookieAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.DateTimeAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.IdentUsernameAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.LocalIPAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.LocalPortAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.LocalServerNameAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.NullAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.QueryParameterAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.QueryStringAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RemoteHostAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RemoteIPAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RemoteUserAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RequestHeaderAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RequestLineAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RequestMethodAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RequestPathAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RequestProtocolAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RequestSchemeAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.RequestURLAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.ResponseCodeAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.ResponseHeaderAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.ResponseTimeAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.SecureExchangeAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.SslCipherAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.SslClientCertAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.SslSessionIdAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.ThreadNameAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.quarkus.vertx.http.runtime.attribute.TransportProtocolAttribute.Builder,Because Quarkus registers it directly or via an extension
+0,io.smallrye.common.annotation.Identifier,Because Quarkus registers it directly or via an extension
+0,io.smallrye.config.PropertiesLocationConfigSourceFactory,Because Quarkus registers it directly or via an extension
+0,io.smallrye.config.SmallRyeConfigProviderResolver,Because Quarkus registers it directly or via an extension
+0,io.smallrye.context.api.CurrentThreadContext,Because Quarkus registers it directly or via an extension
+0,io.smallrye.context.api.NamedInstance,Because Quarkus registers it directly or via an extension
+0,io.smallrye.mutiny.vertx.core.AbstractVerticle,Because Quarkus registers it directly or via an extension
+0,java.lang.Object,Because GraalVM registers it for Object[]
+0,java.lang.management.ManagementFactory,Because it was defined in configuration file jar:file:/home/g/1/mendrugo/profile-buildtime/hibernate-orm-byteman/target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.netty.netty-transport-4.1.74.Final.jar!/META-INF/native-image/io.netty/transport/reflection-config.json
+0,java.lang.management.RuntimeMXBean,Because it was defined in configuration file jar:file:/home/g/1/mendrugo/profile-buildtime/hibernate-orm-byteman/target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.netty.netty-transport-4.1.74.Final.jar!/META-INF/native-image/io.netty/transport/reflection-config.json
+0,java.sql.ResultSet,Because Quarkus registers it directly or via an extension
+0,java.sql.ResultSet[],Because Quarkus registers it directly or via an extension
+0,java.sql.Statement,Because Quarkus registers it directly or via an extension
+0,java.sql.Statement[],Because Quarkus registers it directly or via an extension
+0,java.util.ArrayList,Because Quarkus registers it directly or via an extension
+0,java.util.HashMap,Because Quarkus registers it directly or via an extension
+0,java.util.HashSet,Because Quarkus registers it directly or via an extension
+0,java.util.LinkedHashMap,Because Quarkus registers it directly or via an extension
+0,java.util.LinkedHashSet,Because Quarkus registers it directly or via an extension
+0,java.util.LinkedList,Because Quarkus registers it directly or via an extension
+0,java.util.TreeMap,Because Quarkus registers it directly or via an extension
+0,java.util.TreeSet,Because Quarkus registers it directly or via an extension
+0,javax.enterprise.context.BeforeDestroyed,Because Quarkus registers it directly or via an extension
+0,javax.enterprise.context.Destroyed,Because Quarkus registers it directly or via an extension
+0,javax.enterprise.context.Initialized,Because Quarkus registers it directly or via an extension
+0,javax.enterprise.context.control.ActivateRequestContext,Because Quarkus registers it directly or via an extension
+0,javax.enterprise.inject.Any,Because Quarkus registers it directly or via an extension
+0,javax.enterprise.inject.Default,Because Quarkus registers it directly or via an extension
+0,javax.enterprise.inject.Intercepted,Because Quarkus registers it directly or via an extension
+0,javax.inject.Named,Because Quarkus registers it directly or via an extension
+0,javax.transaction.Transactional,Because Quarkus registers it directly or via an extension
+0,jdk.internal.access.foreign.MemorySegmentProxy,Because GraalVM registers it for JNI access to Java NIO
+0,org.acme.hibernate.orm.Fruit,Because Quarkus registers it directly or via an extension
+0,org.acme.hibernate.orm.FruitResource,Because Quarkus registers it directly or via an extension
+0,org.eclipse.microprofile.config.inject.ConfigProperties,Because Quarkus registers it directly or via an extension
+0,org.eclipse.microprofile.config.inject.ConfigProperty,Because Quarkus registers it directly or via an extension
+0,org.glassfish.json.JsonProviderImpl,Because Quarkus registers it directly or via an extension
+0,org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl,Because Hibernate registered statically
+0,org.hibernate.engine.jdbc.connections.internal.DatasourceConnectionProviderImpl,Because Quarkus registers it directly or via an extension
+0,org.hibernate.engine.jdbc.cursor.internal.StandardRefCursorSupport,Because Quarkus registers it directly or via an extension
+0,org.hibernate.event.spi.AutoFlushEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.ClearEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.DeleteEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.DirtyCheckEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.EvictEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.FlushEntityEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.FlushEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.InitializeCollectionEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.LoadEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.LockEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.MergeEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PersistEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PostCollectionRecreateEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PostCollectionRemoveEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PostCollectionUpdateEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PostDeleteEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PostInsertEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PostLoadEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PostUpdateEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PreCollectionRecreateEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PreCollectionRemoveEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PreCollectionUpdateEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PreDeleteEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PreInsertEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PreLoadEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.PreUpdateEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.RefreshEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.ReplicateEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.ResolveNaturalIdEventListener[],Because Hibernate registered statically
+0,org.hibernate.event.spi.SaveOrUpdateEventListener[],Because Hibernate registered statically
+0,org.hibernate.id.enhanced.SequenceStyleGenerator,Because Hibernate registered statically
+0,org.hibernate.internal.CoreMessageLogger_$logger,Because Hibernate registered statically
+0,org.hibernate.persister.collection.BasicCollectionPersister,Because Hibernate registered statically
+0,org.hibernate.persister.collection.OneToManyPersister,Because Hibernate registered statically
+0,org.hibernate.persister.entity.JoinedSubclassEntityPersister,Because Hibernate registered statically
+0,org.hibernate.persister.entity.SingleTableEntityPersister,Because Hibernate registered statically
+0,org.hibernate.persister.entity.UnionSubclassEntityPersister,Because Hibernate registered statically
+0,org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorBuilderImpl,Because Hibernate registered statically
+0,org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorBuilderImpl,Because Hibernate registered statically
+0,org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor,Because Hibernate registered statically
+0,org.hibernate.tuple.component.DynamicMapComponentTuplizer,Because Hibernate registered statically
+0,org.hibernate.tuple.component.PojoComponentTuplizer,Because Hibernate registered statically
+0,org.hibernate.tuple.entity.DynamicMapEntityTuplizer,Because Hibernate registered statically
+0,org.hibernate.tuple.entity.PojoEntityTuplizer,Because Hibernate registered statically
+0,org.hibernate.type.EnumType,Because Hibernate registered statically
+0,org.jboss.resteasy.reactive.common.jaxrs.RuntimeDelegateImpl,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerBooleanMessageBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerByteArrayMessageBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerCharArrayMessageBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerCharacterMessageBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerDefaultTextPlainBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerFileBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerFilePartBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerFormUrlEncodedProvider,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerInputStreamMessageBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerNumberMessageBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerPathBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerPathPartBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerReaderBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.providers.serialisers.ServerStringMessageBodyHandler,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.vertx.serializers.ServerMutinyAsyncFileMessageBodyWriter,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.vertx.serializers.ServerMutinyBufferMessageBodyWriter,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.vertx.serializers.ServerVertxAsyncFileMessageBodyWriter,Because Quarkus registers it directly or via an extension
+0,org.jboss.resteasy.reactive.server.vertx.serializers.ServerVertxBufferMessageBodyWriter,Because Quarkus registers it directly or via an extension
+0,org.postgresql.Driver,Because Quarkus registers it directly or via an extension
+0,sun.nio.ch.SelectorImpl,Because it was defined in configuration file jar:file:/home/g/1/mendrugo/profile-buildtime/hibernate-orm-byteman/target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.netty.netty-transport-4.1.74.Final.jar!/META-INF/native-image/io.netty/transport/reflection-config.json
+0,sun.security.util.Resources,Because of bundle sun.security.util.Resources
+0,sun.text.resources.BreakIteratorInfo,Because of bundle sun.text.resources.BreakIteratorInfo
+0,sun.text.resources.BreakIteratorResources,Because of bundle sun.text.resources.BreakIteratorResources
+0,sun.text.resources.CollationData,Because of bundle sun.text.resources.CollationData
+0,sun.text.resources.FormatData,Because of bundle sun.text.resources.FormatData
+0,sun.text.resources.FormatData_en,Because of bundle sun.text.resources.FormatData
+0,sun.text.resources.cldr.FormatData,Because of bundle sun.text.resources.cldr.FormatData
+0,sun.text.resources.cldr.FormatData_en,Because of bundle sun.text.resources.cldr.FormatData
+0,sun.text.resources.cldr.ext.FormatData_en_001,Because of bundle sun.text.resources.cldr.FormatData
+0,sun.text.resources.cldr.ext.FormatData_en_GB,Because of bundle sun.text.resources.cldr.FormatData
+0,sun.util.logging.resources.logging,Because of bundle sun.util.logging.resources.logging
+0,sun.util.resources.TimeZoneNames,Because of bundle sun.util.resources.TimeZoneNames
+0,sun.util.resources.TimeZoneNames_en,Because of bundle sun.util.resources.TimeZoneNames
+0,sun.util.resources.cldr.CalendarData,Because of bundle sun.util.resources.cldr.CalendarData
+0,sun.util.resources.cldr.CurrencyNames,Because of bundle sun.util.resources.cldr.CurrencyNames
+0,sun.util.resources.cldr.CurrencyNames_en,Because of bundle sun.util.resources.cldr.CurrencyNames
+0,sun.util.resources.cldr.LocaleNames,Because of bundle sun.util.resources.cldr.LocaleNames
+0,sun.util.resources.cldr.LocaleNames_en,Because of bundle sun.util.resources.cldr.LocaleNames
+0,sun.util.resources.cldr.TimeZoneNames,Because of bundle sun.util.resources.cldr.TimeZoneNames
+0,sun.util.resources.cldr.TimeZoneNames_en,Because of bundle sun.util.resources.cldr.TimeZoneNames
+0,sun.util.resources.cldr.ext.CurrencyNames_en_001,Because of bundle sun.util.resources.cldr.CurrencyNames
+0,sun.util.resources.cldr.ext.LocaleNames_en_001,Because of bundle sun.util.resources.cldr.LocaleNames
+0,sun.util.resources.cldr.ext.LocaleNames_en_GB,Because of bundle sun.util.resources.cldr.LocaleNames
+0,sun.util.resources.cldr.ext.TimeZoneNames_en_001,Because of bundle sun.util.resources.cldr.TimeZoneNames
+0,sun.util.resources.cldr.ext.TimeZoneNames_en_GB,Because of bundle sun.util.resources.cldr.TimeZoneNames
+END 7a075fb5b7bbe40db14e725173b9f868

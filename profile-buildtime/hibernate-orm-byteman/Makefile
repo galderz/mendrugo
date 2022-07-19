@@ -23,7 +23,7 @@ comma := ,
 ifdef DEBUG
   args += -Dquarkus.native.additional-build-args=-J-javaagent:$(byteman_jar)=boot:$(byteman_jar)\\$(comma)$(byteman_scripts)\\$(comma)$(byteman_sysjar),-H:HeapVerifierVerbosity=1,--debug-attach=*:8000
 else ifdef VERBOSE
-  args += -Dquarkus.native.additional-build-args=-J-javaagent:$(byteman_jar)=boot:$(byteman_jar)\\$(comma)$(byteman_scripts)\\$(comma)$(byteman_sysjar)\\$(comma)prop:org.jboss.byteman.verbose=true,-H:HeapVerifierVerbosity=1
+  args += -Dquarkus.native.additional-build-args=-H:+PrintClassInitialization,-J-javaagent:$(byteman_jar)=boot:$(byteman_jar)\\$(comma)$(byteman_scripts)\\$(comma)$(byteman_sysjar)\\$(comma)prop:org.jboss.byteman.verbose=true,-H:HeapVerifierVerbosity=1
 else
   args += -Dquarkus.native.additional-build-args=-J-javaagent:$(byteman_jar)=boot:$(byteman_jar)\\$(comma)$(byteman_scripts)\\$(comma)$(byteman_sysjar),-H:HeapVerifierVerbosity=1
 endif
