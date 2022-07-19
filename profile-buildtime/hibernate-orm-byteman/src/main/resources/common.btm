@@ -1,0 +1,11 @@
+RULE increment iterations
+CLASS com.oracle.graal.pointsto.PointsToAnalysis
+METHOD finish
+AT ENTRY
+BIND
+  numIterations = incrementCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
+IF TRUE
+DO
+  traceln(prefix + " ==> start iteration " + numIterations);
+ENDRULE

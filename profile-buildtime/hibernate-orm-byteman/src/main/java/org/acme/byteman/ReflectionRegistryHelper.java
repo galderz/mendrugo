@@ -109,15 +109,9 @@ public class ReflectionRegistryHelper extends Helper
                 , "Because of static invocation %s".formatted(STATIC_INVOKES.get(Thread.currentThread()))
             ));
         }
-//        else if (stack.contains("org.graalvm.compiler.java.BytecodeParser.buildRootMethod") && stack.contains("com.oracle.svm.methodhandles.MethodHandleFeature.registerMemberName"))
-//        {
-//            REFLECTION_REASONS.putIfAbsent(clazz, new Reason(numIteration, clazz
-//                , "Because method %s is a root entry point to the application".formatted(ANALYSIS_METHODS.get(Thread.currentThread()))
-//            ));
-//        }
         else
         {
-            System.out.printf("Unknown reflection registration of %s at %d iteration:%n%s%n", clazz, numIteration, formatStack());
+            // System.out.printf("Unknown reflection registration of %s at %d iteration:%n%s%n", clazz, numIteration, formatStack());
         }
     }
 
@@ -127,7 +121,7 @@ public class ReflectionRegistryHelper extends Helper
         entries.sort(Comparator.comparing(e -> e.getKey().getCanonicalName()));
 
         final String summary = entries.stream()
-            .map(e -> "%d,%s,%s".formatted(e.getValue().iteration, e.getKey().getCanonicalName(), e.getValue().reason))
+            .map(e -> "%d,%s,%s".formatted(e.getValue().iteration(), e.getKey().getCanonicalName(), e.getValue().reason()))
             .collect(Collectors.joining("\n"));
 
         MessageDigest md = MessageDigest.getInstance("MD5");
@@ -135,9 +129,9 @@ public class ReflectionRegistryHelper extends Helper
 
         final String header = "BEGIN %x".formatted(new BigInteger(1, digest));
         final String footer = "END %x".formatted(new BigInteger(1, digest));
-        System.out.println(header);
-        System.out.println(summary);
-        System.out.println(footer);
+        // System.out.println(header);
+        // System.out.println(summary);
+        // System.out.println(footer);
 
         PrintWriter printWriter = new PrintWriter(new FileWriter("reflection-registry.csv"));
         printWriter.println(header);
@@ -145,6 +139,4 @@ public class ReflectionRegistryHelper extends Helper
         printWriter.println(footer);
         printWriter.close();
     }
-
-    record Reason(int iteration, Class<?> clazz, String reason) {}
 }

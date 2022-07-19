@@ -106,7 +106,7 @@ DO
   trackStaticInvoke($this.source.toString(), $this.targetMethod.format("%H.%n"));
 ENDRULE
 
-RULE print summary
+RULE print summary reflection registry
 CLASS com.oracle.graal.pointsto.PointsToAnalysis
 METHOD runAnalysis
 HELPER org.acme.byteman.ReflectionRegistryHelper
@@ -114,16 +114,4 @@ AT EXIT
 IF TRUE
 DO
   printSummary();
-ENDRULE
-
-RULE increment iterations
-CLASS com.oracle.graal.pointsto.PointsToAnalysis
-METHOD finish
-AT ENTRY
-BIND
-  numIterations = incrementCounter("numIterations");
-  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
-IF TRUE
-DO
-  traceln(prefix + " ==> start iteration " + numIterations);
 ENDRULE

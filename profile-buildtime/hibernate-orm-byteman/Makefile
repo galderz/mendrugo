@@ -31,7 +31,7 @@ endif
 byteman_jar = $(BYTEMAN_HOME)/byteman-4.0.18.jar
 
 #byteman_scripts = script:$(resources_dir)/graalvm.btm
-byteman_scripts = script:$(resources_dir)/reflection-registry.btm
+byteman_scripts = script:$(resources_dir)/common.btm\\$(comma)script:$(resources_dir)/reflection-registry.btm\\$(comma)script:$(resources_dir)/class-discovery.btm
 
 byteman_sysjar = sys:hibernate-orm-quickstart-1.0.0-SNAPSHOT-runner.jar
 # Root for native-image invocation is `target/*-native-image-source-jar` folder
@@ -40,4 +40,5 @@ resources_dir := ../../src/main/resources
 package:
 > $(mvn) package -DskipTests -Pnative $(args)
 > diff src/main/resources/expected-reflection-registry.csv target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/reflection-registry.csv
+> diff src/main/resources/expected-class-discovery.csv target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/class-discovery.csv
 .PHONY: package

@@ -1,0 +1,23 @@
+RULE discover class
+CLASS com.oracle.svm.core.hub.ClassForNameSupport
+METHOD registerClass
+HELPER org.acme.byteman.ClassDiscoveryHelper
+AT ENTRY
+BIND
+  numIterations = readCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
+IF TRUE
+DO
+  # traceln(prefix + " discover class " + $1.toString());
+  trackClassDiscovery(numIterations, $1);
+ENDRULE
+
+RULE print summary class discovery
+CLASS com.oracle.graal.pointsto.PointsToAnalysis
+METHOD runAnalysis
+HELPER org.acme.byteman.ClassDiscoveryHelper
+AT EXIT
+IF TRUE
+DO
+  printSummary();
+ENDRULE
