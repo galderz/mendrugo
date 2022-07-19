@@ -10,12 +10,10 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -26,7 +24,7 @@ public class ReflectionRegistryHelper extends Helper
     static final Map<Thread, Object> CONFIGURATION_LOCATIONS = new ConcurrentHashMap<>();
     static final Map<Thread, Object> BUNDLE_NAMES = new ConcurrentHashMap<>();
     static final Map<Thread, Object> ANALYSIS_METHODS = new ConcurrentHashMap<>();
-    static final Map<Thread, Object> STATIC_METHODS = new ConcurrentHashMap<>();
+    static final Map<Thread, Object> STATIC_INVOKES = new ConcurrentHashMap<>();
 
     protected ReflectionRegistryHelper(Rule rule)
     {
@@ -46,6 +44,11 @@ public class ReflectionRegistryHelper extends Helper
     public void trackAnalysisMethod(String methodName)
     {
         ANALYSIS_METHODS.put(Thread.currentThread(), methodName);
+    }
+
+    public void trackStaticInvoke(String source, String target)
+    {
+        STATIC_INVOKES.put(Thread.currentThread(), "%s -> %s".formatted(source, target));
     }
 
     public void trackReflectionRegistration(int numIteration, Object obj)
@@ -98,6 +101,12 @@ public class ReflectionRegistryHelper extends Helper
             // System.out.printf("Known reflection registration of %s at %d iteration:%n%s%n", clazz, numIteration, formatStack());
             REFLECTION_REASONS.putIfAbsent(clazz, new Reason(numIteration, clazz
                 , "Because root method %s calls AtomicIntegerFieldUpdater.newUpdater".formatted(ANALYSIS_METHODS.get(Thread.currentThread()))
+            ));
+        }
+        else if (stack.contains("com.oracle.graal.pointsto.flow.StaticInvokeTypeFlow.update"))
+        {
+            REFLECTION_REASONS.putIfAbsent(clazz, new Reason(numIteration, clazz
+                , "Because of static invocation %s".formatted(STATIC_INVOKES.get(Thread.currentThread()))
             ));
         }
 //        else if (stack.contains("org.graalvm.compiler.java.BytecodeParser.buildRootMethod") && stack.contains("com.oracle.svm.methodhandles.MethodHandleFeature.registerMemberName"))

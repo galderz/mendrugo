@@ -39,4 +39,5 @@ resources_dir := ../../src/main/resources
 
 package:
 > $(mvn) package -DskipTests -Pnative $(args)
+> diff src/main/resources/expected-reflection-registry.csv target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/reflection-registry.csv
 .PHONY: package

@@ -92,6 +92,20 @@ DO
   trackAnalysisMethod($2.format("%H.%n"));
 ENDRULE
 
+RULE static invoke
+CLASS com.oracle.graal.pointsto.flow.StaticInvokeTypeFlow
+METHOD update
+HELPER org.acme.byteman.ReflectionRegistryHelper
+AT ENTRY
+BIND
+  numIterations = readCounter("numIterations");
+  prefix = "(" + Thread.currentThread().getName() + ") [run-analysis-" + numIterations + "]";
+IF TRUE
+DO
+  # traceln(prefix + " static invoke " + $this.source.toString() + " -> " + $this.targetMethod.format("%H.%n"));
+  trackStaticInvoke($this.source.toString(), $this.targetMethod.format("%H.%n"));
+ENDRULE
+
 RULE print summary
 CLASS com.oracle.graal.pointsto.PointsToAnalysis
 METHOD runAnalysis

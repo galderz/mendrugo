@@ -1,4 +1,4 @@
-BEGIN 7a075fb5b7bbe40db14e725173b9f868
+BEGIN ec201b90c9fe531381d05cb04935d492
 0,com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean,Because Quarkus registers it directly or via an extension
 0,com.arjuna.ats.internal.arjuna.coordinator.CheckedActionFactoryImple,Because Quarkus registers it directly or via an extension
 0,com.arjuna.ats.internal.arjuna.objectstore.ShadowNoFileLockStore,Because Quarkus registers it directly or via an extension
@@ -51,6 +51,7 @@ BEGIN 7a075fb5b7bbe40db14e725173b9f868
 0,io.quarkus.resteasy.reactive.server.runtime.exceptionmappers.ForbiddenExceptionMapper,Because Quarkus registers it directly or via an extension
 0,io.quarkus.resteasy.reactive.server.runtime.exceptionmappers.UnauthorizedExceptionMapper$GeneratedExceptionHandlerFor$UnauthorizedException$OfMethod$handle,Because Quarkus registers it directly or via an extension
 0,io.quarkus.runner.ApplicationImpl,Because Quarkus registers it directly or via an extension
+1,io.quarkus.runner.GeneratedMain,Because of static invocation at com.oracle.svm.core.JavaMainWrapper.run(JavaMainWrapper.java:185) [bci: 0] -> com.oracle.svm.core.JavaMainWrapper.runCore
 0,io.quarkus.runtime.annotations.CommandLineArguments,Because Quarkus registers it directly or via an extension
 0,io.quarkus.runtime.configuration.CharsetConverter,Because Quarkus registers it directly or via an extension
 0,io.quarkus.runtime.configuration.CidrAddressConverter,Because Quarkus registers it directly or via an extension
@@ -101,8 +102,12 @@ BEGIN 7a075fb5b7bbe40db14e725173b9f868
 0,io.smallrye.context.api.NamedInstance,Because Quarkus registers it directly or via an extension
 0,io.smallrye.mutiny.vertx.core.AbstractVerticle,Because Quarkus registers it directly or via an extension
 0,java.lang.Object,Because GraalVM registers it for Object[]
+2,java.lang.invoke.MethodHandleImpl,Because of static invocation at java.lang.invoke.MethodHandleImpl.getConstantHandle(MethodHandleImpl.java:2127) [bci: 14] -> java.lang.invoke.MethodHandleImpl.makeConstantHandle
+2,java.lang.invoke.MethodHandleImpl.ArrayAccessor,Because of static invocation at java.lang.invoke.MethodHandleImpl.makeArrayElementAccessor(MethodHandleImpl.java:73) [bci: 7] -> java.lang.invoke.MethodHandleImpl$ArrayAccess.objectAccessor
 0,java.lang.management.ManagementFactory,Because it was defined in configuration file jar:file:/home/g/1/mendrugo/profile-buildtime/hibernate-orm-byteman/target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.netty.netty-transport-4.1.74.Final.jar!/META-INF/native-image/io.netty/transport/reflection-config.json
 0,java.lang.management.RuntimeMXBean,Because it was defined in configuration file jar:file:/home/g/1/mendrugo/profile-buildtime/hibernate-orm-byteman/target/hibernate-orm-quickstart-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.netty.netty-transport-4.1.74.Final.jar!/META-INF/native-image/io.netty/transport/reflection-config.json
+2,java.sql.Blob,Because of static invocation at org.hibernate.engine.jdbc.AbstractLobCreator.wrap(AbstractLobCreator.java:20) [bci: 1] -> org.hibernate.engine.jdbc.SerializableBlobProxy.generateProxy
+2,java.sql.Clob,Because of static invocation at org.hibernate.engine.jdbc.AbstractLobCreator.wrap(AbstractLobCreator.java:35) [bci: 1] -> org.hibernate.engine.jdbc.SerializableNClobProxy.generateProxy
 0,java.sql.ResultSet,Because Quarkus registers it directly or via an extension
 0,java.sql.ResultSet[],Because Quarkus registers it directly or via an extension
 0,java.sql.Statement,Because Quarkus registers it directly or via an extension
@@ -125,12 +130,21 @@ BEGIN 7a075fb5b7bbe40db14e725173b9f868
 0,javax.inject.Named,Because Quarkus registers it directly or via an extension
 0,javax.transaction.Transactional,Because Quarkus registers it directly or via an extension
 0,jdk.internal.access.foreign.MemorySegmentProxy,Because GraalVM registers it for JNI access to Java NIO
+2,jdk.proxy4.$Proxy369,Because of static invocation at org.hibernate.engine.jdbc.AbstractLobCreator.wrap(AbstractLobCreator.java:35) [bci: 1] -> org.hibernate.engine.jdbc.SerializableNClobProxy.generateProxy
+2,jdk.proxy4.$Proxy370,Because of static invocation at org.hibernate.engine.jdbc.NonContextualLobCreator.createNClob(NonContextualLobCreator.java:53) [bci: 1] -> org.hibernate.engine.jdbc.NClobProxy.generateProxy
+2,jdk.proxy4.$Proxy371,Because of static invocation at org.hibernate.engine.jdbc.NonContextualLobCreator.createClob(NonContextualLobCreator.java:43) [bci: 1] -> org.hibernate.engine.jdbc.ClobProxy.generateProxy
+2,jdk.proxy4.$Proxy372,Because of static invocation at org.hibernate.engine.jdbc.AbstractLobCreator.wrap(AbstractLobCreator.java:29) [bci: 19] -> org.hibernate.engine.jdbc.SerializableClobProxy.generateProxy
+2,jdk.proxy4.$Proxy373,Because of static invocation at org.hibernate.engine.jdbc.AbstractLobCreator.wrap(AbstractLobCreator.java:20) [bci: 1] -> org.hibernate.engine.jdbc.SerializableBlobProxy.generateProxy
 0,org.acme.hibernate.orm.Fruit,Because Quarkus registers it directly or via an extension
 0,org.acme.hibernate.orm.FruitResource,Because Quarkus registers it directly or via an extension
 0,org.eclipse.microprofile.config.inject.ConfigProperties,Because Quarkus registers it directly or via an extension
 0,org.eclipse.microprofile.config.inject.ConfigProperty,Because Quarkus registers it directly or via an extension
 0,org.glassfish.json.JsonProviderImpl,Because Quarkus registers it directly or via an extension
 0,org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl,Because Hibernate registered statically
+2,org.hibernate.engine.jdbc.ClobImplementer,Because of static invocation at org.hibernate.engine.jdbc.NonContextualLobCreator.createNClob(NonContextualLobCreator.java:53) [bci: 1] -> org.hibernate.engine.jdbc.NClobProxy.generateProxy
+2,org.hibernate.engine.jdbc.WrappedBlob,Because of static invocation at org.hibernate.engine.jdbc.AbstractLobCreator.wrap(AbstractLobCreator.java:20) [bci: 1] -> org.hibernate.engine.jdbc.SerializableBlobProxy.generateProxy
+2,org.hibernate.engine.jdbc.WrappedClob,Because of static invocation at org.hibernate.engine.jdbc.AbstractLobCreator.wrap(AbstractLobCreator.java:29) [bci: 19] -> org.hibernate.engine.jdbc.SerializableClobProxy.generateProxy
+2,org.hibernate.engine.jdbc.WrappedNClob,Because of static invocation at org.hibernate.engine.jdbc.AbstractLobCreator.wrap(AbstractLobCreator.java:35) [bci: 1] -> org.hibernate.engine.jdbc.SerializableNClobProxy.generateProxy
 0,org.hibernate.engine.jdbc.connections.internal.DatasourceConnectionProviderImpl,Because Quarkus registers it directly or via an extension
 0,org.hibernate.engine.jdbc.cursor.internal.StandardRefCursorSupport,Because Quarkus registers it directly or via an extension
 0,org.hibernate.event.spi.AutoFlushEventListener[],Because Hibernate registered statically
@@ -224,4 +238,4 @@ BEGIN 7a075fb5b7bbe40db14e725173b9f868
 0,sun.util.resources.cldr.ext.LocaleNames_en_GB,Because of bundle sun.util.resources.cldr.LocaleNames
 0,sun.util.resources.cldr.ext.TimeZoneNames_en_001,Because of bundle sun.util.resources.cldr.TimeZoneNames
 0,sun.util.resources.cldr.ext.TimeZoneNames_en_GB,Because of bundle sun.util.resources.cldr.TimeZoneNames
-END 7a075fb5b7bbe40db14e725173b9f868
+END ec201b90c9fe531381d05cb04935d492
