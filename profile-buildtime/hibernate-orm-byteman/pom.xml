@@ -55,6 +55,11 @@
             <artifactId>byteman</artifactId>
             <version>4.0.18</version>
         </dependency>
+        <dependency>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>pointsto</artifactId>
+            <version>22.1.1.0-SNAPSHOT</version>
+        </dependency>
 
         <!-- Testing: -->
         <dependency>

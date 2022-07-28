@@ -1,5 +1,30 @@
-BEGIN 32d85196de679ea22fc34f8dce92aadd
-3,antlr.CommonToken,Because it was registered for reflection
+BEGIN e0db395bcb3ddf89940746d3df2b2310
+2,antlr.ANTLRException,Because it's a superclass or interface for class antlr.RecognitionException
+2,antlr.ASTFactory,Because it's a superclass or interface for class org.hibernate.sql.ordering.antlr.Factory
+2,antlr.BaseAST,Because it's a superclass or interface for class antlr.CommonAST
+2,antlr.CharScanner,Because it's a superclass or interface for class org.hibernate.tool.schema.ast.SqlScriptLexer
+2,antlr.CharStreamException,Because it's a superclass or interface for class antlr.CharStreamIOException
+2,antlr.CommonAST,Because it's a superclass or interface for class org.hibernate.sql.ordering.antlr.NodeSupport
+2,antlr.CommonToken,Because it's a superclass or interface for class org.hibernate.hql.internal.ast.HqlToken
+2,antlr.FileLineFormatter,Because it's a superclass or interface for class antlr.DefaultFileLineFormatter
+2,antlr.InputBuffer,Because it's a superclass or interface for class antlr.CharBuffer
+2,antlr.LLkParser,Because it's a superclass or interface for class org.hibernate.tool.schema.ast.GeneratedSqlScriptParser
+2,antlr.Parser,Because it's a superclass or interface for class antlr.LLkParser
+2,antlr.RecognitionException,Because it's a superclass or interface for class antlr.SemanticException
+2,antlr.SemanticException,Because it's a superclass or interface for class org.hibernate.hql.internal.ast.DetailedSemanticException
+2,antlr.Token,Because it's a superclass or interface for class antlr.CommonToken
+2,antlr.TokenStream,Because it's a superclass or interface for class org.hibernate.tool.schema.ast.SqlScriptLexer
+2,antlr.TokenStreamException,Because it's a superclass or interface for class antlr.TokenStreamIOException
+2,antlr.TreeParser,Because it's a superclass or interface for class org.hibernate.hql.internal.antlr.SqlGeneratorBase
+2,antlr.collections.AST,Because it's a superclass or interface for class antlr.ASTNULLType
+1,boolean[],Because it's a superclass or interface for class com.fasterxml.jackson.databind.ser.std.StdArraySerializers$BooleanArraySerializer
+1,byte[],Because it's a superclass or interface for class org.jboss.resteasy.reactive.server.providers.serialisers.ServerByteArrayMessageBodyHandler
+2,byte[][],Because it's a superclass or interface for class org.postgresql.jdbc.ArrayEncoding$14
+1,char[],Because it's a superclass or interface for class com.fasterxml.jackson.databind.deser.std.PrimitiveArrayDeserializers$CharDeser
+2,com.arjuna.ats.arjuna.AtomicAction,Because it's a superclass or interface for class com.arjuna.ats.internal.jta.transaction.arjunacore.AtomicAction
+2,com.arjuna.ats.arjuna.StateManager,Because it's a superclass or interface for class com.arjuna.ats.arjuna.coordinator.BasicAction
+2,com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBeanMBean,Because it's a superclass or interface for class com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean
+2,com.arjuna.ats.arjuna.common.CoreEnvironmentBeanMBean,Because it's a superclass or interface for class com.arjuna.ats.arjuna.common.CoreEnvironmentBean
 1,com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean,Because it was registered for reflection
 1,com.arjuna.ats.internal.arjuna.coordinator.CheckedActionFactoryImple,Because it was registered for reflection
 1,com.arjuna.ats.internal.arjuna.objectstore.ShadowNoFileLockStore,Because it was registered for reflection
