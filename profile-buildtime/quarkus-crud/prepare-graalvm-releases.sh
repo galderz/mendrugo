@@ -24,8 +24,9 @@ prepare()
 #    graalvm-ce-java17-21.3.1 \
 #    graalvm-ce-java11-22.0.0.2 \
 #    graalvm-ce-java11-21.3.1
+#    graalvm-ce-java17-22.1.0
 for graalvm_home in \
-    graalvm-ce-java17-22.1.0
+    graalvm-ce-java17-22.2.0
 do
     prepare $graalvm_home
 done
