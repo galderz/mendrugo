@@ -1,30 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>org.example</groupId>
-    <artifactId>methodhandles-reflection</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>methodhandles</artifactId>
+    <packaging>jar</packaging>
+    <version>0.1</version>
 
     <properties>
-        <graal-sdk.version>20.3.0</graal-sdk.version>
-
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
+<!--
     <dependencies>
         <dependency>
-            <groupId>org.graalvm.nativeimage</groupId>
+            <groupId>com.oracle.substratevm</groupId>
             <artifactId>svm</artifactId>
-            <version>${graal-sdk.version}</version>
+            <version>19.2.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
+-->
 
     <build>
         <finalName>example</finalName>
@@ -35,12 +33,11 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.example.methodhandles.reflection.Main</mainClass>
+                            <mainClass>org.example.methodhandles.MethodHandling</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>
