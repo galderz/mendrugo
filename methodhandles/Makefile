@@ -21,6 +21,8 @@ comma := ,
 
 bin = $(GRAALVM_HOME)/bin
 native_image += $(bin)/native-image
+native_image += -ea
+native_image += -esa
 native_image += --no-fallback
 native_image += -H:+ReportExceptionStackTraces
 
@@ -37,6 +39,7 @@ endif
 
 # Project
 sources += $(shell find src/ -type f -name '*.java')
+sources += $(shell find src/ -type f -name '*.json')
 jar := target/example.jar
 program := target/a.out
 
