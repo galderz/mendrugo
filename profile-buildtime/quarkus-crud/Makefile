@@ -62,14 +62,14 @@ analyse:
 profiling: $(mvnw)
 > mkdir -p target/$(GRAALVM_HOME)
 > cd $(app)
-> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-wall.svg\\,event=wall\\,threads\\,interval=10ms | tee target/console-wall.log
-> cp $(native_dir)/*.svg ../target/$(GRAALVM_HOME)
-> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-lock.svg\\,event=lock\\,total | tee target/console-lock.log
-> cp $(native_dir)/*.svg ../target/$(GRAALVM_HOME)
-> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-alloc.svg\\,event=alloc | tee target/console-alloc.log
-> cp $(native_dir)/*.svg ../target/$(GRAALVM_HOME)
-> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-cpu.svg\\,event=cpu | tee target/console-cpu.log
-> cp $(native_dir)/*.svg ../target/$(GRAALVM_HOME)
+> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-wall.html\\,event=wall\\,threads\\,interval=10ms | tee target/console-wall.log
+> cp $(native_dir)/*.html ../target/$(GRAALVM_HOME)
+> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-lock.html\\,event=lock\\,total | tee target/console-lock.log
+> cp $(native_dir)/*.html ../target/$(GRAALVM_HOME)
+> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-alloc.html\\,event=alloc | tee target/console-alloc.log
+> cp $(native_dir)/*.html ../target/$(GRAALVM_HOME)
+> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-cpu.html\\,event=cpu | tee target/console-cpu.log
+> cp $(native_dir)/*.html ../target/$(GRAALVM_HOME)
 .PHONY: profiling
 
 clean:
