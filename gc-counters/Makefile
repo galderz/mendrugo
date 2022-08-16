@@ -22,6 +22,15 @@ mx += /opt/mx/mx
 native_image = $(java_home)/bin/native-image
 project_sources += $(shell find src/ -type f -name '*.java' | sed 's: :\\ :g')
 runner := ./target/gc-counters-1.0.0-SNAPSHOT-runner
+wrk := /opt/wrk/wrk
+
+run: $(runner)
+> $< -XX:+VerboseGC -XX:+PrintHeapShape -XX:+TraceHeapChunks
+.PHONY: run
+
+bench: $(wrk)
+> $(wrk) -H 'Host: localhost' -H 'Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7' -H 'Connection: keep-alive' --latency -d 5 -c 16 --timeout 8 -t 5 http://localhost:8080/hello
+.PHONY: bench
 
 $(runner): $(native_image) $(project_sources)
 > $(mvn) package -DskipTests -Dnative
