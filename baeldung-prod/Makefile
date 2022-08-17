@@ -15,6 +15,8 @@ graalvm_home := /opt/graalvm-ce-java17-22.2.0
 java = /opt/adopt-17.0.4+8/bin/java
 
 baeldung_home := /opt/baeldung-tutorials
+baeldung_spring_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/spring-project
+baeldung_spring_runner = $(baeldung_spring_home)/target/spring-project
 baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project
 baeldung_quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
 jar = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project/target/quarkus-app/quarkus-run.jar
@@ -30,9 +32,9 @@ else ifeq ($(GC),parallel)
   jvm_args += -verbose:gc
 endif
 
-run-native: $(baeldung_quarkus_runner)
-> $< $(native_args)
-.PHONY: run-native
+quarkus-native: $(baeldung_quarkus_runner)
+> $<
+.PHONY: quarkus-native
 
 $(baeldung_quarkus_runner): $(native_image)
 > cd $(baeldung_quarkus_home)
@@ -43,9 +45,9 @@ db:
 > docker run --name mysqldb --network=host -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=baeldung -d mysql:5.7.38 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 .PHONY: db
 
-run-jvm: $(jar)
+quarkus-jvm: $(jar)
 > $(java) $(jvm_args) -jar $<
-.PHONY: run-jvm
+.PHONY: quarkus-jvm
 
 $(jar): $(java)
 > cd $(baeldung_home)
@@ -54,9 +56,19 @@ $(jar): $(java)
 clean:
 > cd $(baeldung_quarkus_home)
 > $(mvn) clean
+> cd $(baeldung_spring_home)
+> $(mvn) clean
 .PHONY: clean
 
 clean-all:
 > cd $(baeldung_quarkus_home)
 > git clean -dfx
 .PHONY: clean-all
+
+spring-native: $(baeldung_spring_runner)
+> $<
+.PHONY: spring-native
+
+$(baeldung_spring_runner): $(native_image)
+> cd $(baeldung_spring_home)
+> $(mvn) package -DskipTests -Plocal-native
