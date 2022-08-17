@@ -12,6 +12,7 @@ endif
 
 args := ""
 baeldung_home := /opt/baeldung-tutorials
+baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project
 graalvm_builder := /opt/graalbuilder-17
 graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
@@ -22,7 +23,7 @@ mx += JAVA_HOME=$(graalvm_builder)
 mx += /opt/mx/mx
 mvn += JAVA_HOME=$(java_home)
 mvn += /opt/maven/bin/mvn
-quarkus_runner = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project/target/quarkus-project-0.1-SNAPSHOT-runner
+quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
 
 ifdef VERBOSE_GC
   args += -XX:+PrintGC
@@ -36,7 +37,7 @@ run: $(quarkus_runner)
 .PHONY: run
 
 $(quarkus_runner): $(native_image)
-> cd $(baeldung_home)
+> cd $(baeldung_quarkus_home)
 > $(mvn) package -DskipTests -Dnative
 
 $(native_image): $(graalvm_sources)
@@ -50,6 +51,8 @@ db:
 .PHONY: db
 
 clean:
+> cd $(baeldung_quarkus_home)
+> $(mvn) clean
 > cd $(graalvm_home)
 > $(mx) clean
 .PHONY: clean
