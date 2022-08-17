@@ -19,10 +19,12 @@ baeldung_spring_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/sp
 baeldung_spring_runner = $(baeldung_spring_home)/target/spring-project
 baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project
 baeldung_quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
+baeldung_wrk_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/wrk
 jar = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project/target/quarkus-app/quarkus-run.jar
 native_image = $(graalvm_home)/bin/native-image
 mvn += JAVA_HOME=$(graalvm_home)
 mvn += /opt/maven/bin/mvn
+wrk_home = /opt/wrk
 
 ifeq ($(GC),serial)
   jvm_args += -XX:+UseSerialGC
@@ -35,6 +37,11 @@ endif
 quarkus-native: $(baeldung_quarkus_runner)
 > $<
 .PHONY: quarkus-native
+
+wrk:
+> cd $(baeldung_wrk_home)
+> wrk_home=$(wrk_home) ip=$(IP) ./run_test_wrk.sh
+.PHONY: wrk
 
 $(baeldung_quarkus_runner): $(native_image)
 > cd $(baeldung_quarkus_home)
