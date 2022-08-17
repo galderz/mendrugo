@@ -12,7 +12,10 @@ endif
 
 args := ""
 baeldung_home := /opt/baeldung-tutorials
+baeldung_hyperfoil_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/hyperfoil
 baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project
+baeldung_quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
+baeldung_wrk_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/wrk
 graalvm_builder := /opt/graalbuilder-17
 graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
@@ -23,7 +26,7 @@ mx += JAVA_HOME=$(graalvm_builder)
 mx += /opt/mx/mx
 mvn += JAVA_HOME=$(java_home)
 mvn += /opt/maven/bin/mvn
-quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
+wrk_home = /opt/wrk
 
 ifdef VERBOSE_GC
   args += -XX:+PrintGC
@@ -32,11 +35,21 @@ ifdef VERBOSE_GC
   args += -XX:+TraceHeapChunks
 endif
 
-run: $(quarkus_runner)
+run: $(baeldung_quarkus_runner)
 > $< $(args)
 .PHONY: run
 
-$(quarkus_runner): $(native_image)
+wrk:
+> cd $(baeldung_wrk_home)
+> wrk_home=$(wrk_home) ip=$(IP) ./run_test_wrk.sh
+.PHONY: wrk
+
+hyperfoil:
+> cd $(baeldung_hyperfoil_home)
+> ./docker_run.sh
+.PHONY: hyperfoil
+
+$(baeldung_quarkus_runner): $(native_image)
 > cd $(baeldung_quarkus_home)
 > $(mvn) package -DskipTests -Dnative
 
