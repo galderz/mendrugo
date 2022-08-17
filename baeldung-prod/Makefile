@@ -15,6 +15,7 @@ graalvm_home := /opt/graalvm-ce-java17-22.2.0
 java = /opt/adopt-17.0.4+8/bin/java
 
 baeldung_home := /opt/baeldung-tutorials
+baeldung_hyperfoil_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/hyperfoil
 baeldung_spring_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/spring-project
 baeldung_spring_runner = $(baeldung_spring_home)/target/spring-project
 baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project
@@ -42,6 +43,11 @@ wrk:
 > cd $(baeldung_wrk_home)
 > wrk_home=$(wrk_home) ip=$(IP) ./run_test_wrk.sh
 .PHONY: wrk
+
+hyperfoil:
+> cd $(baeldung_hyperfoil_home)
+> ./docker_run.sh
+.PHONY: hyperfoil
 
 $(baeldung_quarkus_runner): $(native_image)
 > cd $(baeldung_quarkus_home)
