@@ -16,6 +16,7 @@ graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 graalvm_version := 22.3.0
 java_home := /opt/mandrel-mandrel/sdk/latest_graalvm_home
+java = $(java_home/bin/java
 native_image = $(java_home)/bin/native-image
 mx += JAVA_HOME=$(graalvm_builder)
 mx += /opt/mx/mx
@@ -24,15 +25,27 @@ mvn += /opt/maven/bin/mvn
 quarkus_runner = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project/target/quarkus-project-0.1-SNAPSHOT-runner
 
 ifdef VERBOSE_GC
-  args += -XX:+PrintGC
-  args += -XX:+VerboseGC
-  args += -XX:+PrintHeapShape
-  args += -XX:+TraceHeapChunks
+  native_args += -XX:+PrintGC
+  native_args += -XX:+VerboseGC
+  native_args += -XX:+PrintHeapShape
+  native_args += -XX:+TraceHeapChunks
+endif
+
+ifeq ($(GC),serial)
+  jvm_args += -XX:+UseSerialGC
+  jvm_args += -verbose:gc
+else ifeq ($(GC),parallel)
+  jvm_args += -XX:+UseParallelGC
+  jvm_args += -verbose:gc
 endif
 
 run-native: $(quarkus_runner)
-> $< $(args)
+> $< $(native_args)
 .PHONY: run-native
+
+run-jvm: $(native_image)
+> $(java) $(jvm_args)
+.PHONY: run-jvm
 
 $(quarkus_runner): $(native_image)
 > cd $(baeldung_home)
