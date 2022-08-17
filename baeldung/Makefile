@@ -16,12 +16,14 @@ graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 graalvm_version := 22.3.0
 java_home := /opt/mandrel-mandrel/sdk/latest_graalvm_home
-java = $(java_home/bin/java
+java = /opt/java-17/bin/java
+jar = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project/target/quarkus-app/quarkus-run.jar
 native_image = $(java_home)/bin/native-image
 mx += JAVA_HOME=$(graalvm_builder)
 mx += /opt/mx/mx
 mvn += JAVA_HOME=$(java_home)
 mvn += /opt/maven/bin/mvn
+native_args := ""
 quarkus_runner = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project/target/quarkus-project-0.1-SNAPSHOT-runner
 
 ifdef VERBOSE_GC
@@ -43,10 +45,6 @@ run-native: $(quarkus_runner)
 > $< $(native_args)
 .PHONY: run-native
 
-run-jvm: $(native_image)
-> $(java) $(jvm_args)
-.PHONY: run-jvm
-
 $(quarkus_runner): $(native_image)
 > cd $(baeldung_home)
 > $(mvn) package -DskipTests -Dnative
@@ -60,6 +58,14 @@ db:
 > docker rm /mysqldb
 > docker run --name mysqldb --network=host -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=baeldung -d mysql:5.7.38 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 .PHONY: db
+
+run-jvm: $(jar)
+> $(java) $(jvm_args) -jar $<
+.PHONY: run-jvm
+
+$(jar): $(java)
+> cd $(baeldung_home)
+> $(mvn) package -DskipTests
 
 clean:
 > cd $(graalvm_home)
