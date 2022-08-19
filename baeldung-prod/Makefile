@@ -35,8 +35,18 @@ else ifeq ($(GC),parallel)
   jvm_args += -verbose:gc
 endif
 
+ifeq ($(VERBOSE_GC),1)
+  native_args += -XX:+PrintGC
+else ifeq ($(VERBOSE_GC),2)
+  native_args += -XX:+VerboseGC
+else ifeq ($(VERBOSE_GC),3)
+  native_args += -XX:+PrintHeapShape
+else ifeq ($(VERBOSE_GC),4)
+  native_args += -XX:+TraceHeapChunks
+endif
+
 quarkus-native: $(baeldung_quarkus_runner)
-> $<
+> $< $(native_args)
 .PHONY: quarkus-native
 
 wrk:
