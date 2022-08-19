@@ -36,7 +36,7 @@ ifdef VERBOSE_GC
 endif
 
 run: $(baeldung_quarkus_runner)
-> $< $(args)
+> $< $(args) |& tee target/console.log
 .PHONY: run
 
 wrk:
