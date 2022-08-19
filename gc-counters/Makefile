@@ -28,9 +28,9 @@ run: $(runner)
 > $< -XX:+VerboseGC -XX:+PrintHeapShape -XX:+TraceHeapChunks
 .PHONY: run
 
-bench: $(wrk)
+wrk: $(wrk)
 > $(wrk) -H 'Host: localhost' -H 'Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7' -H 'Connection: keep-alive' --latency -d 5 -c 16 --timeout 8 -t 5 http://localhost:8080/hello
-.PHONY: bench
+.PHONY: wrk
 
 $(runner): $(native_image) $(project_sources)
 > $(mvn) package -DskipTests -Dnative
