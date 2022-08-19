@@ -21,7 +21,7 @@ baeldung_spring_runner = $(baeldung_spring_home)/target/spring-project
 baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project
 baeldung_quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
 baeldung_wrk_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/wrk
-jar = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project/target/quarkus-app/quarkus-run.jar
+baeldung_quarkus_jar = $(baeldung_quarkus_home)/target/quarkus-app/quarkus-run.jar
 native_image = $(graalvm_home)/bin/native-image
 mvn += JAVA_HOME=$(graalvm_home)
 mvn += /opt/maven/bin/mvn
@@ -58,12 +58,12 @@ db:
 > docker run --name mysqldb --network=host -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=baeldung -d mysql:5.7.38 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 .PHONY: db
 
-quarkus-jvm: $(jar)
+quarkus-jvm: $(baeldung_quarkus_jar)
 > $(java) $(jvm_args) -jar $<
 .PHONY: quarkus-jvm
 
-$(jar): $(java)
-> cd $(baeldung_home)
+$(baeldung_quarkus_jar): $(java)
+> cd $(baeldung_quarkus_home)
 > $(mvn) package -DskipTests
 
 clean:
