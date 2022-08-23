@@ -45,6 +45,10 @@ else ifeq ($(VERBOSE_GC),4)
   native_args += -XX:+TraceHeapChunks
 endif
 
+ifdef XMN
+  native_args += -Xmn$(XMN)
+endif
+
 quarkus-native: $(baeldung_quarkus_runner)
 > $< $(native_args)
 .PHONY: quarkus-native
