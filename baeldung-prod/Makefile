@@ -25,6 +25,11 @@ baeldung_quarkus_jar = $(baeldung_quarkus_home)/target/quarkus-app/quarkus-run.j
 native_image = $(graalvm_home)/bin/native-image
 mvn += JAVA_HOME=$(graalvm_home)
 mvn += /opt/maven/bin/mvn
+quarkus_home := /opt/quarkus-quarkus
+quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
+quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
+quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
+quarkus_version := 999-SNAPSHOT
 wrk_home = /opt/wrk
 
 ifeq ($(GC),serial)
@@ -63,7 +68,7 @@ hyperfoil:
 > ./docker_run.sh
 .PHONY: hyperfoil
 
-$(baeldung_quarkus_runner): $(native_image)
+$(baeldung_quarkus_runner): $(native_image) $(quarkus_jar_core)
 > cd $(baeldung_quarkus_home)
 > $(mvn) package -DskipTests -Dnative
 
@@ -85,6 +90,8 @@ clean:
 > $(mvn) clean
 > cd $(baeldung_spring_home)
 > $(mvn) clean
+> cd $(quarkus_home)
+> $(mvn) clean
 .PHONY: clean
 
 clean-all:
@@ -99,3 +106,8 @@ spring-native: $(baeldung_spring_runner)
 $(baeldung_spring_runner): $(native_image)
 > cd $(baeldung_spring_home)
 > $(mvn) package -DskipTests -Plocal-native
+
+$(quarkus_jar_core): $(quarkus_sources)
+> cd $(quarkus_home)
+> $(mvn) install -pl core/deployment,devtools/maven,extensions/arc/deployment -DskipTests -am $(quarkus_args) $(quarkus_native_args)
+> touch $@
