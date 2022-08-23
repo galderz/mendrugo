@@ -50,7 +50,7 @@ ifdef XMN
 endif
 
 quarkus-native: $(baeldung_quarkus_runner)
-> $< $(native_args)
+> numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(native_args)
 .PHONY: quarkus-native
 
 wrk:
