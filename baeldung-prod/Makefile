@@ -54,9 +54,9 @@ ifdef XMN
   native_args += -Xmn$(XMN)
 endif
 
-quarkus-native: $(baeldung_quarkus_runner)
+native: $(baeldung_quarkus_runner)
 > numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(native_args)
-.PHONY: quarkus-native
+.PHONY: native
 
 wrk:
 > cd $(baeldung_wrk_home)
