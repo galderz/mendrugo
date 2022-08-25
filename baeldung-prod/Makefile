@@ -100,7 +100,7 @@ clean-all:
 .PHONY: clean-all
 
 spring-native: $(baeldung_spring_runner)
-> $<
+> numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(native_args)
 .PHONY: spring-native
 
 $(baeldung_spring_runner): $(native_image)
