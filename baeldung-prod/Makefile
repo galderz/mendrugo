@@ -11,7 +11,7 @@ endif
 .RECIPEPREFIX = >
 
 # The underlying java version in graalvm is aligned with the jvm version
-graalvm_home := /opt/graalvm-ce-java17-22.2.0
+GRAALVM_HOME ?= /opt/graalvm-ce-java17-22.2.0
 java = /opt/adopt-17.0.4+8/bin/java
 
 baeldung_home := /opt/baeldung-tutorials
@@ -22,8 +22,8 @@ baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/q
 baeldung_quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
 baeldung_wrk_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/wrk
 baeldung_quarkus_jar = $(baeldung_quarkus_home)/target/quarkus-app/quarkus-run.jar
-native_image = $(graalvm_home)/bin/native-image
-mvn += JAVA_HOME=$(graalvm_home)
+native_image = $(GRAALVM_HOME)/bin/native-image
+mvn += JAVA_HOME=$(GRAALVM_HOME)
 mvn += /opt/maven/bin/mvn
 quarkus_home := /opt/quarkus-quarkus
 quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
@@ -41,21 +41,25 @@ else ifeq ($(GC),parallel)
 endif
 
 ifeq ($(VERBOSE_GC),1)
-  native_args += -XX:+PrintGC
+  run_args += -XX:+PrintGC
 else ifeq ($(VERBOSE_GC),2)
-  native_args += -XX:+VerboseGC
+  run_args += -XX:+VerboseGC
 else ifeq ($(VERBOSE_GC),3)
-  native_args += -XX:+PrintHeapShape
+  run_args += -XX:+PrintHeapShape
 else ifeq ($(VERBOSE_GC),4)
-  native_args += -XX:+TraceHeapChunks
+  run_args += -XX:+TraceHeapChunks
 endif
 
 ifdef XMN
-  native_args += -Xmn$(XMN)
+  run_args += -Xmn$(XMN)
+endif
+
+ifdef BUILD_ARGS
+  build_args += -Dquarkus.native.additional-build-args=$(BUILD_ARGS)
 endif
 
 native: $(baeldung_quarkus_runner)
-> numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(native_args)
+> numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(run_args)
 .PHONY: native
 
 wrk:
@@ -70,7 +74,7 @@ hyperfoil:
 
 $(baeldung_quarkus_runner): $(native_image) $(quarkus_jar_core)
 > cd $(baeldung_quarkus_home)
-> $(mvn) package -DskipTests -Dnative
+> $(mvn) package -DskipTests -Dnative $(build_args)
 
 db:
 > docker rm /mysqldb
@@ -100,7 +104,7 @@ clean-all:
 .PHONY: clean-all
 
 spring-native: $(baeldung_spring_runner)
-> numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(native_args)
+> numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(run_args)
 .PHONY: spring-native
 
 $(baeldung_spring_runner): $(native_image)
@@ -109,5 +113,5 @@ $(baeldung_spring_runner): $(native_image)
 
 $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)
-> $(mvn) install -pl core/deployment,devtools/maven,extensions/arc/deployment -DskipTests -am $(quarkus_args) $(quarkus_native_args)
+> $(mvn) install -pl core/deployment,devtools/maven,extensions/arc/deployment -DskipTests -am
 > touch $@
