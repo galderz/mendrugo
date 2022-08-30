@@ -22,6 +22,7 @@ baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/q
 baeldung_quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
 baeldung_wrk_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/wrk
 baeldung_quarkus_jar = $(baeldung_quarkus_home)/target/quarkus-app/quarkus-run.jar
+hyperfoil_cli = /opt/hyperfoil/bin/cli.sh
 native_image = $(GRAALVM_HOME)/bin/native-image
 mvn += JAVA_HOME=$(GRAALVM_HOME)
 mvn += /opt/maven/bin/mvn
@@ -69,7 +70,7 @@ wrk:
 
 hyperfoil:
 > cd $(baeldung_hyperfoil_home)
-> ./docker_run.sh
+> $(hyperfoil_cli)
 .PHONY: hyperfoil
 
 $(baeldung_quarkus_runner): $(native_image) $(quarkus_jar_core)
