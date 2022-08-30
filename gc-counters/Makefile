@@ -24,8 +24,14 @@ project_sources += $(shell find src/ -type f -name '*.java' | sed 's: :\\ :g')
 runner := ./target/gc-counters-1.0.0-SNAPSHOT-runner
 wrk := /opt/wrk/wrk
 
+ifdef DEBUG
+  native_args += -Dquarkus.native.additional-build-args=--debug-attach=*:8000,-H:+AllowVMInspection
+else
+  native_args += -Dquarkus.native.additional-build-args=-H:+AllowVMInspection
+endif
+
 run: $(runner)
-> $< -XX:+VerboseGC -XX:+PrintHeapShape -XX:+TraceHeapChunks
+> $< -XX:+VerboseGC -XX:+PrintGCSummary -XX:+PrintHeapShape -XX:+TraceHeapChunks -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr"
 .PHONY: run
 
 wrk: $(wrk)
@@ -33,7 +39,7 @@ wrk: $(wrk)
 .PHONY: wrk
 
 $(runner): $(native_image) $(project_sources)
-> $(mvn) package -DskipTests -Dnative
+> $(mvn) package -DskipTests -Dnative $(native_args)
 
 $(native_image): $(graalvm_sources)
 > cd $(graalvm_home)
