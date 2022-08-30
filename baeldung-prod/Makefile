@@ -55,6 +55,10 @@ ifdef XMN
   run_args += -Xmn$(XMN)
 endif
 
+ifdef XMX
+  run_args += -Xmx$(XMX)
+endif
+
 ifdef BUILD_ARGS
   build_args += -Dquarkus.native.additional-build-args=$(BUILD_ARGS)
 endif
