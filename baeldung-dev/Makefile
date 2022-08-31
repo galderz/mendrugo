@@ -20,6 +20,7 @@ graalvm_builder := /opt/graalbuilder-17
 graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 graalvm_version := 22.3.0
+hyperfoil_cli = /opt/hyperfoil/bin/cli.sh
 java_home := /opt/mandrel-mandrel/sdk/latest_graalvm_home
 native_image = $(java_home)/bin/native-image
 mx += JAVA_HOME=$(graalvm_builder)
@@ -36,7 +37,7 @@ ifdef VERBOSE_GC
 endif
 
 run: $(baeldung_quarkus_runner)
-> $< $(args) |& tee target/console.log
+> $< $(args)
 .PHONY: run
 
 wrk:
@@ -46,7 +47,7 @@ wrk:
 
 hyperfoil:
 > cd $(baeldung_hyperfoil_home)
-> ./docker_run.sh
+> $(hyperfoil_cli)
 .PHONY: hyperfoil
 
 $(baeldung_quarkus_runner): $(native_image)

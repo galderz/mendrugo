@@ -30,3 +30,5 @@ mlib
 out
 # emacs backup files
 *~
+# nohup output file
+nohup.out
