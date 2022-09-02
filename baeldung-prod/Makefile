@@ -55,6 +55,10 @@ ifdef XMN
   run_args += -Xmn$(XMN)
 endif
 
+ifdef XMS
+  run_args += -Xms$(XMS)
+endif
+
 ifdef XMX
   run_args += -Xmx$(XMX)
 endif
