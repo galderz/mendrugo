@@ -10,6 +10,11 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+ifdef DEBUG
+  native_args += -Dquarkus.native.additional-build-args=--debug-attach=*:8000,-H:NumberOfThreads=1
+  mvn += DEBUG=true
+endif
+
 graalvm_builder := /opt/graalbuilder-17
 graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
@@ -24,14 +29,8 @@ project_sources += $(shell find src/ -type f -name '*.java' | sed 's: :\\ :g')
 runner := ./target/gc-counters-1.0.0-SNAPSHOT-runner
 wrk := /opt/wrk/wrk
 
-ifdef DEBUG
-  native_args += -Dquarkus.native.additional-build-args=--debug-attach=*:8000,-H:+AllowVMInspection
-else
-  native_args += -Dquarkus.native.additional-build-args=-H:+AllowVMInspection
-endif
-
 run: $(runner)
-> $< -XX:+VerboseGC -XX:+PrintGCSummary -XX:+PrintHeapShape -XX:+TraceHeapChunks -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr"
+> $< -XX:+VerboseGC -XX:+PrintGCSummary -XX:+PrintHeapShape -XX:+TraceHeapChunks
 .PHONY: run
 
 wrk: $(wrk)
