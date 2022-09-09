@@ -15,6 +15,10 @@ ifdef DEBUG
   mvn += DEBUG=true
 endif
 
+ifdef DWARF
+  native_args += -Dquarkus.native.debug.enabled=true
+endif
+
 graalvm_builder := /opt/graalbuilder-17
 graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
