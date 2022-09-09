@@ -67,6 +67,8 @@ endif
 
 ifdef XMX
   run_args += -Xmx$(XMX)
+else
+  run_args += -Xmx256g
 endif
 
 ifdef BUILD_ARGS
@@ -128,5 +130,5 @@ $(baeldung_spring_runner): $(native_image)
 
 $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)
-> $(mvn) install -pl core/deployment,devtools/maven,extensions/arc/deployment -DskipTests -am
+> $(mvn) -Dquickly -T 4C
 > touch $@
