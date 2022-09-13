@@ -63,12 +63,14 @@ endif
 
 ifdef XMS
   run_args += -Xms$(XMS)
+else
+  run_args += -Xms512m
 endif
 
 ifdef XMX
   run_args += -Xmx$(XMX)
 else
-  run_args += -Xmx256g
+  run_args += -Xmx512m
 endif
 
 ifdef BUILD_ARGS
@@ -97,6 +99,10 @@ db:
 > docker rm /mysqldb
 > docker run --name mysqldb --network=host -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=baeldung -d mysql:5.7.38 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 .PHONY: db
+
+mariadb:
+> podman run --rm=true --net=host --memory-swappiness=0 --tmpfs /var/lib/mysql:rw --tmpfs /var/log:rw -v /opt/custom-mariadbconfig:/etc/mysql/conf.d --name mariadb_demo -e MYSQL_DATABASE=baeldung -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mariadb:10.4
+.PHONY: mariadb
 
 quarkus-jvm: $(baeldung_quarkus_jar)
 > $(java) $(jvm_args) -jar $<
