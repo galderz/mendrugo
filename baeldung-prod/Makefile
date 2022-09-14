@@ -109,6 +109,7 @@ $(baeldung_quarkus_jar): $(java)
 > $(mvn) package -DskipTests
 
 clean:
+> rm -f nohup.out
 > cd $(baeldung_quarkus_home)
 > $(mvn) clean
 > cd $(baeldung_spring_home)
