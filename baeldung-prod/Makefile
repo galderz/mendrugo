@@ -63,14 +63,10 @@ endif
 
 ifdef XMS
   run_args += -Xms$(XMS)
-else
-  run_args += -Xms512m
 endif
 
 ifdef XMX
   run_args += -Xmx$(XMX)
-else
-  run_args += -Xmx512m
 endif
 
 ifdef BUILD_ARGS
@@ -96,7 +92,7 @@ $(baeldung_quarkus_runner): $(native_image) $(quarkus_jar_core)
 > $(mvn) package -DskipTests -Dnative $(build_args)
 
 db:
-> docker rm /mysqldb
+> docker rm /mysqldb || true
 > docker run --name mysqldb --network=host -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=baeldung -d mysql:5.7.38 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 .PHONY: db
 
