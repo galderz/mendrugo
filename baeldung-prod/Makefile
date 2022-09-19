@@ -84,7 +84,7 @@ wrk:
 
 hyperfoil:
 > cd $(baeldung_hyperfoil_home)
-> $(hyperfoil_cli)
+> JAVA_HOME=/opt/java-17 $(hyperfoil_cli)
 .PHONY: hyperfoil
 
 $(baeldung_quarkus_runner): $(native_image) $(quarkus_jar_core)
