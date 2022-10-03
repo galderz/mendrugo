@@ -12,7 +12,7 @@ endif
 
 # The underlying java version in graalvm is aligned with the jvm version
 GRAALVM_HOME ?= /opt/graalvm-ce-java17-22.2.0
-java = /opt/adopt-17.0.4+8/bin/java
+java = /opt/java-17/bin/java
 
 baeldung_home := /opt/baeldung-tutorials
 baeldung_hyperfoil_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/hyperfoil
@@ -107,6 +107,11 @@ quarkus-jvm: $(baeldung_quarkus_jar)
 $(baeldung_quarkus_jar): $(java)
 > cd $(baeldung_quarkus_home)
 > $(mvn) package -DskipTests
+
+dev: $(java)
+> cd $(baeldung_quarkus_home)
+> $(mvn) quarkus:dev
+.PHONY: dev
 
 clean:
 > rm -f nohup.out
