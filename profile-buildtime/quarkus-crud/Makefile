@@ -12,7 +12,7 @@ endif
 
 AP_HOME ?= /opt/async-profiler
 NATIVE_ARGS ?=
-GRAALVM_HOME ?= graalvm-ce-java11-21.3.0-dev
+GRAALVM_HOME ?= graalvm-ce-java17-22.2.0
 
 ap_agent = -J-agentpath:$(AP_HOME)/build/libasyncProfiler.so=start
 app := hibernate-orm-quickstart
@@ -71,6 +71,11 @@ profiling: $(mvnw)
 > $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=$(ap_agent)\\,file=profile-cpu.html\\,event=cpu | tee target/console-cpu.log
 > cp $(native_dir)/*.html ../target/$(GRAALVM_HOME)
 .PHONY: profiling
+
+jfr: $(mvnw)
+> cd $(app)
+> $(mvn) package -DskipTests -Pnative -Dquarkus.native.additional-build-args=-J-XX:StartFlightRecording=dumponexit=true\\,filename=../../../nativeimage.jfr\\,settings=profile.jfc
+.PHONY: jfr
 
 clean:
 > rm -drf $(app)
