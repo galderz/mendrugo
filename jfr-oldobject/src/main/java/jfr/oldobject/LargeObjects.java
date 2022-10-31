@@ -17,6 +17,7 @@ public class LargeObjects
             leaks.put(i, node);
         }
 
+        System.out.println("Press enter to finish program");
         Scanner scanner = new Scanner(System.in);
         scanner.nextLine();
     }
