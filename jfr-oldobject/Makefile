@@ -13,24 +13,29 @@ endif
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
 binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/binary.jfr\,settings=./oldobject.jfc
-binary_opts += -XX:FlightRecorderLogging=all=trace
+graalbuilder_home := $(HOME)/1/jdk17u-dev
+graalbuilder_java = $(graalbuilder_java_home)/bin/java
+graalbuilder_java_home = $(graalbuilder_home)/build/graalbuilder/images/graal-builder-jdk
+graalbuilder_sources += $(shell find $(graalbuilder_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
+graalvm_version := 23.0.0
 jar := target/jfr-oldobject.jar
-java_home := /opt/mandrel-mandrel/sdk/latest_graalvm_home
 jvm_opts += -XX:TLABSize=2k
 jvm_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/jvm.jfr\,settings=./oldobject.jfc
-graalvm_builder := /opt/graalbuilder-17
-graalvm_version := 23.0.0
-mvn += JAVA_HOME=$(graalvm_builder)
+mvn += JAVA_HOME=$(graalbuilder_java_home)
 mvn += /opt/maven/bin/mvn
-mx += JAVA_HOME=$(graalvm_builder)
+mx += JAVA_HOME=$(graalbuilder_java_home)
 mx += /opt/mx/mx
-native_image += $(java_home)/bin/native-image
+native_image += /opt/mandrel-mandrel/sdk/latest_graalvm_home/bin/native-image
 native_image_opts += --enable-monitoring=jfr
 native_image_opts += --no-fallback
 native_image_opts += -H:+ReportExceptionStackTraces
 project_sources += $(shell find src/ -type f -name '*.java' | sed 's: :\\ :g')
+
+ifdef VERBOSE
+  binary_opts += -XX:FlightRecorderLogging=all=trace
+endif
 
 run-binary: $(binary)
 > $< $(binary_opts)
@@ -43,10 +48,20 @@ run-jvm: $(jar)
 > java $(jvm_opts) -cp $< jfr.oldobject.LargeObjects
 .PHONY: run-jvm
 
-$(native_image): $(graalvm_sources)
+$(native_image): $(graalvm_sources) $(graalbuilder_java)
 > cd $(graalvm_home)
 > $(mx) build
 > sed -i'' -e 's/EnableJVMCI/EnableJVMCI -Dorg.graalvm.version=$(graalvm_version)-dev/g' ../sdk/latest_graalvm_home/lib/svm/bin/native-image
+
+$(graalbuilder_java): $(graalbuilder_sources)
+> cd $(graalbuilder_home)
+> bash configure \
+>   --disable-warnings-as-errors \
+>   --with-boot-jdk=/opt/java-17 \
+>   --with-conf-name=graalbuilder \
+>   --with-extra-cflags=-fcommon \
+>   --with-jvm-variants=server
+> make CONF=graalbuilder graal-builder-image
 
 $(jar): $(project_sources)
 > $(mvn) package
@@ -55,4 +70,6 @@ clean:
 > $(mvn) clean
 > cd $(graalvm_home)
 > $(mx) clean
+> cd $(graalbuilder_home)
+> make CONF=graalbuilder clean
 .PHONY: clean
