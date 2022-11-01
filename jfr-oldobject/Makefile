@@ -10,6 +10,8 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+TEST_CLASS ?= LargeObjects
+
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
 binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/binary.jfr\,settings=./oldobject.jfc
@@ -38,14 +40,14 @@ ifdef VERBOSE
 endif
 
 run-binary: $(binary)
-> $< $(binary_opts)
+> $< $(binary_opts) -Xmx128m
 .PHONY: run-binary
 
 $(binary): $(jar) $(native_image)
-> $(native_image) $(native_image_opts) -cp $< jfr.oldobject.LargeObjects $@
+> $(native_image) $(native_image_opts) -cp $< jfr.oldobject.$(TEST_CLASS) $@
 
 run-jvm: $(jar)
-> java $(jvm_opts) -cp $< jfr.oldobject.LargeObjects
+> java $(jvm_opts) -cp $< jfr.oldobject.$(TEST_CLASS)
 .PHONY: run-jvm
 
 $(native_image): $(graalvm_sources) $(graalbuilder_java)
@@ -68,8 +70,12 @@ $(jar): $(project_sources)
 
 clean:
 > $(mvn) clean
+.PHONY: clean
+
+clean-all:
+> $(mvn) clean
 > cd $(graalvm_home)
 > $(mx) clean
 > cd $(graalbuilder_home)
 > make CONF=graalbuilder clean
-.PHONY: clean
+.PHONY: clean-all
