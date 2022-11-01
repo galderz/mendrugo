@@ -16,10 +16,6 @@ public class HugeObject
         Scanner scanner = new Scanner(System.in);
         scanner.nextLine();
 
-        // Use the leak, to avoid being dead code eliminated
-        if (leak.hashCode() == System.nanoTime())
-        {
-            System.out.println(" ");
-        }
+        Blackhole.blackhole(leak);
     }
 }
