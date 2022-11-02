@@ -12,6 +12,7 @@ endif
 
 # The underlying java version in graalvm is aligned with the jvm version
 GRAALVM_HOME ?= /opt/graalvm-ce-java17-22.2.0
+NUMA_NODE ?= 3
 java = /opt/java-17/bin/java
 
 baeldung_home := /opt/baeldung-tutorials
@@ -22,14 +23,27 @@ baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/q
 baeldung_quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
 baeldung_wrk_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/wrk
 baeldung_quarkus_jar = $(baeldung_quarkus_home)/target/quarkus-app/quarkus-run.jar
+baeldung_quarkus_sources += $(shell find $(baeldung_quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
+baeldung_quarkus_sources += $(shell find $(baeldung_quarkus_home)/src -type f -name '*.java' | sed 's: :\\ :g')
+baeldung_quarkus_sources += $(shell find $(baeldung_quarkus_home)/src -type f -name '*.properties' | sed 's: :\\ :g')
+baeldung_quarkus_sources += $(shell find $(baeldung_quarkus_home)/src -type f -name '*.sql' | sed 's: :\\ :g')
 hyperfoil_cli = /opt/hyperfoil/bin/cli.sh
 native_image = $(GRAALVM_HOME)/bin/native-image
+numactl += numactl
+#numactl += --cpunodebind=$(NUMA_NODE)
+# Run on 2 cores inside numa node 3
+numactl += --physcpubind=12,13
+numactl += --localalloc
+numactl += /usr/bin/time
+numactl += -v
 mvn += JAVA_HOME=$(GRAALVM_HOME)
 mvn += /opt/maven/bin/mvn
 quarkus_home := /opt/quarkus-quarkus
 quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
-quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
+quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
+quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.properties' | sed 's: :\\ :g')
+quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.sql' | sed 's: :\\ :g')
 quarkus_version := 999-SNAPSHOT
 wrk_home = /opt/wrk
 
@@ -74,7 +88,7 @@ ifdef BUILD_ARGS
 endif
 
 native: $(baeldung_quarkus_runner)
-> numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(run_args)
+> $(numactl) $< $(run_args)
 .PHONY: native
 
 wrk:
@@ -87,7 +101,7 @@ hyperfoil:
 > JAVA_HOME=/opt/java-17 $(hyperfoil_cli)
 .PHONY: hyperfoil
 
-$(baeldung_quarkus_runner): $(native_image) $(quarkus_jar_core)
+$(baeldung_quarkus_runner): $(native_image) $(quarkus_jar_core) $(baeldung_quarkus_sources)
 > cd $(baeldung_quarkus_home)
 > $(mvn) package -DskipTests -Dnative $(build_args)
 
@@ -100,18 +114,22 @@ mariadb:
 > podman run --rm=true --net=host --memory-swappiness=0 --tmpfs /var/lib/mysql:rw --tmpfs /var/log:rw -v /opt/custom-mariadbconfig:/etc/mysql/conf.d --name mariadb_demo -e MYSQL_DATABASE=baeldung -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mariadb:10.4
 .PHONY: mariadb
 
+db-metal:
+> sudo systemctl start mariadb
+.PHONY: db-metal
+
 quarkus-jvm: $(baeldung_quarkus_jar)
-> $(java) $(jvm_args) -jar $<
+> $(numactl) $(java) $(jvm_args) -jar $< $(run_args)
 .PHONY: quarkus-jvm
 
 $(baeldung_quarkus_jar): $(java)
 > cd $(baeldung_quarkus_home)
 > $(mvn) package -DskipTests
 
-dev: $(java)
+quarkus-dev:
 > cd $(baeldung_quarkus_home)
 > $(mvn) quarkus:dev
-.PHONY: dev
+.PHONY: quarkus-dev
 
 clean:
 > rm -f nohup.out
@@ -129,7 +147,7 @@ clean-all:
 .PHONY: clean-all
 
 spring-native: $(baeldung_spring_runner)
-> numactl --cpunodebind=2 --localalloc /usr/bin/time -v $< $(run_args)
+> $(numactl) $< $(run_args)
 .PHONY: spring-native
 
 $(baeldung_spring_runner): $(native_image)
