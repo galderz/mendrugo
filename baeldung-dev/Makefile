@@ -16,28 +16,58 @@ baeldung_hyperfoil_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot
 baeldung_quarkus_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/quarkus-project
 baeldung_quarkus_runner = $(baeldung_quarkus_home)/target/quarkus-project-0.1-SNAPSHOT-runner
 baeldung_wrk_home = $(baeldung_home)/quarkus-modules/quarkus-vs-springboot/wrk
-graalvm_builder := /opt/graalbuilder-17
+#graalvm_builder := /opt/graalbuilder-17
+graalvm_builder := /opt/labsjdk-17-22.1
 graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
-graalvm_version := 22.3.0
+#graalvm_version := 22.3.0
+graalvm_version := 22.2.0
 hyperfoil_cli = /opt/hyperfoil/bin/cli.sh
 java_home := /opt/mandrel-mandrel/sdk/latest_graalvm_home
 native_image = $(java_home)/bin/native-image
+numactl += numactl
+#numactl += --cpunodebind=$(NUMA_NODE)
+# Run on 2 cores inside numa node 3
+numactl += --physcpubind=12,13
+numactl += --localalloc
+numactl += /usr/bin/time
+numactl += -v
 mx += JAVA_HOME=$(graalvm_builder)
 mx += /opt/mx/mx
 mvn += JAVA_HOME=$(java_home)
 mvn += /opt/maven/bin/mvn
 wrk_home = /opt/wrk
 
-ifdef VERBOSE_GC
-  args += -XX:+PrintGC
-  args += -XX:+VerboseGC
-  args += -XX:+PrintHeapShape
-  args += -XX:+TraceHeapChunks
+ifeq ($(VERBOSE_GC),1)
+  run_args += -XX:+PrintGC
+else ifeq ($(VERBOSE_GC),2)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+else ifeq ($(VERBOSE_GC),3)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+  run_args += -XX:+PrintHeapShape
+else ifeq ($(VERBOSE_GC),4)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+  run_args += -XX:+PrintHeapShape
+  run_args += -XX:+TraceHeapChunks
+endif
+
+ifdef XMN
+  run_args += -Xmn$(XMN)
+endif
+
+ifdef XMS
+  run_args += -Xms$(XMS)
+endif
+
+ifdef XMX
+  run_args += -Xmx$(XMX)
 endif
 
 run: $(baeldung_quarkus_runner)
-> $< $(args)
+> $(numactl) $< $(run_args)
 .PHONY: run
 
 wrk:
@@ -65,8 +95,9 @@ db:
 .PHONY: db
 
 clean:
+> rm -f nohup.out
 > cd $(baeldung_quarkus_home)
-> $(mvn) clean
+> JAVA_HOME=/opt/graalbuilder-17 /opt/maven/bin/mvn clean
 > cd $(graalvm_home)
 > $(mx) clean
 .PHONY: clean
