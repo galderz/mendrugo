@@ -4,11 +4,11 @@ public class SecurityDemo
 {
     public static String show()
     {
-        return show(BaseComponent.class); // exported from module
+        return show(BaseComponent.class).getImageData().toString();
     }
 
-    private static String show(Class<?> intf) {
+    private static <T> T show(Class<T> intf) {
         return Proxies.simpleProxy(
-            intf, null).getClass().toString();
+            intf, null);
     }
 }

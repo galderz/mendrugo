@@ -20,6 +20,12 @@
 
 package org.acme;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 /**
  * Used by #CompositeHandler
  */
@@ -27,5 +33,6 @@ package org.acme;
 public interface BaseComponent<T> {
   default boolean add(T t) { return false; }
   default boolean remove(T t) { return false; }
+  ImageData getImageData();
 }
 // end::listing[]
