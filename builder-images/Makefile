@@ -10,7 +10,9 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+docker_builder_stamp = target/builder.stamp
 docker_image_name = galderz/ubi-quarkus-graalvmce-builder-image:23.0.0-java17
+dockerfile_builder = Dockerfile.builder
 graalvm_builder := /opt/graalbuilder-17
 graalvm_sources += $(shell find $(mandrel)/ -type f -name '*.java' | sed 's: :\\ :g')
 graalvm_home := /opt/mandrel-mandrel/sdk/latest_graalvm_home
@@ -21,20 +23,14 @@ mx += /opt/mx/mx
 native_image = $(graalvm_home)/bin/native-image
 target_graalvm_home := target/latest_graalvm_home
 
-docker-build: $(target_graalvm_home)
-> docker build -f Dockerfile.graalvm -t $(docker_image_name) .
+$(docker_builder_stamp): $(target_graalvm_home) $(dockerfile_builder)
+> docker build -f Dockerfile.builder -t $(docker_image_name) .
 > docker run $(docker_image_name) --expert-options-all
-.PHONY: docker-build
+> touch $@
 
 $(target_graalvm_home): $(native_image) target
 > mkdir -p target/latest_graalvm_home
 > cp -r $(graalvm_home)/* target/latest_graalvm_home
-
-# Use a full build to be able to move graalvm home around
-# Also, no need to replace graalvm version
-$(native_image): $(graalvm_sources)
-> cd $(mandrel)/vm
-> $(mx) --dynamicimports /substratevm,/tools build
 
 target:
 > mkdir -p target

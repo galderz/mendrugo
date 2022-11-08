@@ -1,6 +1,5 @@
 FROM quay.io/quarkus/ubi-quarkus-graalvmce-builder-image:22.3.0-java17
 
-# COPY /opt/mandrel-mandrel/sdk/latest_graalvm_home /opt/new-graalvm
 COPY ./target/latest_graalvm_home /opt/new-graalvm
 
 ENV PATH="/opt/new-graalvm/bin:$PATH"
