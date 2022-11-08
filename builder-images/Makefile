@@ -47,8 +47,6 @@ clean:
 .PHONY: clean
 
 clean-all:
-> cd $(substratevm)
-> $(mx) clean
-> cd $(substratevm)
+> cd $(mandrel)
 > git clean -dfx
 .PHONY: clean-all
