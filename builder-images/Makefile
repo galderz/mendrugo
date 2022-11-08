@@ -27,7 +27,8 @@ docker-build: $(target_graalvm_home)
 .PHONY: docker-build
 
 $(target_graalvm_home): $(native_image) target
-> cp -r $(graalvm_home) target
+> mkdir -p target/latest_graalvm_home
+> cp -r $(graalvm_home)/* target/latest_graalvm_home
 
 # Use a full build to be able to move graalvm home around
 # Also, no need to replace graalvm version
