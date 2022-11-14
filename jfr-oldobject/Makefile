@@ -10,7 +10,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-TEST_CLASS ?= HugeObject
+TEST_CLASS ?= DeepChain
 
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
@@ -34,6 +34,7 @@ native_image_opts += --enable-monitoring=jfr
 native_image_opts += --no-fallback
 native_image_opts += -H:+ReportExceptionStackTraces
 project_sources += $(shell find src/ -type f -name '*.java' | sed 's: :\\ :g')
+project_sources += pom.xml
 
 ifdef VERBOSE
   binary_opts += -XX:FlightRecorderLogging=all=trace
@@ -45,7 +46,7 @@ run-binary: $(binary)
 .PHONY: run-binary
 
 show:
-> jfr -J-Xlog:jfr+system+parser=trace print --events OldObjectSample target/binary.jfr
+> jfr -J-Xlog:jfr+system+parser=trace print --events OldObjectSample --stack-depth 100 target/binary.jfr
 .PHONY: show
 
 $(binary): $(jar) $(native_image)
