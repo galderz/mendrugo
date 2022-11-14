@@ -2,6 +2,10 @@ native_image += native-image
 native_image += -jar
 native_image += target/helloworld-0.1.jar
 
+# ifdef VERBOSE
+#   native_image += --verbose
+# endif
+
 # e.g. NATIVE_OPTS=--gc=epsilon
 ifdef NATIVE_OPTS
   native_image += $(NATIVE_OPTS)
