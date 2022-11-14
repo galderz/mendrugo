@@ -490,7 +490,10 @@
     <event name="jdk.OldObjectSample">
       <setting name="enabled" control="old-objects-enabled">true</setting>
       <setting name="stackTrace" control="old-objects-stack-trace">true</setting>
+      <!--
       <setting name="cutoff" control="old-objects-cutoff">infinity</setting>
+      -->
+      <setting name="cutoff" control="old-objects-cutoff">0 h</setting>
     </event>
 
     <event name="jdk.CompilerConfiguration">

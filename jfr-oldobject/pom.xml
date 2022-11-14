@@ -18,4 +18,12 @@
         <finalName>jfr-oldobject</finalName>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>svm</artifactId>
+            <version>22.3.0</version>
+        </dependency>
+    </dependencies>
+
 </project>

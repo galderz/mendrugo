@@ -10,7 +10,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-TEST_CLASS ?= LargeObjects
+TEST_CLASS ?= HugeObject
 
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
@@ -37,11 +37,16 @@ project_sources += $(shell find src/ -type f -name '*.java' | sed 's: :\\ :g')
 
 ifdef VERBOSE
   binary_opts += -XX:FlightRecorderLogging=all=trace
+  native_image_opts += -H:+TraceVMOperations
 endif
 
 run-binary: $(binary)
-> $< $(binary_opts) -Xmx128m
+> $< $(binary_opts)
 .PHONY: run-binary
+
+show:
+> jfr -J-Xlog:jfr+system+parser=trace print --events OldObjectSample target/binary.jfr
+.PHONY: show
 
 $(binary): $(jar) $(native_image)
 > $(native_image) $(native_image_opts) -cp $< jfr.oldobject.$(TEST_CLASS) $@
@@ -72,10 +77,12 @@ clean:
 > $(mvn) clean
 .PHONY: clean
 
-clean-all:
-> $(mvn) clean
+clean-graalvm:
 > cd $(graalvm_home)
 > $(mx) clean
+.PHONY: clean-graalvm
+
+clean-all: clean clean-graalvm
 > cd $(graalbuilder_home)
 > make CONF=graalbuilder clean
 .PHONY: clean-all
