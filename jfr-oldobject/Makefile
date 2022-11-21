@@ -51,6 +51,11 @@ print:
 > $(graalbuilder_jfr) -J-Xlog:jfr+system+parser=trace print --events OldObjectSample --stack-depth 100 target/$(JFR_FILE)
 .PHONY: print
 
+test: $(native_image)
+> cd $(graalvm_home)
+> $(mx) native-unittest com.oracle.svm.test.jfr
+.PHONY: test
+
 $(binary): $(jar) $(native_image)
 > $(native_image) $(native_image_opts) -cp $< jfr.oldobject.$(TEST_CLASS) $@
 
