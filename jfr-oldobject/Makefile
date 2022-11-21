@@ -11,6 +11,7 @@ endif
 .RECIPEPREFIX = >
 
 TEST_CLASS ?= DeepChain
+JFR_FILE ?= binary.jfr
 
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
@@ -18,6 +19,7 @@ binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/binary.
 graalbuilder_home := $(HOME)/1/jdk17u-dev
 graalbuilder_java = $(graalbuilder_java_home)/bin/java
 graalbuilder_java_home = $(graalbuilder_home)/build/graalbuilder/images/graal-builder-jdk
+graalbuilder_jfr = $(graalbuilder_java_home)/bin/jfr
 graalbuilder_sources += $(shell find $(graalbuilder_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 graalvm_home := /opt/mandrel-mandrel/substratevm
 graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
@@ -45,15 +47,15 @@ run-binary: $(binary)
 > $< $(binary_opts)
 .PHONY: run-binary
 
-show:
-> jfr -J-Xlog:jfr+system+parser=trace print --events OldObjectSample --stack-depth 100 target/binary.jfr
-.PHONY: show
+print:
+> $(graalbuilder_jfr) -J-Xlog:jfr+system+parser=trace print --events OldObjectSample --stack-depth 100 target/$(JFR_FILE)
+.PHONY: print
 
 $(binary): $(jar) $(native_image)
 > $(native_image) $(native_image_opts) -cp $< jfr.oldobject.$(TEST_CLASS) $@
 
 run-jvm: $(jar)
-> java $(jvm_opts) -cp $< jfr.oldobject.$(TEST_CLASS)
+> $(graalbuilder_java) $(jvm_opts) -cp $< jfr.oldobject.$(TEST_CLASS)
 .PHONY: run-jvm
 
 $(native_image): $(graalvm_sources) $(graalbuilder_java)
