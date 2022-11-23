@@ -32,6 +32,9 @@ mvn += mvn
 pom_xml = $(target_dir)/quarkus-startstop/app-full-microprofile/pom.xml
 target_dir = target/$(QUARKUS)
 
+time: $(app_runner)
+> /usr/bin/time -v $<
+
 $(app_runner): $(pom_xml)
 > cd $(app_home)
 > $(mvn) test -Ptestsuite -Dtest=StartStopTest#fullMicroProfileNative -Dquarkus.version=$(quarkus_version) -Dstart-stop.iterations=3
