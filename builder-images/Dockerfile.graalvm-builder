@@ -1,0 +1,22 @@
+# FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6
+FROM centos:centos8
+
+RUN microdnf -y install git wget gcc openssl-devel bzip2-devel libffi-devel tar make gcc-c++
+
+RUN cd /opt \
+  && wget https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tgz \
+  && tar xzf Python-3.8.3.tgz \
+  && cd Python-3.8.3 \
+  && ./configure --enable-optimizations \
+  && make altinstall
+
+ENV PATH=/opt/Python-3.8.3:$PATH
+
+RUN cd /opt \
+  && git clone https://github.com/graalvm/mx
+
+RUN cd /opt \
+  && wget https://github.com/graalvm/labs-openjdk-17/releases/download/jvmci-23.0-b01/labsjdk-ce-17.0.5+6-jvmci-23.0-b01-linux-amd64.tar.gz \
+  && tar xzf labsjdk-ce-17.0.5+6-jvmci-23.0-b01-linux-amd64.tar.gz
+
+ENV JAVA_HOME=/opt/labsjdk-ce-17.0.5-jvmci-23.0-b01
