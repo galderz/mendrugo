@@ -41,6 +41,7 @@ project_sources += pom.xml
 ifdef VERBOSE
   binary_opts += -XX:FlightRecorderLogging=all=trace
   native_image_opts += -H:+TraceVMOperations
+  mx += -V
 endif
 
 run-binary: $(binary)
