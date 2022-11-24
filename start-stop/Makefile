@@ -26,9 +26,10 @@ else ifeq ($(QUARKUS),2.7)
   graalvm_home = /opt/$(graalvm_21_3)
   quarkus_version = $(quarkus_2_7)
 else ifeq ($(QUARKUS),2.13-21.3)
-  branch = topic.1122.minor-tweaks
+  branch = topic.1122.minor-tweaks.2.13-21.3
   graalvm_home = /opt/$(graalvm_21_3)
   quarkus_version = $(quarkus_2_13)
+  maven_opts = -javaagent:/opt/byteman/byteman/target/byteman-4.0.18.jar=script:/opt/mendrugo/start-stop/target/2.13-21.3/quarkus-startstop/app-full-microprofile/src/main/resources/native-image-build-step.btm\,prop:org.jboss.byteman.verbose=true
 else ifeq ($(QUARKUS),2.7-22.3)
   branch = topic.1122.minor-tweaks.$(QUARKUS)
   graalvm_home = /opt/$(graalvm_22_3)
@@ -57,9 +58,14 @@ endif
 
 app_home = $(target_dir)/quarkus-startstop
 app_runner = $(app_home)/app-full-microprofile/target/quarkus-runner
+
 mvn += JAVA_HOME=$(graalvm_home)
+ifdef maven_opts
+  mvn += MAVEN_OPTS=$(maven_opts)
+endif
 mvn += PATH=$(PATH):/opt/boot-maven-3/bin
 mvn += mvn
+
 pom_xml = $(target_dir)/quarkus-startstop/app-full-microprofile/pom.xml
 target_dir = target/$(QUARKUS)
 
