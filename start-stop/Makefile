@@ -21,8 +21,25 @@ ifeq ($(QUARKUS),2.7)
   graalvm_home = /opt/graalvm-ce-java17-21.3.3.1
 endif
 
-QUARKUS_VERSION ?=
-GRAALVM_HOME ?=
+ifeq ($(VERBOSE_GC),1)
+  run_args += -XX:+PrintGC
+else ifeq ($(VERBOSE_GC),2)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+else ifeq ($(VERBOSE_GC),3)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+  run_args += -XX:+PrintHeapShape
+else ifeq ($(VERBOSE_GC),4)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+  run_args += -XX:+PrintHeapShape
+  run_args += -XX:+TraceHeapChunks
+endif
+
+ifdef XMX
+  run_args += -Xmx$(XMX)
+endif
 
 app_home = $(target_dir)/quarkus-startstop
 app_runner = $(app_home)/app-full-microprofile/target/quarkus-runner
@@ -33,10 +50,10 @@ pom_xml = $(target_dir)/quarkus-startstop/app-full-microprofile/pom.xml
 target_dir = target/$(QUARKUS)
 
 time: $(app_runner)
-> /usr/bin/time -v $<
+> /usr/bin/time -v $< $(run_args)
 
 massif: $(app_runner)
-> valgrind --tool=massif $<
+> valgrind --tool=massif $< $(run_args)
 #> valgrind --tool=massif --pages-as-heap=yes $<
 
 $(app_runner): $(pom_xml)
