@@ -69,6 +69,10 @@ $(pom_xml): $(target_dir)
 $(target_dir):
 > mkdir -p $@
 
+test:
+> ./test-endpoints.sh
+.PHONY: test
+
 clean:
 > rm -drf $(target_dir)
 .PHONY: clean

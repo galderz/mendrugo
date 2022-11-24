@@ -1,0 +1,11 @@
+curl http://localhost:8080
+curl http://localhost:8080/data/hello
+curl http://localhost:8080/data/config/injected
+curl http://localhost:8080/data/config/lookup
+curl http://localhost:8080/data/resilience
+curl http://localhost:8080/q/health
+curl http://localhost:8080/data/metric/time
+curl http://localhost:8080/q/metrics
+curl http://localhost:8080/data/secured/test
+curl http://localhost:8080/q/openapi
+curl http://localhost:8080/data/client/test/parameterValue=xxx
