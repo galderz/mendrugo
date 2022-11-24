@@ -12,13 +12,27 @@ endif
 
 QUARKUS ?= 2.13
 
+quarkus_2_13=2.13.4.Final
+quarkus_2_7=2.7.6.Final
+graalvm_22_3=graalvm-ce-java17-22.3.0
+graalvm_21_3=graalvm-ce-java17-21.3.3.1
+
 ifeq ($(QUARKUS),2.13)
-  quarkus_version = 2.13.4.Final
-  graalvm_home = /opt/graalvm-ce-java17-22.3.0
-endif
-ifeq ($(QUARKUS),2.7)
-  quarkus_version = 2.7.6.Final
-  graalvm_home = /opt/graalvm-ce-java17-21.3.3.1
+  branch = topic.1122.minor-tweaks
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = $(quarkus_2_13)
+else ifeq ($(QUARKUS),2.7)
+  branch = topic.1122.minor-tweaks
+  graalvm_home = /opt/$(graalvm_21_3)
+  quarkus_version = $(quarkus_2_7)
+else ifeq ($(QUARKUS),2.13-21.3)
+  branch = topic.1122.minor-tweaks
+  graalvm_home = /opt/$(graalvm_21_3)
+  quarkus_version = $(quarkus_2_13)
+else ifeq ($(QUARKUS),2.7-22.3)
+  branch = topic.1122.minor-tweaks.$(QUARKUS)
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = $(quarkus_2_7)
 endif
 
 ifeq ($(VERBOSE_GC),1)
@@ -64,7 +78,7 @@ $(pom_xml): $(target_dir)
 > cd $<
 > git clone https://github.com/galderz/quarkus-startstop
 > cd quarkus-startstop
-> git checkout -b topic.1122.minor-tweaks origin/topic.1122.minor-tweaks
+> git checkout -b $(branch) origin/$(branch)
 
 $(target_dir):
 > mkdir -p $@
