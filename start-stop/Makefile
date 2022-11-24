@@ -35,6 +35,10 @@ target_dir = target/$(QUARKUS)
 time: $(app_runner)
 > /usr/bin/time -v $<
 
+massif: $(app_runner)
+> valgrind --tool=massif $<
+#> valgrind --tool=massif --pages-as-heap=yes $<
+
 $(app_runner): $(pom_xml)
 > cd $(app_home)
 > $(mvn) test -Ptestsuite -Dtest=StartStopTest#fullMicroProfileNative -Dquarkus.version=$(quarkus_version) -Dstart-stop.iterations=3
@@ -51,3 +55,7 @@ $(target_dir):
 clean:
 > rm -drf $(target_dir)
 .PHONY: clean
+
+clean-all:
+> rm -drf target
+.PHONY: clean-all
