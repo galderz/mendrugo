@@ -22,6 +22,10 @@ ifeq ($(QUARKUS),2.13)
   branch = topic.1122.minor-tweaks
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_2_13)
+else ifeq ($(QUARKUS),2.13-hd)
+  branch = topic.1122.minor-tweaks.heapdump
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = $(quarkus_2_13)
 else ifeq ($(QUARKUS),2.7)
   branch = topic.1122.minor-tweaks
   graalvm_home = /opt/$(graalvm_21_3)
@@ -94,6 +98,10 @@ massif: $(app_runner)
 snapshot: $(quarkus_jar_core) $(app_runner)
 > /usr/bin/time -v $(app_home)/app-full-microprofile/target/quarkus-runner $(run_args)
 .PHONY: snapshot
+
+heapdump: $(app_runner)
+> $< $(run_args)
+.PHONY: heapdump
 
 $(app_runner): $(pom_xml)
 > cd $(app_home)
