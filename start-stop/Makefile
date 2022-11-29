@@ -30,6 +30,10 @@ else ifeq ($(QUARKUS),2.13-netty-stats)
   branch = topic.1122.minor-tweaks.$(QUARKUS)
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_2_13)
+#else ifeq ($(QUARKUS),2.13-n4174)
+#  branch = topic.1122.minor-tweaks.$(QUARKUS)
+#  graalvm_home = /opt/$(graalvm_22_3)
+#  quarkus_version = $(quarkus_2_13)
 else ifeq ($(QUARKUS),2.7)
   branch = topic.1122.minor-tweaks
   graalvm_home = /opt/$(graalvm_21_3)
@@ -56,7 +60,7 @@ else ifeq ($(QUARKUS),999)
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_999)
 else ifeq ($(QUARKUS),999-21.3)
-  branch = topic.1122.minor-tweaks
+  branch = topic.1122.minor-tweaks.999
   graalvm_home = /opt/$(graalvm_21_3)
   quarkus_version = $(quarkus_999)
 endif
