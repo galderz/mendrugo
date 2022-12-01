@@ -11,12 +11,19 @@ endif
 .RECIPEPREFIX = >
 
 QUARKUS ?= 2.13
+APP ?= full-microprofile
 
 quarkus_2_7 = 2.7.6.Final
 quarkus_2_13 = 2.13.4.Final
 graalvm_21_3 = graalvm-ce-java17-21.3.3.1
 graalvm_22_3 = graalvm-ce-java17-22.3.0
 quarkus_999 = 999-SNAPSHOT
+
+ifeq ($(APP),full-microprofile)
+  test_name = fullMicroProfileNative
+else ifeq ($(APP),jax-rs-minimal)
+  test_name = jaxRsMinimalNative
+endif
 
 ifeq ($(QUARKUS),2.13)
   branch = topic.1122.minor-tweaks
@@ -30,10 +37,11 @@ else ifeq ($(QUARKUS),2.13-netty-stats)
   branch = topic.1122.minor-tweaks.$(QUARKUS)
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_2_13)
-#else ifeq ($(QUARKUS),2.13-n4174)
-#  branch = topic.1122.minor-tweaks.$(QUARKUS)
-#  graalvm_home = /opt/$(graalvm_22_3)
-#  quarkus_version = $(quarkus_2_13)
+else ifeq ($(QUARKUS),2.13-n4174)
+  branch = topic.1122.minor-tweaks.$(QUARKUS)
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_maven_args += -Dnetty.version=4.1.74.Final
+  quarkus_version = $(quarkus_2_13)
 else ifeq ($(QUARKUS),2.7)
   branch = topic.1122.minor-tweaks
   graalvm_home = /opt/$(graalvm_21_3)
@@ -86,7 +94,7 @@ ifdef XMX
 endif
 
 app_home = $(target_dir)/quarkus-startstop
-app_runner = $(app_home)/app-full-microprofile/target/quarkus-runner
+app_runner = $(app_home)/app-$(APP)/target/quarkus-runner
 
 mvn += JAVA_HOME=$(graalvm_home)
 ifdef maven_opts
@@ -95,7 +103,7 @@ endif
 mvn += PATH=$(PATH):/opt/boot-maven-3/bin
 mvn += mvn
 
-pom_xml = $(target_dir)/quarkus-startstop/app-full-microprofile/pom.xml
+pom_xml = $(target_dir)/quarkus-startstop/app-$(APP)/pom.xml
 quarkus_home := /opt/quarkus-quarkus
 quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
@@ -112,7 +120,7 @@ massif: $(app_runner)
 .PHONY: massif
 
 snapshot: $(quarkus_jar_core) $(app_runner)
-> /usr/bin/time -v $(app_home)/app-full-microprofile/target/quarkus-runner $(run_args)
+> /usr/bin/time -v $(app_runner) $(run_args)
 .PHONY: snapshot
 
 heapdump: $(app_runner)
@@ -121,7 +129,7 @@ heapdump: $(app_runner)
 
 $(app_runner): $(pom_xml)
 > cd $(app_home)
-> $(mvn) test -Ptestsuite -Dtest=StartStopTest#fullMicroProfileNative -Dquarkus.version=$(quarkus_version) -Dstart-stop.iterations=3
+> $(mvn) test -Ptestsuite -Dtest=StartStopTest#$(test_name) -Dquarkus.version=$(quarkus_version) -Dstart-stop.iterations=3
 
 $(pom_xml): $(target_dir)
 > cd $<
@@ -134,7 +142,7 @@ $(target_dir):
 
 $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)
-> $(mvn) -Dquickly -T 4C
+> $(mvn) -Dquickly -T 4C $(quarkus_maven_args)
 > touch $@
 
 test:
