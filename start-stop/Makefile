@@ -29,6 +29,10 @@ ifeq ($(QUARKUS),2.13)
   branch = topic.1122.minor-tweaks
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_2_13)
+else ifeq ($(QUARKUS),2.13-debug)
+  branch = topic.1122.minor-tweaks.$(QUARKUS)
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = $(quarkus_2_13)
 else ifeq ($(QUARKUS),2.13-hd)
   branch = topic.1122.minor-tweaks.$(QUARKUS)
   graalvm_home = /opt/$(graalvm_22_3)
@@ -44,6 +48,10 @@ else ifeq ($(QUARKUS),2.13-n4174)
   quarkus_version = $(quarkus_2_13)
 else ifeq ($(QUARKUS),2.7)
   branch = topic.1122.minor-tweaks
+  graalvm_home = /opt/$(graalvm_21_3)
+  quarkus_version = $(quarkus_2_7)
+else ifeq ($(QUARKUS),2.7-debug)
+  branch = topic.1122.minor-tweaks.$(QUARKUS)
   graalvm_home = /opt/$(graalvm_21_3)
   quarkus_version = $(quarkus_2_7)
 else ifeq ($(QUARKUS),2.13-21.3)
@@ -118,6 +126,16 @@ massif: $(app_runner)
 > valgrind --tool=massif $< $(run_args)
 #> valgrind --tool=massif --pages-as-heap=yes $<
 .PHONY: massif
+
+# Call `starti` to put a breakpoint in the very first instruction
+debug:
+> gdb $(app_runner)
+.PHONY: debug
+
+stackcount:
+> rm -f $(target_dir)/out.stacks
+> sudo /usr/share/bcc/tools/stackcount -v -P -p $(PID) -U c:malloc > $(target_dir)/out.stacks
+.PHONY: stackcount
 
 snapshot: $(quarkus_jar_core) $(app_runner)
 > /usr/bin/time -v $(app_runner) $(run_args)
