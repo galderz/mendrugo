@@ -116,6 +116,8 @@ quarkus_home := /opt/quarkus-quarkus
 quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
+stackcollapse = /opt/FlameGraph/stackcollapse.pl
+flamegraph = /opt/FlameGraph/flamegraph.pl
 target_dir = target/$(QUARKUS)
 
 time: $(app_runner)
@@ -133,9 +135,13 @@ debug:
 .PHONY: debug
 
 stackcount:
-> rm -f $(target_dir)/out.stacks
-> sudo /usr/share/bcc/tools/stackcount -P -p $(PID) -U c:malloc > $(target_dir)/out.stacks
+> rm -f $(target_dir)/malloc.stacks
+> sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:malloc > $(target_dir)/malloc.stacks
 .PHONY: stackcount
+
+flame:
+> $(stackcollapse) < $(target_dir)/malloc.stacks | $(flamegraph) --color=mem --title="malloc() Flame Graph" --countname="calls" > $(target_dir)/malloc.svg
+.PHONY: flame
 
 snapshot: $(quarkus_jar_core) $(app_runner)
 > /usr/bin/time -v $(app_runner) $(run_args)
