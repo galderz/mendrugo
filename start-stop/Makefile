@@ -134,7 +134,7 @@ debug:
 
 stackcount:
 > rm -f $(target_dir)/out.stacks
-> sudo /usr/share/bcc/tools/stackcount -v -P -p $(PID) -U c:malloc > $(target_dir)/out.stacks
+> sudo /usr/share/bcc/tools/stackcount -P -p $(PID) -U c:malloc > $(target_dir)/out.stacks
 .PHONY: stackcount
 
 snapshot: $(quarkus_jar_core) $(app_runner)
