@@ -111,13 +111,13 @@ endif
 mvn += PATH=$(PATH):/opt/boot-maven-3/bin
 mvn += mvn
 
+flamegraph = /opt/FlameGraph/flamegraph.pl
 pom_xml = $(target_dir)/quarkus-startstop/app-$(APP)/pom.xml
 quarkus_home := /opt/quarkus-quarkus
 quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
 stackcollapse = /opt/FlameGraph/stackcollapse.pl
-flamegraph = /opt/FlameGraph/flamegraph.pl
 target_dir = target/$(QUARKUS)
 
 time: $(app_runner)
@@ -134,14 +134,36 @@ debug:
 > gdb $(app_runner)
 .PHONY: debug
 
-stackcount:
+malloc:
 > rm -f $(target_dir)/malloc.stacks
 > sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:malloc > $(target_dir)/malloc.stacks
-.PHONY: stackcount
+.PHONY: malloc
 
-flame:
+# malloc-bytes:
+# > rm -f $(target_dir)/malloc-bytes.stacks
+# > sudo /opt/bcc/examples/tracing/mallocstacks.py $(shell pidof quarkus-runner) > $(target_dir)/malloc-bytes.stacks
+# .PHONY: malloc-bytes
+
+brendan-malloc-bytes:
+> rm -f $(target_dir)/malloc-bytes.stacks
+> sudo /opt/BPF-tools/old/2017-12-23/mallocstacks.py -p $(shell pidof quarkus-runner) -f > $(target_dir)/brendan-malloc-bytes.stacks
+.PHONY: brendan-malloc-bytes
+
+flame-malloc:
 > $(stackcollapse) < $(target_dir)/malloc.stacks | $(flamegraph) --color=mem --title="malloc() Flame Graph" --countname="calls" > $(target_dir)/malloc.svg
-.PHONY: flame
+.PHONY: flame-malloc
+
+# flame-malloc-bytes:
+# > $(stackcollapse) < $(target_dir)/malloc-bytes.stacks | $(flamegraph) --color=mem --title="malloc() bytes Flame Graph" --countname="bytes" > $(target_dir)/malloc-bytes.svg
+# .PHONY: flame-malloc-bytes
+
+flame-brendan-malloc-bytes:
+> cat $(target_dir)/brendan-malloc-bytes.stacks | $(flamegraph) --color=mem --title="malloc() bytes Flame Graph" --countname="bytes" > $(target_dir)/brendan-malloc-bytes.svg
+.PHONY: flame-brendan-malloc-bytes
+
+memleak:
+> sudo /usr/share/bcc/tools/memleak -c $(app_runner) -O /lib64/libc.so.6
+.PHONY: memleak
 
 snapshot: $(quarkus_jar_core) $(app_runner)
 > /usr/bin/time -v $(app_runner) $(run_args)
