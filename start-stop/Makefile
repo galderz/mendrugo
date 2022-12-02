@@ -119,6 +119,7 @@ quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
 stackcollapse = /opt/FlameGraph/stackcollapse.pl
+stackcollapse_perf = /opt/FlameGraph/stackcollapse-perf.pl
 target_dir = target/$(QUARKUS)
 
 time: $(app_runner)
@@ -150,6 +151,10 @@ brendan-malloc-bytes:
 > sudo /opt/BPF-tools/old/2017-12-23/mallocstacks.py -p $(shell pidof quarkus-runner) -f > $(target_dir)/brendan-malloc-bytes.stacks
 .PHONY: brendan-malloc-bytes
 
+mmap:
+> sudo perf record -e syscalls:sys_enter_mmap -a -g -o $(target_dir)/perf-mmap.data -- $(app_runner)
+.PHONY: mmap
+
 flame-malloc:
 > $(stackcollapse) < $(target_dir)/malloc.stacks | $(flamegraph) --color=mem --title="malloc() Flame Graph" --countname="calls" > $(target_dir)/malloc.svg
 .PHONY: flame-malloc
@@ -161,6 +166,11 @@ flame-malloc:
 flame-brendan-malloc-bytes:
 > cat $(target_dir)/brendan-malloc-bytes.stacks | $(flamegraph) --color=mem --title="malloc() bytes Flame Graph" --countname="bytes" > $(target_dir)/brendan-malloc-bytes.svg
 .PHONY: flame-brendan-malloc-bytes
+
+flame-mmap:
+> sudo perf script -i $(target_dir)/perf-mmap.data > $(target_dir)/mmap.stacks
+> $(stackcollapse_perf) < $(target_dir)/mmap.stacks | $(flamegraph) --color=mem --title="mmap() Flame Graph" --countname="calls" > $(target_dir)/mmap.svg
+.PHONY: flame-mmap
 
 memleak:
 > sudo /usr/share/bcc/tools/memleak -c $(app_runner) -O /lib64/libc.so.6
