@@ -103,6 +103,7 @@ endif
 
 app_home = $(target_dir)/quarkus-startstop
 app_runner = $(app_home)/app-$(APP)/target/quarkus-runner
+app_jar = $(app_home)/app-$(APP)/target/quarkus-native-image-source-jar/quarkus-runner.jar
 
 mvn += JAVA_HOME=$(graalvm_home)
 ifdef maven_opts
@@ -172,6 +173,10 @@ snapshot: $(quarkus_jar_core) $(app_runner)
 heapdump: $(app_runner)
 > $< $(run_args)
 .PHONY: heapdump
+
+jvm: $(app_runner)
+> /usr/bin/time -v java $(run_args) -jar $(app_jar)
+.PHONY: jvm
 
 $(app_runner): $(pom_xml)
 > cd $(app_home)
