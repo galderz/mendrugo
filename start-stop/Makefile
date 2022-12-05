@@ -155,6 +155,10 @@ mmap:
 > sudo perf record -e syscalls:sys_enter_mmap -a -g -o $(target_dir)/perf-mmap.data -- $(app_runner)
 .PHONY: mmap
 
+pagefault:
+> sudo perf record -e page-faults -a -g -o $(target_dir)/perf-pagefault.data -- $(app_runner)
+.PHONY: mmap
+
 flame-malloc:
 > $(stackcollapse) < $(target_dir)/malloc.stacks | $(flamegraph) --color=mem --title="malloc() Flame Graph" --countname="calls" > $(target_dir)/malloc.svg
 .PHONY: flame-malloc
@@ -171,6 +175,11 @@ flame-mmap:
 > sudo perf script -i $(target_dir)/perf-mmap.data > $(target_dir)/mmap.stacks
 > $(stackcollapse_perf) < $(target_dir)/mmap.stacks | $(flamegraph) --color=mem --title="mmap() Flame Graph" --countname="calls" > $(target_dir)/mmap.svg
 .PHONY: flame-mmap
+
+flame-pagefault:
+> sudo perf script -i $(target_dir)/perf-pagefault.data > $(target_dir)/pagefault.stacks
+> $(stackcollapse_perf) < $(target_dir)/pagefault.stacks | $(flamegraph) --color=mem --title="Page Fault Flame Graph" --countname="pages" > $(target_dir)/pages.svg
+.PHONY: flame-pagefault
 
 memleak:
 > sudo /usr/share/bcc/tools/memleak -c $(app_runner) -O /lib64/libc.so.6
