@@ -150,6 +150,11 @@ calloc:
 > sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:calloc > $(target_dir)/calloc.stacks
 .PHONY: calloc
 
+realloc:
+> rm -f $(target_dir)/realloc.stacks
+> sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:realloc > $(target_dir)/realloc.stacks
+.PHONY: realloc
+
 # malloc-bytes:
 # > rm -f $(target_dir)/malloc-bytes.stacks
 # > sudo /opt/bcc/examples/tracing/mallocstacks.py $(shell pidof quarkus-runner) > $(target_dir)/malloc-bytes.stacks
@@ -175,6 +180,10 @@ flame-malloc:
 flame-calloc:
 > $(stackcollapse) < $(target_dir)/calloc.stacks | $(flamegraph) --color=mem --title="calloc() Flame Graph" --countname="calls" > $(target_dir)/calloc.svg
 .PHONY: flame-calloc
+
+flame-realloc:
+> $(stackcollapse) < $(target_dir)/realloc.stacks | $(flamegraph) --color=mem --title="realloc() Flame Graph" --countname="calls" > $(target_dir)/realloc.svg
+.PHONY: flame-realloc
 
 # flame-malloc-bytes:
 # > $(stackcollapse) < $(target_dir)/malloc-bytes.stacks | $(flamegraph) --color=mem --title="malloc() bytes Flame Graph" --countname="bytes" > $(target_dir)/malloc-bytes.svg
