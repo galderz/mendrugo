@@ -145,6 +145,11 @@ malloc:
 > sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:malloc > $(target_dir)/malloc.stacks
 .PHONY: malloc
 
+calloc:
+> rm -f $(target_dir)/calloc.stacks
+> sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:calloc > $(target_dir)/calloc.stacks
+.PHONY: calloc
+
 # malloc-bytes:
 # > rm -f $(target_dir)/malloc-bytes.stacks
 # > sudo /opt/bcc/examples/tracing/mallocstacks.py $(shell pidof quarkus-runner) > $(target_dir)/malloc-bytes.stacks
@@ -166,6 +171,10 @@ pagefault:
 flame-malloc:
 > $(stackcollapse) < $(target_dir)/malloc.stacks | $(flamegraph) --color=mem --title="malloc() Flame Graph" --countname="calls" > $(target_dir)/malloc.svg
 .PHONY: flame-malloc
+
+flame-calloc:
+> $(stackcollapse) < $(target_dir)/calloc.stacks | $(flamegraph) --color=mem --title="calloc() Flame Graph" --countname="calls" > $(target_dir)/calloc.svg
+.PHONY: flame-calloc
 
 # flame-malloc-bytes:
 # > $(stackcollapse) < $(target_dir)/malloc-bytes.stacks | $(flamegraph) --color=mem --title="malloc() bytes Flame Graph" --countname="bytes" > $(target_dir)/malloc-bytes.svg
