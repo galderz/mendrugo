@@ -1,5 +1,9 @@
 python import threading, gdb
 
+# Put a breakpoint in first instruction,
+# and start the application
+starti
+
 # Stackcount needs to run for less than the overall time of this script,
 # otherwise the process won't stop in time and no stacks will be recorded
 shell ./stackcount.sh malloc c:malloc 4 &
