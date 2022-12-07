@@ -122,6 +122,10 @@ ifdef CACHE_ALL_THREADS
   run_args += -Dio.netty.allocator.useCacheForAllThreads=$(CACHE_ALL_THREADS)
 endif
 
+ifdef EVENT_LOOPS
+  run_args += -Dquarkus.vertx.event-loops-pool-size=$(EVENT_LOOPS)
+endif
+
 app_home = $(target_dir)/quarkus-startstop
 app_runner = $(app_home)/app-$(APP)/target/quarkus-runner
 app_jar = $(app_home)/app-$(APP)/target/quarkus-native-image-source-jar/quarkus-runner.jar
