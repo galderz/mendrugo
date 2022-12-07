@@ -161,11 +161,6 @@ debug:
 > gdb $(app_runner)
 .PHONY: debug
 
-malloc:
-> rm -f $(target_dir)/malloc.stacks
-> sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:malloc > $(target_dir)/malloc.stacks
-.PHONY: malloc
-
 calloc:
 > rm -f $(target_dir)/calloc.stacks
 > sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:calloc > $(target_dir)/calloc.stacks
