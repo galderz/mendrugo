@@ -25,6 +25,14 @@ else ifeq ($(APP),jax-rs-minimal)
   test_name = jaxRsMinimalNative
 endif
 
+quarkus_maven_args += -Dquickly
+quarkus_maven_args += -T
+ifdef MAVEN_THREADS
+  quarkus_maven_args += $(MAVEN_THREADS)C
+else
+  quarkus_maven_args += 4C
+endif
+
 ifeq ($(QUARKUS),2.13)
   branch = topic.1122.minor-tweaks
   graalvm_home = /opt/$(graalvm_22_3)
@@ -90,6 +98,14 @@ else ifeq ($(QUARKUS),999)
 else ifeq ($(QUARKUS),999-21.3)
   branch = topic.1122.minor-tweaks.999
   graalvm_home = /opt/$(graalvm_21_3)
+  quarkus_version = $(quarkus_999)
+else ifeq ($(QUARKUS),999-before)
+  branch = topic.1122.minor-tweaks.999-hd
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = $(quarkus_999)
+else ifeq ($(QUARKUS),999-after)
+  branch = topic.1122.minor-tweaks.999-hd
+  graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_999)
 endif
 
@@ -250,7 +266,7 @@ $(target_dir):
 
 $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)
-> $(mvn) -Dquickly -T 4C $(quarkus_maven_args)
+> $(mvn) $(quarkus_maven_args)
 > touch $@
 
 test:
