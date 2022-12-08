@@ -251,18 +251,24 @@ jvm: $(app_runner)
 > /usr/bin/time -v java $(run_args) -jar $(app_jar)
 .PHONY: jvm
 
+ap-alloc: $(app_runner)
+> java -agentpath:/opt/async-profiler/build/libasyncProfiler.so=start,event=alloc,file=$(target_dir)/alloc.html $(run_args) -jar $(app_jar)
+.PHONY: ap-alloc
+
+ap-alloc-live: $(app_runner)
+> java -agentpath:/opt/async-profiler/build/libasyncProfiler.so=start,event=alloc,live,file=$(target_dir)/alloc-live.html $(run_args) -jar $(app_jar)
+.PHONY: ap-alloc-live
+
 $(app_runner): $(pom_xml)
 > cd $(app_home)
 > $(mvn) test -Ptestsuite -Dtest=StartStopTest#$(test_name) -Dquarkus.version=$(quarkus_version) -Dstart-stop.iterations=3
 
-$(pom_xml): $(target_dir)
-> cd $<
+$(pom_xml):
+> mkdir -p $(target_dir)
+> cd $(target_dir)
 > git clone https://github.com/galderz/quarkus-startstop
 > cd quarkus-startstop
 > git checkout -b $(branch) origin/$(branch)
-
-$(target_dir):
-> mkdir -p $@
 
 $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)
