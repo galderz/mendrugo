@@ -176,11 +176,6 @@ stack:
 > gdb --batch --command=$(STACK_NAME).gdb $(app_runner)
 .PHONY: stack
 
-realloc:
-> rm -f $(target_dir)/realloc.stacks
-> sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:realloc > $(target_dir)/realloc.stacks
-.PHONY: realloc
-
 # malloc-bytes:
 # > rm -f $(target_dir)/malloc-bytes.stacks
 # > sudo /opt/bcc/examples/tracing/mallocstacks.py $(shell pidof quarkus-runner) > $(target_dir)/malloc-bytes.stacks
