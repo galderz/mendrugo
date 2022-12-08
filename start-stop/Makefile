@@ -172,15 +172,9 @@ massif: $(app_runner)
 #> valgrind --tool=massif --pages-as-heap=yes $<
 .PHONY: massif
 
-# Call `starti` to put a breakpoint in the very first instruction
-debug:
-> gdb $(app_runner)
-.PHONY: debug
-
-calloc:
-> rm -f $(target_dir)/calloc.stacks
-> sudo /usr/share/bcc/tools/stackcount -P -p $(shell pidof quarkus-runner) -U c:calloc > $(target_dir)/calloc.stacks
-.PHONY: calloc
+stack:
+> gdb --batch --command=$(STACK_NAME).gdb $(app_runner)
+.PHONY: stack
 
 realloc:
 > rm -f $(target_dir)/realloc.stacks
