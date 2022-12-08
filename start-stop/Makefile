@@ -173,7 +173,7 @@ massif: $(app_runner)
 .PHONY: massif
 
 stack:
-> gdb --batch --command=$(STACK_NAME).gdb $(app_runner)
+> gdb --batch --command=gdb.$(STACK_NAME).script $(app_runner)
 .PHONY: stack
 
 # malloc-bytes:
