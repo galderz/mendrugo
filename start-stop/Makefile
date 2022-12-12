@@ -176,54 +176,6 @@ stack:
 > gdb --batch --command=gdb.$(STACK_NAME).script $(app_runner)
 .PHONY: stack
 
-# malloc-bytes:
-# > rm -f $(target_dir)/malloc-bytes.stacks
-# > sudo /opt/bcc/examples/tracing/mallocstacks.py $(shell pidof quarkus-runner) > $(target_dir)/malloc-bytes.stacks
-# .PHONY: malloc-bytes
-
-brendan-malloc-bytes:
-> rm -f $(target_dir)/malloc-bytes.stacks
-> sudo /opt/BPF-tools/old/2017-12-23/mallocstacks.py -p $(shell pidof quarkus-runner) -f > $(target_dir)/brendan-malloc-bytes.stacks
-.PHONY: brendan-malloc-bytes
-
-mmap:
-> sudo perf record -e syscalls:sys_enter_mmap -a -g -o $(target_dir)/perf-mmap.data -- $(app_runner)
-.PHONY: mmap
-
-pagefault:
-> sudo perf record -e page-faults -a -g -o $(target_dir)/perf-pagefault.data -- $(app_runner)
-.PHONY: mmap
-
-flame-malloc:
-> $(stackcollapse) < $(target_dir)/malloc.stacks | $(flamegraph) --color=mem --title="malloc() Flame Graph" --countname="calls" > $(target_dir)/malloc.svg
-.PHONY: flame-malloc
-
-flame-calloc:
-> $(stackcollapse) < $(target_dir)/calloc.stacks | $(flamegraph) --color=mem --title="calloc() Flame Graph" --countname="calls" > $(target_dir)/calloc.svg
-.PHONY: flame-calloc
-
-flame-realloc:
-> $(stackcollapse) < $(target_dir)/realloc.stacks | $(flamegraph) --color=mem --title="realloc() Flame Graph" --countname="calls" > $(target_dir)/realloc.svg
-.PHONY: flame-realloc
-
-# flame-malloc-bytes:
-# > $(stackcollapse) < $(target_dir)/malloc-bytes.stacks | $(flamegraph) --color=mem --title="malloc() bytes Flame Graph" --countname="bytes" > $(target_dir)/malloc-bytes.svg
-# .PHONY: flame-malloc-bytes
-
-flame-brendan-malloc-bytes:
-> cat $(target_dir)/brendan-malloc-bytes.stacks | $(flamegraph) --color=mem --title="malloc() bytes Flame Graph" --countname="bytes" > $(target_dir)/brendan-malloc-bytes.svg
-.PHONY: flame-brendan-malloc-bytes
-
-flame-mmap:
-> sudo perf script -i $(target_dir)/perf-mmap.data > $(target_dir)/mmap.stacks
-> $(stackcollapse_perf) < $(target_dir)/mmap.stacks | $(flamegraph) --color=mem --title="mmap() Flame Graph" --countname="calls" > $(target_dir)/mmap.svg
-.PHONY: flame-mmap
-
-flame-pagefault:
-> sudo perf script -i $(target_dir)/perf-pagefault.data > $(target_dir)/pagefault.stacks
-> $(stackcollapse_perf) < $(target_dir)/pagefault.stacks | $(flamegraph) --color=mem --title="Page Fault Flame Graph" --countname="pages" > $(target_dir)/pages.svg
-.PHONY: flame-pagefault
-
 memleak:
 > sudo /usr/share/bcc/tools/memleak -c $(app_runner) -O /lib64/libc.so.6
 .PHONY: memleak
