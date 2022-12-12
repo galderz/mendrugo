@@ -173,7 +173,7 @@ massif: $(app_runner)
 .PHONY: massif
 
 stack:
-> gdb --batch --command=gdb.$(STACK_NAME).script $(app_runner)
+> gdb --batch --command=gdb.$(STACK_NAME).script --args $(app_runner) $(run_args)
 .PHONY: stack
 
 memleak:

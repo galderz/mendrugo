@@ -7,9 +7,10 @@ stack()
 {
     local quarkus=$1
     local app=$2
-    local name=$3
+    local xmx=$3
+    local name=$4
 
-    QUARKUS=$quarkus APP=$app STACK_NAME=$name make stack
+    QUARKUS=$quarkus APP=$app XMX=$xmx STACK_NAME=$name make stack
 }
 
 flamegraph()
@@ -32,6 +33,7 @@ flamegraphs()
 {
     local quarkus=$1
     local app=$2
+    local xmx=$3
     local fgdir=target/flamegraphs
 
     rm -drf $fgdir
@@ -49,9 +51,9 @@ flamegraphs()
         realloc,calls
     do
         IFS=',' read name countname <<< "${entry}"
-        stack $quarkus $app $name
+        stack $quarkus $app $xmx $name
         flamegraph $name $countname $fgdir
     done
 }
 
-flamegraphs $1 $2
+flamegraphs $1 $2 $3
