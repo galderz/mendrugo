@@ -40,6 +40,7 @@ flamegraphs()
     for entry in \
         brk,calls \
         calloc,calls \
+        free,calls \
         malloc-bytes-brendan,bytes \
         malloc,calls \
         mmap,calls \
