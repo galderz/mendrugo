@@ -15,4 +15,4 @@ stackcount()
     sudo /usr/share/bcc/tools/stackcount -D $duration -P -p $(pidof quarkus-runner) -U $function > $stacksdir/$name.stacks
 }
 
-stackcount target/stacks $1 $2 $3
+stackcount target/flamegraphs/stacks $1 $2 $3

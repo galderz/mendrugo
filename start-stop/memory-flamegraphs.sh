@@ -16,14 +16,15 @@ flamegraph()
 {
     local name=$1
     local countname=$2
-    local dir=target/stacks
+    local fgdir=$3
+    local stacksdir=$fgdir/stacks
     local fp=/opt/FlameGraph/flamegraph.pl
     local sp=/opt/FlameGraph/stackcollapse.pl
 
     if [[ "$name" = "malloc-bytes-brendan" ]]; then
-        cat $dir/$name.stacks | $fp --color=mem --title="$name Flame Graph" --countname="$countname" > $dir/$name.svg
+        cat $stacksdir/$name.stacks | $fp --color=mem --title="$name Flame Graph" --countname="$countname" > $fgdir/$name.svg
     else
-        $sp < $dir/$name.stacks | $fp --color=mem --title="$name Flame Graph" --countname="$countname" > $dir/$name.svg
+        $sp < $stacksdir/$name.stacks | $fp --color=mem --title="$name Flame Graph" --countname="$countname" > $fgdir/$name.svg
     fi
 }
 
@@ -31,10 +32,10 @@ flamegraphs()
 {
     local quarkus=$1
     local app=$2
-    local stacksdir=target/stacks
+    local fgdir=target/flamegraphs
 
-    rm -drf $stacksdir
-    mkdir -p $stacksdir
+    rm -drf $fgdir
+    mkdir -p $fgdir
 
     for entry in \
         brk,calls \
@@ -47,7 +48,7 @@ flamegraphs()
     do
         IFS=',' read name countname <<< "${entry}"
         stack $quarkus $app $name
-        flamegraph $name $countname
+        flamegraph $name $countname $fgdir
     done
 }
 
