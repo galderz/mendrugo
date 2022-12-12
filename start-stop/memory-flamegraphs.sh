@@ -44,6 +44,7 @@ flamegraphs()
         malloc-bytes-brendan,bytes \
         malloc,calls \
         mmap,calls \
+        munmap,calls \
         pagefault,pages \
         realloc,calls
     do
