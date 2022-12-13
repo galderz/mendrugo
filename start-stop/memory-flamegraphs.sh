@@ -45,7 +45,6 @@ flamegraphs()
         malloc-bytes-brendan,bytes \
         malloc,calls \
         mmap,calls \
-        munmap,calls \
         pagefault,pages
     do
         IFS=',' read name countname <<< "${entry}"
