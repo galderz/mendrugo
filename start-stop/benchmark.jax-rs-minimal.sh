@@ -7,14 +7,10 @@ startstop()
 {
     local filename=$1
     local version=$2
+    local xmx=$3
     local app=jax-rs-minimal
 
-    if [ -z "$3" ]; then
-      APP=$app QUARKUS=$version make &
-    else
-      local xmx=$3
-      APP=$app QUARKUS=$version XMX=$xmx make &
-    fi
+    APP=$app QUARKUS=$version XMX=$xmx make &
 
     sleep 2
 
@@ -32,10 +28,8 @@ trial()
     local filename=$1
     local version=$2
 
-    startstop $filename $version
-
     for xmx in \
-	64m \
+      64m \
 	    128m \
 	    256m \
 	    512m \
@@ -43,12 +37,13 @@ trial()
 	    2g \
 	    4g
     do
-	startstop $filename $version $xmx
+        startstop $filename $version $xmx
     done
 }
 
 dir=target/benchmarks/jax-rs-minimal
 rm -drf $dir
 mkdir -p $dir
+trial $dir/2.13.4-29408-29842.rss 2.13.4-29408-29842
 trial $dir/2.7-22.3.rss 2.7-22.3
 trial $dir/2.13.rss 2.13
