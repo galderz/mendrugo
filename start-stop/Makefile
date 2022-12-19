@@ -95,6 +95,10 @@ else ifeq ($(QUARKUS),999)
   branch = topic.1122.minor-tweaks.999
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_999)
+else ifeq ($(QUARKUS),999-debug)
+  branch = topic.1122.minor-tweaks.$(QUARKUS)
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = $(quarkus_999)
 else ifeq ($(QUARKUS),999-21.3)
   branch = topic.1122.minor-tweaks.999
   graalvm_home = /opt/$(graalvm_21_3)
@@ -107,6 +111,14 @@ else ifeq ($(QUARKUS),999-after)
   branch = topic.1122.minor-tweaks.999-hd
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_999)
+else ifeq ($(QUARKUS),2.13.4-29408-29842)
+  branch = topic.1122.minor-tweaks.999
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = 2.13.4-29408-29842
+else ifeq ($(QUARKUS),2.13.4-29408-29842-debug)
+  branch = topic.1122.minor-tweaks.999-debug
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = 2.13.4-29408-29842
 endif
 
 ifeq ($(VERBOSE_GC),1)
@@ -212,6 +224,12 @@ $(pom_xml):
 > git checkout -b $(branch) origin/$(branch)
 
 $(quarkus_jar_core): $(quarkus_sources)
+> cd $(quarkus_home)/independent-projects/ide-config
+> $(mvn) $(quarkus_maven_args)
+> cd $(quarkus_home)/independent-projects/enforcer-rules
+> $(mvn) $(quarkus_maven_args)
+> cd $(quarkus_home)/independent-projects/bootstrap
+> $(mvn) $(quarkus_maven_args)
 > cd $(quarkus_home)
 > $(mvn) $(quarkus_maven_args)
 > touch $@
@@ -230,5 +248,5 @@ clean-all:
 
 clean-quarkus:
 > cd $(quarkus_home)
-> $(mvn) clean
+> git clean -dfx
 .PHONY: clean-quarkus
