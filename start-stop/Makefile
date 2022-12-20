@@ -26,10 +26,13 @@ else ifeq ($(APP),jax-rs-minimal)
 endif
 
 quarkus_maven_args += -Dquickly
-quarkus_maven_args += -T
 ifdef MAVEN_THREADS
-  quarkus_maven_args += $(MAVEN_THREADS)C
+  ifneq ($(MAVEN_THREADS),1)
+    quarkus_maven_args += -T
+    quarkus_maven_args += $(MAVEN_THREADS)C
+  endif
 else
+  quarkus_maven_args += -T
   quarkus_maven_args += 4C
 endif
 
@@ -179,9 +182,21 @@ stackcollapse = /opt/FlameGraph/stackcollapse.pl
 stackcollapse_perf = /opt/FlameGraph/stackcollapse-perf.pl
 target_dir = target/$(QUARKUS)
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+  time_cmd := /usr/bin/time
+endif
+ifeq ($(UNAME_S),Darwin)
+  time_cmd := $(HOME)/.nix-profile/bin/time
+endif
+
 time: $(app_runner)
-> /usr/bin/time -v $< $(run_args)
+> $(time_cmd) -v $< $(run_args)
 .PHONY: time
+
+run: $(app_runner)
+> $< $(run_args)
+.PHONY: run
 
 massif: $(app_runner)
 > valgrind --tool=massif $< $(run_args)
@@ -199,10 +214,6 @@ memleak:
 snapshot: $(quarkus_jar_core) $(app_runner)
 > /usr/bin/time -v $(app_runner) $(run_args)
 .PHONY: snapshot
-
-heapdump: $(app_runner)
-> $< $(run_args)
-.PHONY: heapdump
 
 jvm: $(app_runner)
 > /usr/bin/time -v java $(run_args) -jar $(app_jar)

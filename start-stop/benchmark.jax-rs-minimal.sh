@@ -12,7 +12,7 @@ startstop()
 
     APP=$app QUARKUS=$version XMX=$xmx make &
 
-    sleep 2
+    sleep 4
 
     pid=`pidof quarkus-runner`
 
