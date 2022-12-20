@@ -11,7 +11,7 @@ endif
 .RECIPEPREFIX = >
 
 TEST_CLASS ?= DeepChain
-JFR_FILE ?= binary.jfr
+JFR_FILE ?= target/binary.jfr
 
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
@@ -49,7 +49,7 @@ run-binary: $(binary)
 .PHONY: run-binary
 
 print:
-> $(graalbuilder_jfr) -J-Xlog:jfr+system+parser=trace print --events OldObjectSample --stack-depth 100 target/$(JFR_FILE)
+> $(graalbuilder_jfr) -J-Xlog:jfr+system+parser=trace print --events OldObjectSample --stack-depth 100 $(JFR_FILE)
 .PHONY: print
 
 test: $(native_image)
