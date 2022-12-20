@@ -40,6 +40,10 @@ ifeq ($(QUARKUS),2.13)
   branch = topic.1122.minor-tweaks
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = $(quarkus_2_13)
+else ifeq ($(QUARKUS),2.13-heapgraph)
+  branch = topic.1122.minor-tweaks.$(QUARKUS)
+  graalvm_home = /opt/latest_graalvm_home
+  quarkus_version = $(quarkus_2_13)
 else ifeq ($(QUARKUS),2.13-debug)
   branch = topic.1122.minor-tweaks.$(QUARKUS)
   graalvm_home = /opt/$(graalvm_22_3)
@@ -173,6 +177,9 @@ mvn += PATH=$(PATH):/opt/boot-maven-3/bin
 mvn += mvn
 
 flamegraph = /opt/FlameGraph/flamegraph.pl
+mx += JAVA_HOME=$(svm_builder)
+mx += /opt/mx/mx
+native_image = /opt/latest_graalvm_home/bin/native-image
 pom_xml = $(target_dir)/quarkus-startstop/app-$(APP)/pom.xml
 quarkus_home := /opt/quarkus-quarkus
 quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
@@ -180,6 +187,10 @@ quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's
 quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
 stackcollapse = /opt/FlameGraph/stackcollapse.pl
 stackcollapse_perf = /opt/FlameGraph/stackcollapse-perf.pl
+svm_builder := /opt/graalbuilder-17
+svm_home := /opt/mandrel-mandrel/substratevm
+svm_sources += $(shell find $(svm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
+svm_version := 23.0.0
 target_dir = target/$(QUARKUS)
 
 UNAME_S := $(shell uname -s)
@@ -249,6 +260,14 @@ $(quarkus_jar_core): $(quarkus_sources)
 > $(mvn) $(quarkus_maven_args)
 > touch $@
 
+native-image: $(native_image)
+.PHONY: native-image
+
+$(native_image): $(svm_sources)
+> cd $(svm_home)
+> $(mx) build
+> sed -i'' -e 's/EnableJVMCI/EnableJVMCI -Dorg.graalvm.version=$(svm_version)-dev/g' ../sdk/latest_graalvm_home/lib/svm/bin/native-image
+
 test:
 > ./test-endpoints.sh
 .PHONY: test
@@ -265,3 +284,8 @@ clean-quarkus:
 > cd $(quarkus_home)
 > git clean -dfx
 .PHONY: clean-quarkus
+
+clean-graal:
+> cd $(graalvm_home)/..
+> git clean -dfx
+.PHONY: clean-graal
