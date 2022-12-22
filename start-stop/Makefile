@@ -238,6 +238,11 @@ ap-alloc-live: $(app_runner)
 > java -agentpath:/opt/async-profiler/build/libasyncProfiler.so=start,event=alloc,live,file=$(target_dir)/alloc-live.html $(run_args) -jar $(app_jar)
 .PHONY: ap-alloc-live
 
+startstop: $(app_runner)
+> cd $(app_home)
+> $(mvn) test -Ptestsuite -Dtest=StartStopTest#$(test_name) -Dquarkus.version=$(quarkus_version) -Dstart-stop.iterations=120
+.PHONY: startstop
+
 $(app_runner): $(pom_xml)
 > cd $(app_home)
 > $(mvn) test -Ptestsuite -Dtest=StartStopTest#$(test_name) -Dquarkus.version=$(quarkus_version) -Dstart-stop.iterations=3
