@@ -25,5 +25,4 @@ update()
     update_project $version independent-projects/ide-config
 }
 
-update
-
+update $1
