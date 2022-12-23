@@ -46,7 +46,8 @@ trial()
 dir=target/benchmarks/jax-rs-minimal
 rm -drf $dir
 mkdir -p $dir
-trial $dir/preconfig 999
-trial $dir/2.13.4-29408-29842 2.13.4-29408-29842
-trial $dir/2.7-22.3 2.7-22.3
+#trial $dir/preconfig 999
+#trial $dir/2.13.4-29408-29842 2.13.4-29408-29842
+#trial $dir/2.7-22.3 2.7-22.3
 trial $dir/2.13 2.13
+trial $dir/2.13.4.short-thread-name 2.13.4.short-thread-name

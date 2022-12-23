@@ -126,6 +126,14 @@ else ifeq ($(QUARKUS),2.13.4-29408-29842-debug)
   branch = topic.1122.minor-tweaks.999-debug
   graalvm_home = /opt/$(graalvm_22_3)
   quarkus_version = 2.13.4-29408-29842
+else ifeq ($(QUARKUS),2.13.4.short-thread-name)
+  branch = topic.1122.minor-tweaks.999
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = 2.13.4.short-thread-name
+else ifeq ($(QUARKUS),2.13.4.short-thread-name.debug)
+  branch = topic.1122.minor-tweaks.999-debug
+  graalvm_home = /opt/$(graalvm_22_3)
+  quarkus_version = 2.13.4.short-thread-name
 endif
 
 ifeq ($(VERBOSE_GC),1)
