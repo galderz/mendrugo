@@ -82,6 +82,12 @@ $(graalbuilder_java): $(graalbuilder_sources)
 $(jar): $(project_sources)
 > $(mvn) package
 
+mx-format:
+> cd $(graalvm_home)
+> $(mx) eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
+> $(mx) checkstyle
+.PHONY: mx-format
+
 clean:
 > $(mvn) clean
 .PHONY: clean
