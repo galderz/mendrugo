@@ -10,7 +10,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-TEST_CLASS ?= DeepChain
+TEST_CLASS ?= PlainObjectLeak
 JFR_FILE ?= target/binary.jfr
 
 binary := target/jfr-oldobject

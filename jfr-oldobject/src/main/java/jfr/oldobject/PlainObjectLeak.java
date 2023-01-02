@@ -1,6 +1,6 @@
 package jfr.oldobject;
 
-public class DeepChain
+public class PlainObjectLeak
 {
     static Object leak;
 
