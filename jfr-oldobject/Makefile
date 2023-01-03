@@ -91,6 +91,11 @@ mx-format:
 > $(mx) eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
 .PHONY: mx-format
 
+mx-intellij:
+> cd $(graalvm_home)
+> $(mx) intellijinit
+.PHONY: mx-intellij
+
 clean:
 > $(mvn) clean
 .PHONY: clean
