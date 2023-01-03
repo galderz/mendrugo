@@ -16,7 +16,9 @@ JFR_FILE ?= target/binary.jfr
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
 binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/binary.jfr\,settings=./oldobject.jfc
-graalbuilder_home := $(HOME)/1/jdk17u-dev
+# Workaround https://github.com/oracle/graal/issues/5686
+# Use tagged jdk 17.0.4.1 which does not suffer from issue.
+graalbuilder_home := $(HOME)/1/jdk17u
 graalbuilder_java = $(graalbuilder_java_home)/bin/java
 graalbuilder_java_home = $(graalbuilder_home)/build/graalbuilder/images/graal-builder-jdk
 graalbuilder_jfr = $(graalbuilder_java_home)/bin/jfr
