@@ -87,8 +87,8 @@ $(jar): $(project_sources)
 
 mx-format:
 > cd $(graalvm_home)
-> $(mx) eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
 > $(mx) checkstyle
+> $(mx) eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
 .PHONY: mx-format
 
 clean:
