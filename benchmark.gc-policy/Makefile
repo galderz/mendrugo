@@ -11,9 +11,14 @@ endif
 .RECIPEPREFIX = >
 
 JVM ?= /opt/graalvm-ce-java17-22.3.0
+
+HYPERFOIL_VERSION ?= 0.24
 QUARKUS_VERSION ?= 2.15.2
 
-hyperfoil = /opt/hyperfoil/bin/cli.sh
+hyperfoil_cli = /opt/$(hyperfoil_dir_name)/bin/cli.sh
+hyperfoil_dir_name = hyperfoil-$(HYPERFOIL_VERSION)
+hyperfoil_url = https://github.com/Hyperfoil/Hyperfoil/releases/download/hyperfoil-all-$(HYPERFOIL_VERSION)/$(hyperfoil_zip)
+hyperfoil_zip = hyperfoil-$(HYPERFOIL_VERSION).zip
 mvn += JAVA_HOME=$(JVM)
 mvn += /opt/boot-maven-3/bin/mvn
 jvisualvm := $(JVM)/bin/jvisualvm
@@ -66,9 +71,15 @@ $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION).Final:create 
     -DprojectArtifactId=${1}
 endef
 
-hyperfoil:
-> $(hyperfoil)
+hyperfoil: $(hyperfoil_cli)
+> JAVA_HOME=$(JVM) $<
 .PHONY: hyperfoil
+
+$(hyperfoil_cli):
+> pushd /tmp
+> wget $(hyperfoil_url)
+> unzip $(hyperfoil_zip)
+> mv $(hyperfoil_dir_name) /opt
 
 jvisualvm: $(jvisualvm)
 > $<
