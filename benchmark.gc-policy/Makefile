@@ -16,6 +16,7 @@ QUARKUS_VERSION ?= 2.15.2
 hyperfoil = /opt/hyperfoil/bin/cli.sh
 mvn += JAVA_HOME=$(JVM)
 mvn += /opt/boot-maven-3/bin/mvn
+jvisualvm := $(JVM)/bin/jvisualvm
 
 app_a := adaptive
 app_s := spacetime
@@ -68,6 +69,13 @@ endef
 hyperfoil:
 > $(hyperfoil)
 .PHONY: hyperfoil
+
+jvisualvm: $(jvisualvm)
+> $<
+.PHONY: jvisualvm
+
+$(jvisualvm):
+> $(JVM)/bin/gu install jvisualvm
 
 clean:
 > pushd $(app_a)
