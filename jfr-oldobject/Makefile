@@ -24,8 +24,8 @@ graalbuilder_java_home = $(graalbuilder_home)/build/graalbuilder/images/graal-bu
 graalbuilder_jfr = $(graalbuilder_java_home)/bin/jfr
 graalbuilder_sources += $(shell find $(graalbuilder_home)/ -type f -name '*.java' | sed 's: :\\ :g')
 graalvm_home := /opt/mandrel-mandrel/substratevm
-graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.java' | sed 's: :\\ :g')
-graalvm_sources += $(shell find $(graalvm_home)/ -type f -name '*.properties' | sed 's: :\\ :g')
+graalvm_sources += $(shell find $(graalvm_home) -type f -name '*.java' | sed 's: :\\ :g')
+graalvm_sources += $(shell find $(graalvm_home) -type f -name '*.properties' | sed 's: :\\ :g')
 graalvm_version := 23.0.0
 jar := target/jfr-oldobject.jar
 jvm_opts += -XX:TLABSize=2k
