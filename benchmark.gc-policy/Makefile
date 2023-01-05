@@ -49,3 +49,8 @@ $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION).Final:create 
     -DprojectGroupId=org.acme \
     -DprojectArtifactId=${1}
 endef
+
+clean:
+> rm -drf $(app-a)
+> rm -drf $(app-s)
+.PHONY: clean
