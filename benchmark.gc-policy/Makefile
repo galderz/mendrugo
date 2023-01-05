@@ -13,6 +13,7 @@ endif
 JVM ?= /opt/graalvm-ce-java17-22.3.0
 QUARKUS_VERSION ?= 2.15.2
 
+hyperfoil = /opt/hyperfoil/bin/cli.sh
 mvn += JAVA_HOME=$(JVM)
 mvn += /opt/boot-maven-3/bin/mvn
 
@@ -49,6 +50,10 @@ $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION).Final:create 
     -DprojectGroupId=org.acme \
     -DprojectArtifactId=${1}
 endef
+
+hyperfoil:
+> $(hyperfoil)
+.PHONY: hyperfoil
 
 clean:
 > rm -drf $(app-a)
