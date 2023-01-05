@@ -56,6 +56,15 @@ hyperfoil:
 .PHONY: hyperfoil
 
 clean:
+> pushd $(app-a)
+> $(mvn) clean
+> popd
+> pushd $(app-s)
+> $(mvn) clean
+> popd
+.PHONY: clean
+
+clean-all:
 > rm -drf $(app-a)
 > rm -drf $(app-s)
-.PHONY: clean
+.PHONY: clean-all
