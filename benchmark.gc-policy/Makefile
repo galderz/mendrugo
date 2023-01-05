@@ -17,47 +17,47 @@ hyperfoil = /opt/hyperfoil/bin/cli.sh
 mvn += JAVA_HOME=$(JVM)
 mvn += /opt/boot-maven-3/bin/mvn
 
-app-a := adaptive
-app-s := spacetime
-pom-a = $(app-a)/pom.xml
-pom-s = $(app-s)/pom.xml
-native-args-a = --enable-monitoring=jvmstat
-native-args-s = -H:InitialCollectionPolicy=com.oracle.svm.core.genscavenge.CollectionPolicy\$$BySpaceAndTime,--enable-monitoring=jvmstat
-runner-a = $(app-a)/target/$(app-a)-1.0.0-SNAPSHOT-runner
-runner-s = $(app-s)/target/$(app-s)-1.0.0-SNAPSHOT-runner
+app_a := adaptive
+app_s := spacetime
+pom_a = $(app_a)/pom.xml
+pom_s = $(app_s)/pom.xml
+native_args_a = --enable-monitoring=jvmstat
+native_args_s = -H:InitialCollectionPolicy=com.oracle.svm.core.genscavenge.CollectionPolicy\$$BySpaceAndTime,--enable-monitoring=jvmstat
+runner_a = $(app_a)/target/$(app_a)-1.0.0-SNAPSHOT-runner
+runner_s = $(app_s)/target/$(app_s)-1.0.0-SNAPSHOT-runner
 
-default: $(runner-a) $(runner-s)
+default: $(runner_a) $(runner_s)
 
-run-a: $(runner-a)
-> $(call run,$(runner-a))
+run-a: $(runner_a)
+> $(call run,$(runner_a))
 .PHONY: run-a
 
-run-s: $(runner-b)
-> $(call run,$(runner-s))
+run-s: $(runner_b)
+> $(call run,$(runner_s))
 .PHONY: run-s
 
 define run
 ${1} -Xmx8g
 endef
 
-$(runner-a): $(pom-a)
-> $(call build-native,$(app-a),$(native-args-a))
+$(runner_a): $(pom_a)
+> $(call build-native,$(app_a),$(native_args_a))
 
-$(runner-s): $(pom-s)
-> $(call build-native,$(app-s),$(native-args-s))
+$(runner_s): $(pom_s)
+> $(call build-native,$(app_s),$(native_args_s))
 
 define build-native
 cd ${1}
 $(mvn) package -DskipTests -Dnative -Dquarkus.native.additional-build-args=${2}
 endef
 
-pom: $(pom-a) $(pom-s)
+pom: $(pom_a) $(pom_s)
 
-$(pom-a):
-> $(call get-pom,$(app-a))
+$(pom_a):
+> $(call get-pom,$(app_a))
 
-$(pom-s):
-> $(call get-pom,$(app-s))
+$(pom_s):
+> $(call get-pom,$(app_s))
 
 define get-pom
 $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION).Final:create \
@@ -70,15 +70,15 @@ hyperfoil:
 .PHONY: hyperfoil
 
 clean:
-> pushd $(app-a)
+> pushd $(app_a)
 > $(mvn) clean
 > popd
-> pushd $(app-s)
+> pushd $(app_s)
 > $(mvn) clean
 > popd
 .PHONY: clean
 
 clean-all:
-> rm -drf $(app-a)
-> rm -drf $(app-s)
+> rm -drf $(app_a)
+> rm -drf $(app_s)
 .PHONY: clean-all
