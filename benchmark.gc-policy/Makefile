@@ -21,10 +21,11 @@ app-a := adaptive
 app-s := spacetime
 pom-a = $(app-a)/pom.xml
 pom-s = $(app-s)/pom.xml
+native-args-a = --enable-monitoring=jvmstat
+native-args-s = -H:InitialCollectionPolicy=com.oracle.svm.core.genscavenge.CollectionPolicy\$$BySpaceAndTime,--enable-monitoring=jvmstat
 runner-a = $(app-a)/target/$(app-a)-1.0.0-SNAPSHOT-runner
 runner-s = $(app-s)/target/$(app-s)-1.0.0-SNAPSHOT-runner
 
-runner: $(runner-a) $(runner-s)
 default: $(runner-a) $(runner-s)
 
 run-a: $(runner-a)
@@ -40,10 +41,10 @@ ${1} -Xmx8g
 endef
 
 $(runner-a): $(pom-a)
-> $(call build-native,$(app-a))
+> $(call build-native,$(app-a),$(native-args-a))
 
 $(runner-s): $(pom-s)
-> $(call build-native,$(app-s),-H:InitialCollectionPolicy=com.oracle.svm.core.genscavenge.CollectionPolicy\$$BySpaceAndTime)
+> $(call build-native,$(app-s),$(native-args-s))
 
 define build-native
 cd ${1}
