@@ -25,6 +25,19 @@ runner-a = $(app-a)/target/$(app-a)-1.0.0-SNAPSHOT-runner
 runner-s = $(app-s)/target/$(app-s)-1.0.0-SNAPSHOT-runner
 
 runner: $(runner-a) $(runner-s)
+default: $(runner-a) $(runner-s)
+
+run-a: $(runner-a)
+> $(call run,$(runner-a))
+.PHONY: run-a
+
+run-s: $(runner-b)
+> $(call run,$(runner-s))
+.PHONY: run-s
+
+define run
+${1} -Xmx8g
+endef
 
 $(runner-a): $(pom-a)
 > $(call build-native,$(app-a))
