@@ -35,7 +35,7 @@ runner_s = $(app_s)/target/$(app_s)-1.0.0-SNAPSHOT-runner
 default: $(runner_a) $(runner_s)
 
 run-a: $(runner_a)
-> $(call run,$(runner_a))
+> $(call run,$<)
 .PHONY: run-a
 
 run-s: $(runner_s)
