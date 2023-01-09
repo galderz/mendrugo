@@ -43,7 +43,7 @@ run-s: $(runner_s)
 .PHONY: run-s
 
 define run
-${1} -Xmx8g
+${1}
 endef
 
 $(runner_a): $(pom_a)
