@@ -38,8 +38,8 @@ run-a: $(runner_a)
 > $(call run,$(runner_a))
 .PHONY: run-a
 
-run-s: $(runner_b)
-> $(call run,$(runner_s))
+run-s: $(runner_s)
+> $(call run,$<)
 .PHONY: run-s
 
 define run
