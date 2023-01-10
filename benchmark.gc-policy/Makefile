@@ -32,6 +32,22 @@ native_args_s = -H:InitialCollectionPolicy=com.oracle.svm.core.genscavenge.Colle
 runner_a = $(app_a)/target/$(app_a)-1.0.0-SNAPSHOT-runner
 runner_s = $(app_s)/target/$(app_s)-1.0.0-SNAPSHOT-runner
 
+ifeq ($(VERBOSE_GC),1)
+  run_args += -XX:+PrintGC
+else ifeq ($(VERBOSE_GC),2)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+else ifeq ($(VERBOSE_GC),3)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+  run_args += -XX:+PrintHeapShape
+else ifeq ($(VERBOSE_GC),4)
+  run_args += -XX:+PrintGC
+  run_args += -XX:+VerboseGC
+  run_args += -XX:+PrintHeapShape
+  run_args += -XX:+TraceHeapChunks
+endif
+
 default: $(runner_a) $(runner_s)
 
 run-a: $(runner_a)
@@ -43,7 +59,7 @@ run-s: $(runner_s)
 .PHONY: run-s
 
 define run
-${1}
+${1} $(run_args)
 endef
 
 $(runner_a): $(pom_a)
