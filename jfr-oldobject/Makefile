@@ -81,6 +81,7 @@ $(graalbuilder_java): $(graalbuilder_sources)
 >   --with-extra-cflags=-fcommon \
 >   --with-jvm-variants=server
 > make CONF=graalbuilder graal-builder-image
+> touch $@
 
 $(jar): $(project_sources)
 > $(mvn) package
