@@ -57,7 +57,7 @@ print:
 
 test: $(native_image)
 > cd $(graalvm_home)
-> $(mx) native-unittest com.oracle.svm.test.jfr
+> $(mx) native-unittest --preserve-image com.oracle.svm.test.jfr
 .PHONY: test
 
 $(binary): $(jar) $(native_image)
