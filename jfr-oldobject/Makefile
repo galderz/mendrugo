@@ -84,7 +84,7 @@ $(graalbuilder_java): $(graalbuilder_sources)
 > make CONF=graalbuilder graal-builder-image
 > touch $@
 
-$(jar): $(project_sources)
+$(jar): $(project_sources) $(graalbuilder_java)
 > $(mvn) package
 
 mx-format:
