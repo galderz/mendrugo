@@ -37,6 +37,7 @@ mx += /opt/mx/mx
 native_image += /opt/mandrel-mandrel/sdk/latest_graalvm_home/bin/native-image
 native_image_opts += --enable-monitoring=jfr
 native_image_opts += --no-fallback
+native_image_opts += -g
 native_image_opts += -H:+ReportExceptionStackTraces
 project_sources += $(shell find src/ -type f -name '*.java' | sed 's: :\\ :g')
 project_sources += pom.xml
