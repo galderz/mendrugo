@@ -30,7 +30,6 @@ graalvm_sources += $(shell find $(graalvm_home) -type f -name '*.properties' | s
 graalvm_version := 23.0.0
 jar := target/jfr-oldobject.jar
 jvm_opts += -XX:TLABSize=2k
-jvm_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/jvm.jfr\,settings=./oldobject.jfc
 mvn += JAVA_HOME=$(graalbuilder_java_home)
 mvn += /opt/maven/bin/mvn
 mx += JAVA_HOME=$(graalbuilder_java_home)
@@ -47,6 +46,12 @@ ifdef VERBOSE
   binary_opts += -XX:FlightRecorderLogging=all=trace
   native_image_opts += -H:+TraceVMOperations
   mx += -V
+endif
+
+ifdef PATH_TO_GC_ROOTS
+  jvm_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/jvm.jfr\,settings=./jfc/base.jfc,path-to-gc-roots=true
+else
+  jvm_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/jvm.jfr\,settings=./jfc/base.jfc
 endif
 
 run-binary: $(binary)
