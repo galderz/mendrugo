@@ -12,10 +12,11 @@ endif
 
 TEST_CLASS ?= PlainObjectLeak
 JFR_FILE ?= target/binary.jfr
+JFC_FILE ?= jfc/base.jfc
 
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
-binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/binary.jfr\,settings=./oldobject.jfc
+binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/binary.jfr\,settings=$(JFC_FILE)
 # Workaround https://github.com/oracle/graal/issues/5686
 # Use tagged jdk 17.0.4.1 which does not suffer from issue.
 graalbuilder_home := $(HOME)/1/jdk17u
