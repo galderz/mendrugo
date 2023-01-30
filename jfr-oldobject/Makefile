@@ -90,7 +90,7 @@ $(jar): $(project_sources) $(graalbuilder_java)
 
 mx-format:
 > cd $(graalvm_home)
-> $(mx) checkstyle
+> $(mx) checkstyle --primary
 > $(mx) eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
 .PHONY: mx-format
 
