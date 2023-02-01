@@ -70,7 +70,7 @@ test: $(native_image)
 $(binary): $(jar) $(native_image)
 > $(native_image) $(native_image_opts) -cp $< jfr.oldobject.$(TEST_CLASS) $@
 
-run-jvm: $(jar)
+run-jvm: $(jar) clean-jfr
 > $(graalbuilder_java) $(jvm_opts) -cp $< jfr.oldobject.$(TEST_CLASS)
 .PHONY: run-jvm
 
@@ -117,3 +117,7 @@ clean-all: clean clean-graalvm
 > cd $(graalbuilder_home)
 > make CONF=graalbuilder clean
 .PHONY: clean-all
+
+clean-jfr:
+> rm -f target/jvm.jfr
+.PHONY: clean-jfr
