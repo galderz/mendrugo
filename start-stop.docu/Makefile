@@ -16,7 +16,7 @@ qdup_home = /opt/qDup
 qdup_jar := $(qdup_home)/target/qDup-0.6.17-SNAPSHOT-uber.jar
 qdup_pom := $(qdup_home)/pom.xml
 qdup_sources += $(shell find $(qdup_home) -type f -name '*.java' | sed 's: :\\ :g')
-qdup_sources += $(shell find $(qdup_home) -type f -name '*.xml' | sed 's: :\\ :g')
+qdup_sources += $(shell find $(qdup_home) -type f -name 'pom.xml' | sed 's: :\\ :g')
 
 $(qdup_jar): $(qdup_pom) $(qdup_sources)
 > cd $(qdup_home)
