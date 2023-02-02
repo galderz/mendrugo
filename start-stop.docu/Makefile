@@ -10,7 +10,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
-mvn += JAVA_HOME=/opt/java-17
+mvn += JAVA_HOME=/opt/$(java_home)
 mvn += /opt/maven/bin/mvn
 qdup_home = /opt/qDup
 qdup_jar := $(qdup_home)/target/qDup-0.6.17-SNAPSHOT-uber.jar
