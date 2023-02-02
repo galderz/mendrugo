@@ -1,0 +1,15 @@
+scripts:
+    tryme:
+    - sh: whoami
+    - sh: date
+    - sh: echo ${{message}}
+hosts:
+    server: ${{USER}}@${{HOST}}
+roles:
+    test:
+        hosts:
+        - server
+        run-scripts:
+        - tryme
+states:
+    message: Hello, qDup!
