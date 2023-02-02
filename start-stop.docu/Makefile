@@ -45,3 +45,9 @@ $(qdup_jar): $(qdup_pom) $(qdup_sources)
 $(qdup_pom):
 > cd /opt
 > git clone https://github.com/Hyperfoil/qDup
+
+clean:
+> cd $(qdup_home)
+> $(mvn) clean
+.PHONY: clean
+
