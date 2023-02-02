@@ -21,6 +21,7 @@ mvn += /opt/maven/bin/mvn
 $(qdup_jar): $(qdup_pom) $(qdup_sources)
 > cd $(qdup_home)
 > $(mvn) -DskipTests package
+> touch $@
 
 $(qdup_pom):
 > cd /opt
