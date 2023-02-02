@@ -15,13 +15,9 @@ java = $(java_home)/bin/java
 mvn += JAVA_HOME=/opt/$(java_home)
 mvn += /opt/maven/bin/mvn
 qdup_args += -i
-qdup_args += $(QDUP_ID)
+qdup_args += /opt/qdup.id
 qdup_args += -p
-qdup_args += $(QDUP_PASS)
-qdup_args += -S
-qdup_args += _USER=$$(whoami)
-qdup_args += -S
-qdup_args += _HOST=$(QDUP_HOST)
+qdup_args += test
 qdup_home = /opt/qDup
 qdup_jar := $(qdup_home)/target/qDup-*-uber.jar
 qdup_pom := $(qdup_home)/pom.xml

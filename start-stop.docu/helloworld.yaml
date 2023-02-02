@@ -4,7 +4,7 @@ scripts:
     - sh: date
     - sh: echo ${{message}}
 hosts:
-    server: ${{USER}}@${{HOST}}
+    server: testuser@test
 roles:
     test:
         hosts:
