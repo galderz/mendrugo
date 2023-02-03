@@ -1,0 +1,14 @@
+scripts:
+  getting-started:
+  - sh: cd /tmp/
+  - sh: "[[ ! -d quarkus-quickstarts ]] && git clone https://github.com/quarkusio/quarkus-quickstarts.git"
+  - sh: cd quarkus-quickstarts
+  - sh: cd getting-started
+hosts:
+  test: testuser@test
+roles:
+  example:
+    hosts:
+    - test
+    run-scripts:
+    - getting-started
