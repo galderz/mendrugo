@@ -25,6 +25,7 @@ qdup_sources += $(shell find $(qdup_home) -type f -name '*.java' | sed 's: :\\ :
 qdup_sources += $(shell find $(qdup_home) -type f -name 'pom.xml' | sed 's: :\\ :g')
 script_helloworld = helloworld.yaml
 script_quarkus = quarkus.yaml
+script_native = native.yaml
 
 ifdef VERBOSE
   jvm_args += -Dlog4j.configurationFile=./qdup-log4j2.properties
@@ -33,6 +34,10 @@ endif
 ifdef DEBUG
   jvm_args += -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 endif
+
+native: $(qdup_jar) $(script_native)
+> $(java) $(jvm_args) -jar $< $(qdup_args) $(script_native)
+.PHONY: native
 
 quarkus: $(qdup_jar) $(script_quarkus)
 > $(java) $(jvm_args) -jar $< $(qdup_args) $(script_quarkus)
