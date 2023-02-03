@@ -1,9 +1,36 @@
 scripts:
+  test-endpoint:
+  - wait-for: ready
+    then:
+    - sh: curl localhost:8080/hello #replace localhost if you used a different ssh computer name
+    - signal: done #tells qDup that the "testing" is done
+  ensure-quarkus-cli:
+  - sh: quarkus version #to see if the command exists
+    then:
+    - regex: command not found
+      then:
+      - sh: "curl -Ls https://sh.jbang.dev | bash -s - trust add https://repo1.maven.org/maven2/io/quarkus/quarkus-cli/"
+      - sh: "curl -Ls https://sh.jbang.dev | bash -s - app install --fresh --force quarkus@quarkusio"
   getting-started:
   - sh: cd /tmp/
   - sh: "[[ ! -d quarkus-quickstarts ]] && git clone https://github.com/quarkusio/quarkus-quickstarts.git"
   - sh: cd quarkus-quickstarts
   - sh: cd getting-started
+  - script: ensure-quarkus-cli
+  - sh:
+      command: quarkus dev
+      prompt:
+        "Press [r] to resume testing, [o] Toggle test output, [:] for the terminal, [h] for more options>": "r"
+    timer:
+      2m: #a short timeout
+      - abort: quarkus dev did not exit before the timer expired
+    watch:
+    - regex: "Tests paused"
+      then:
+      - signal: ready
+    on-signal:
+      done:
+      - ctrlC #exits the process
 hosts:
   test: testuser@test
 roles:
@@ -11,4 +38,5 @@ roles:
     hosts:
     - test
     run-scripts:
+    - test-endpoint
     - getting-started
