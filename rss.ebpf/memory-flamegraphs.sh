@@ -34,12 +34,12 @@ flamegraphs()
     mkdir -p $fgdir
 
     for entry in \
-        brk,calls
-        # free,calls \
-        # malloc-bytes-brendan,bytes \
-        # malloc,calls \
-        # mmap,calls \
-        # pagefault,pages
+        brk,calls \
+        free,calls \
+        malloc-bytes-brendan,bytes \
+        malloc,calls \
+        mmap,calls \
+        pagefault,pages
     do
         IFS=',' read name countname <<< "${entry}"
         stack $name
