@@ -29,6 +29,11 @@ $(pom):
 >   -DprojectGroupId=org.acme \
 >   -DprojectArtifactId=code-with-quarkus
 
+clean:
+> rm -drf $(target)
+.PHONY: clean
+
+### eBPF specific targets below ###
 stack: $(runner)
 > gdb --batch --command=gdb.$(STACK_NAME).script --args $< -Xmx128m
 .PHONY: stack
