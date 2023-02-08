@@ -24,7 +24,8 @@ target = $(app)/target
 $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn) package -DskipTests -Dnative \
->   -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-H:+PreserveFramePointer
+>   -Dquarkus.native.debug.enabled \
+>   -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-H:-OmitInlinedMethodDebugLineInfo
 
 $(pom):
 > $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION).Final:create \
