@@ -35,3 +35,26 @@ $(pom):
 clean:
 > rm -drf $(target)
 .PHONY: clean
+
+### perf specific targets below ###
+
+mmap_stacks = $(stacks_dir)/mmap.stacks
+mmap_svg = target/flamegraphs/mmap.svg
+stacks_dir := target/flamegraphs/stacks
+stackcollapse_perf = /opt/FlameGraph/stackcollapse-perf.pl
+flamegraph = /opt/FlameGraph/flamegraph.pl
+
+stack: $(runner)
+> sudo perf record -e syscalls:sys_enter_mmap --call-graph dwarf -a -- $<
+.PHONY: stack
+
+flamegraph:
+> rm -drf $(stacks_dir)
+> mkdir -p $(stacks_dir)
+> sudo chown $(USER) perf.data
+> perf script > $(mmap_stacks)
+> $(stackcollapse_perf) < $(mmap_stacks) | $(flamegraph) \
+>   --color=mem \
+>   --title="mmap Flame Graph" \
+>   --countname="calls" > $(mmap_svg)
+.PHONY: flamegraph
