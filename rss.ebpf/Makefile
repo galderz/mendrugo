@@ -13,16 +13,18 @@ endif
 QUARKUS_VERSION=2.16.1
 JAVA_HOME=/opt/graalvm-ce-java17-22.3.0
 
-app = code-with-quarkus
+app := code-with-quarkus
 mvn += JAVA_HOME=$(JAVA_HOME)
 mvn += /opt/boot-maven-3/bin/mvn
-pom := $(app)/pom.xml
-runner := $(app)/target/code-with-quarkus-1.0.0-SNAPSHOT-runner
+pom = $(app)/pom.xml
+runner = $(target)/code-with-quarkus-1.0.0-SNAPSHOT-runner
 sources += $(shell find $(app) -type f -name '*.java' | sed 's: :\\ :g')
+target = $(app)/target
 
 $(runner): $(pom) $(sources)
 > cd $(app)
-> $(mvn) package -DskipTests -Dnative
+> $(mvn) package -DskipTests -Dnative \
+>   -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-H:+PreserveFramePointer
 
 $(pom):
 > $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION).Final:create \
@@ -34,6 +36,7 @@ clean:
 .PHONY: clean
 
 ### eBPF specific targets below ###
+
 stack: $(runner)
 > gdb --batch --command=gdb.$(STACK_NAME).script --args $< -Xmx128m
 .PHONY: stack
