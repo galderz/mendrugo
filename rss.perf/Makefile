@@ -27,6 +27,10 @@ run: $(runner)
 > $< -Xmx128m
 .PHONY: run
 
+gdb: $(runner)
+> gdb --args $< -Xmx128m
+.PHONY: gdb
+
 $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn) package -DskipTests -Dnative \
