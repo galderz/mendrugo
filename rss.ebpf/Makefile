@@ -21,6 +21,10 @@ runner = $(target)/code-with-quarkus-1.0.0-SNAPSHOT-runner
 sources += $(shell find $(app) -type f -name '*.java' | sed 's: :\\ :g')
 target = $(app)/target
 
+run: $(runner)
+> $< -Xmx128m
+.PHONY: run
+
 $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn) package -DskipTests -Dnative \
