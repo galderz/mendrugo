@@ -40,3 +40,11 @@ clean:
 stack: $(runner)
 > gdb --batch --command=gdb.$(STACK_NAME).script --args $< -Xmx128m
 .PHONY: stack
+
+gdb: $(runner)
+> gdb --args $< -Xmx128m
+.PHONY: gdb
+
+mmap-munmap:
+> sudo /usr/share/bcc/tools/stackcount -P -p $$(pidof $(app)-1.0.0-SNAPSHOT-runner) -U "t:syscalls:sys_enter_m*"
+.PHONY: mmap-munmap
