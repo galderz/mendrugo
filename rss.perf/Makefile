@@ -14,6 +14,8 @@ QUARKUS_VERSION=2.16.1
 JAVA_HOME=/opt/graalvm-ce-java17-22.3.0
 
 app := code-with-quarkus
+jar = $(target)/quarkus-app/quarkus-run.jar
+java = $(JAVA_HOME)/bin/java
 mvn += JAVA_HOME=$(JAVA_HOME)
 mvn += /opt/boot-maven-3/bin/mvn
 pom = $(app)/pom.xml
@@ -21,11 +23,23 @@ runner = $(target)/code-with-quarkus-1.0.0-SNAPSHOT-runner
 sources += $(shell find $(app) -type f -name '*.java' | sed 's: :\\ :g')
 target = $(app)/target
 
+run: $(runner)
+> $< -Xmx128m
+.PHONY: run
+
 $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn) package -DskipTests -Dnative \
 >   -Dquarkus.native.debug.enabled \
 >   -Dquarkus.native.additional-build-args=-O0,-H:-OmitInlinedMethodDebugLineInfo
+
+jvm: $(jar)
+> $(java) -jar $< -Xmx128m
+.PHONY: jvm
+
+$(jar): $(pom) $(sources)
+> cd $(app)
+> $(mvn) package -DskipTests
 
 $(pom):
 > $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION).Final:create \
