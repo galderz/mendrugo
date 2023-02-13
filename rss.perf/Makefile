@@ -28,6 +28,12 @@ ifdef JVM_DEBUG
   jvm_args += -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 endif
 
+ifdef WITH_OPTS
+  native_build_args = -H:-OmitInlinedMethodDebugLineInfo
+else
+  native_build_args = -O0,-H:-OmitInlinedMethodDebugLineInfo
+endif
+
 run: $(runner)
 > $< -Xmx128m
 .PHONY: run
@@ -40,7 +46,7 @@ $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn) dependency:sources package -DskipTests -Dnative \
 >   -Dquarkus.native.debug.enabled \
->   -Dquarkus.native.additional-build-args=-O0,-H:-OmitInlinedMethodDebugLineInfo
+>   -Dquarkus.native.additional-build-args=$(native_args)
 
 jvm: $(jar)
 > $(java) $(jvm_args) -jar $<
