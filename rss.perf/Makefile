@@ -33,7 +33,7 @@ gdb: $(runner)
 
 $(runner): $(pom) $(sources)
 > cd $(app)
-> $(mvn) package -DskipTests -Dnative \
+> $(mvn) dependency:sources package -DskipTests -Dnative \
 >   -Dquarkus.native.debug.enabled \
 >   -Dquarkus.native.additional-build-args=-O0,-H:-OmitInlinedMethodDebugLineInfo
 
