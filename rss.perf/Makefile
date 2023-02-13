@@ -46,7 +46,8 @@ $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn) dependency:sources package -DskipTests -Dnative \
 >   -Dquarkus.native.debug.enabled \
->   -Dquarkus.native.additional-build-args=$(native_args)
+>   -Dquarkus.native.additional-build-args=$(native_build_args)
+
 
 jvm: $(jar)
 > $(java) $(jvm_args) -jar $<
