@@ -16,12 +16,17 @@ JAVA_HOME=/opt/graalvm-ce-java17-22.3.0
 app := code-with-quarkus
 jar = $(target)/quarkus-app/quarkus-run.jar
 java = $(JAVA_HOME)/bin/java
+jvm_args += -Xmx128m
 mvn += JAVA_HOME=$(JAVA_HOME)
 mvn += /opt/boot-maven-3/bin/mvn
 pom = $(app)/pom.xml
 runner = $(target)/code-with-quarkus-1.0.0-SNAPSHOT-runner
 sources += $(shell find $(app) -type f -name '*.java' | sed 's: :\\ :g')
 target = $(app)/target
+
+ifdef JVM_DEBUG
+  jvm_args += -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+endif
 
 run: $(runner)
 > $< -Xmx128m
@@ -38,7 +43,7 @@ $(runner): $(pom) $(sources)
 >   -Dquarkus.native.additional-build-args=-O0,-H:-OmitInlinedMethodDebugLineInfo
 
 jvm: $(jar)
-> $(java) -jar $< -Xmx128m
+> $(java) $(jvm_args) -jar $<
 .PHONY: jvm
 
 $(jar): $(pom) $(sources)
