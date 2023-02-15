@@ -11,12 +11,12 @@ endif
 .RECIPEPREFIX = >
 
 TEST_CLASS ?= PlainObjectLeak
-JFR_FILE ?= target/binary.jfr
+JFR_FILE ?= target/native.jfr
 JFC_FILE ?= jfc/base.jfc
 
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
-binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/binary.jfr\,settings=$(JFC_FILE)
+binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE)
 # Workaround https://github.com/oracle/graal/issues/5686
 # Use tagged jdk 17.0.4.1 which does not suffer from issue.
 graalbuilder_home := $(HOME)/1/jdk17u
@@ -54,9 +54,9 @@ else
   jvm_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/jvm.jfr\,settings=./jfc/base.jfc
 endif
 
-run-binary: $(binary)
+native: $(binary)
 > $< $(binary_opts)
-.PHONY: run-binary
+.PHONY: native
 
 print:
 > $(graalbuilder_jfr) -J-Xlog:jfr+system+parser=trace print --events OldObjectSample --stack-depth 100 $(JFR_FILE)
@@ -70,9 +70,9 @@ test: $(native_image)
 $(binary): $(jar) $(native_image)
 > $(native_image) $(native_image_opts) -cp $< jfr.oldobject.$(TEST_CLASS) $@
 
-run-jvm: $(jar) clean-jfr
+jvm: $(jar) clean-jfr
 > $(graalbuilder_java) $(jvm_opts) -cp $< jfr.oldobject.$(TEST_CLASS)
-.PHONY: run-jvm
+.PHONY: jvm
 
 $(native_image): $(graalvm_sources) $(graalbuilder_java)
 > cd $(graalvm_home)
