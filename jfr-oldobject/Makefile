@@ -104,8 +104,8 @@ mx-intellij:
 > $(mx) intellijinit
 .PHONY: mx-intellij
 
-clean: $(graalbuilder_java)
-> $(mvn) clean
+clean:
+> rm -drf target
 .PHONY: clean
 
 clean-graalvm: $(graalbuilder_java)
