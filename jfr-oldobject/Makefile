@@ -78,7 +78,7 @@ jvm: $(jar) clean-jfr
 
 $(native_image): $(graalvm_sources) $(graalbuilder_java)
 > cd $(graalvm_home)
-> $(mx) build
+> $(mx) --debug-images build
 > sed -i'' -e 's/EnableJVMCI/EnableJVMCI -Dorg.graalvm.version=$(graalvm_version)-dev/g' ../sdk/latest_graalvm_home/lib/svm/bin/native-image
 
 $(graalbuilder_java): $(graalbuilder_sources)
