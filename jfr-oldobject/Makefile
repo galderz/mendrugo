@@ -16,7 +16,6 @@ JFC_FILE ?= jfc/base.jfc
 
 binary := target/jfr-oldobject
 binary_opts += -XX:+FlightRecorder
-binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE)
 # Workaround https://github.com/oracle/graal/issues/5686
 # Use tagged jdk 17.0.4.1 which does not suffer from issue.
 graalbuilder_home := $(HOME)/1/jdk17u
@@ -50,8 +49,10 @@ endif
 
 ifdef PATH_TO_GC_ROOTS
   jvm_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/jvm.jfr\,settings=./jfc/base.jfc,path-to-gc-roots=true
+  binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE),path-to-gc-roots=true
 else
   jvm_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/jvm.jfr\,settings=./jfc/base.jfc
+  binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE)
 endif
 
 native: $(binary)
