@@ -56,6 +56,11 @@ else
   binary_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE)
 endif
 
+ifdef GC
+  binary_opts += -XX:+PrintGC
+  binary_opts += -XX:+VerboseGC
+endif
+
 native: $(binary)
 > $< $(binary_opts)
 .PHONY: native
