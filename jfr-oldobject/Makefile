@@ -37,7 +37,7 @@ native_image += /opt/mandrel-mandrel/sdk/latest_graalvm_home/bin/native-image
 native_image_opts += --enable-monitoring=jfr
 native_image_opts += --no-fallback
 native_image_opts += -g
-native_image_opts += -O0
+#native_image_opts += -O0
 native_image_opts += -H:+ReportExceptionStackTraces
 # Use kill -QUIT <PID>
 native_image_opts += -H:+DumpThreadStacksOnSignal
