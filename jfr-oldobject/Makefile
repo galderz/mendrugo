@@ -45,6 +45,7 @@ project_sources += $(shell find src/ -type f -name '*.java' | sed 's: :\\ :g')
 project_sources += pom.xml
 
 ifdef VERBOSE
+  jvm_opts += -Xlog:jfr+system=trace
   binary_opts += -XX:FlightRecorderLogging=all=trace
   native_image_opts += -H:+TraceVMOperations
   mx += -V
