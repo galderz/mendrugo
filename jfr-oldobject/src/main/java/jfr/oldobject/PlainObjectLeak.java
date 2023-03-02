@@ -17,18 +17,4 @@ public class PlainObjectLeak
 
         Blackhole.blackhole(leak);
     }
-
-    static class Node {
-        Node left;
-        Node right;
-        Object value;
-    }
-
-    static class Big {
-        public long value1;
-        public Object value2;
-        float value3;
-        int value4;
-        double value5;
-    }
 }
