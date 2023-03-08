@@ -10,6 +10,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+FG_HOME ?= /opt/FlameGraph
 TEST_CLASS ?= PlainObjectLeak
 JFR_FILE ?= target/native.jfr
 JFC_FILE ?= jfc/base.jfc
@@ -37,6 +38,8 @@ native_image += /opt/mandrel-mandrel/sdk/latest_graalvm_home/bin/native-image
 native_image_opts += --enable-monitoring=jfr
 native_image_opts += --no-fallback
 native_image_opts += -g
+native_image_opts += -H:-DeleteLocalSymbols
+native_image_opts += -H:+PreserveFramePointer
 #native_image_opts += -O0
 native_image_opts += -H:+ReportExceptionStackTraces
 # Use kill -QUIT <PID>
@@ -71,6 +74,14 @@ native: $(binary)
 print:
 > $(graalbuilder_jfr) -J-Xlog:jfr+system+parser=trace print --events OldObjectSample --stack-depth 100 $(JFR_FILE)
 .PHONY: print
+
+record: $(binary)
+> perf record -F 1009 -g -a $< $(binary_opts)
+.PHONY: record
+
+flame:
+> perf script | $(FG_HOME)/stackcollapse-perf.pl | $(FG_HOME)/flamegraph.pl > flamegraph.svg
+.PHONY: flame
 
 test: $(native_image)
 > cd $(graalvm_home)
