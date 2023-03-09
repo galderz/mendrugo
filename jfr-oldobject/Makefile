@@ -64,10 +64,13 @@ ifdef GC
 endif
 
 ifdef DEBUG
-  #native_image_opts += -O0
   native_image_opts += -H:GenerateDebugInfo=1
   native_image_opts += -H:+SourceLevelDebug
   native_image_opts += -H:-DeleteLocalSymbols
+endif
+
+ifdef ZERO_OPT
+  native_image_opts += -O0
 endif
 
 native: $(binary)
