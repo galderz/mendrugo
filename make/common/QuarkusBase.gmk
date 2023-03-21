@@ -1,0 +1,40 @@
+jar = $(target)/quarkus-app/quarkus-run.jar
+java = $(java_home)/bin/java
+native_build_args += -Dnative
+pom = $(app)/pom.xml
+runner = $(target)/$(app)-1.0.0-SNAPSHOT-runner
+sources += $(shell find $(app) -type f -name '*.java' | sed 's: :\\ :g')
+target = $(app)/target
+
+ifdef DEBUG
+  native_build_args += -Dquarkus.native.debug.enabled
+  native_build_args += -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
+endif
+
+ifndef XMX
+  xmx = 128m
+endif
+
+run: $(runner)
+> $< -Xmx$(xmx)
+.PHONY: run
+
+run-jvm: $(jar)
+> $(java) -Xmx$(xmx) -jar $<
+.PHONY: run-jvm
+
+$(runner): $(pom) $(sources)
+> cd $(app)
+> $(mvn_package) $(native_build_args)
+
+$(jar): $(pom) $(sources)
+> cd $(app)
+> $(mvn_package)
+
+clean:
+> rm -drf $(target)
+.PHONY: clean
+
+clean-app:
+> rm -drf $(app)
+.PHONY: clean-app
