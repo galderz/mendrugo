@@ -1,5 +1,0 @@
-*.class
-*.jar
-helloworld
-.env
-*.build_artifacts*

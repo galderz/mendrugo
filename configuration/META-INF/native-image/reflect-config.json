@@ -1,6 +1,0 @@
-[
-{
-  "name":"java.security.KeyPairGenerator",
-  "methods":[{"name":"getInstance","parameterTypes":["java.lang.String"] }]
-}
-]
