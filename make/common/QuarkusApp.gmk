@@ -1,5 +1,6 @@
 app := code-with-quarkus
 jar = $(target)/quarkus-app/quarkus-run.jar
+java = $(java_home)/bin/java
 native_build_args += -Dnative
 pom = $(app)/pom.xml
 runner = $(target)/code-with-quarkus-1.0.0-SNAPSHOT-runner
@@ -11,9 +12,17 @@ ifdef DEBUG
   native_build_args += -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
 endif
 
+ifndef XMX
+  xmx = 128m
+endif
+
 run: $(runner)
-> $< -Xmx128m
+> $< -Xmx$(xmx)
 .PHONY: run
+
+run-jvm: $(jar)
+> $(java) -Xmx$(xmx) -jar $<
+.PHONY: run-jvm
 
 $(runner): $(pom) $(sources)
 > cd $(app)
