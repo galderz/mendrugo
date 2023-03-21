@@ -1,0 +1,6 @@
+mvn += JAVA_HOME=$(java_home)
+mvn += /opt/boot-maven-3/bin/mvn
+mvn_package += $(mvn)
+mvn_package += dependency:sources
+mvn_package += package
+mvn_package += -DskipTests

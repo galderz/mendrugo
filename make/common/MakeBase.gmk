@@ -9,6 +9,3 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
   $(error This Make does not support .RECIPEPREFIX. Please use GNU Make 4.0 or later)
 endif
 .RECIPEPREFIX = >
-
-mvn += JAVA_HOME=$(java_home)
-mvn += /opt/boot-maven-3/bin/mvn
