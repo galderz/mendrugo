@@ -4,4 +4,9 @@ pom = $(app)/pom.xml
 $(pom):
 > $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(quarkus_version):create \
 >   -DprojectGroupId=org.acme \
->   -DprojectArtifactId=$(app)
+>   -DprojectArtifactId=$(app) \
+>   -Dextensions='$(extensions)'
+
+clean-app:
+> rm -drf $(app)
+.PHONY: clean-app
