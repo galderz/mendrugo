@@ -3,6 +3,7 @@ java = $(java_home)/bin/java
 native_build_args += -Dnative
 pom = $(app)/pom.xml
 runner = $(target)/$(app)-1.0.0-SNAPSHOT-runner
+run_args += -Xmx128m
 sources += $(shell find $(app) -type f -name '*.java' | sed 's: :\\ :g')
 target = $(app)/target
 
@@ -11,16 +12,12 @@ ifdef DEBUG
   native_build_args += -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
 endif
 
-ifndef XMX
-  xmx = 128m
-endif
-
 run: $(runner)
-> $< -Xmx$(xmx)
+> $< $(run_args)
 .PHONY: run
 
 run-jvm: $(jar)
-> $(java) -Xmx$(xmx) -jar $<
+> $(java) $(run_args) -jar $<
 .PHONY: run-jvm
 
 $(runner): $(pom) $(sources)
@@ -52,11 +49,11 @@ svg = $(target)/out.svg
 perf_trace = $(target)/perf-trace.log
 
 record: $(runner)
-> sudo perf record -e $(event) --call-graph dwarf -o $(perf_data) -- taskset -c 1 $< -Xms$(xmx)
+> sudo perf record -e $(event) --call-graph dwarf -o $(perf_data) -- taskset -c 1 $< $(run_args)
 .PHONY: record
 
 trace: $(runner)
-> sudo perf trace -e $(event) --call-graph dwarf -o $(perf_trace) -- taskset -c 1 $< -Xms$(xmx)
+> sudo perf trace -e $(event) --call-graph dwarf -o $(perf_trace) -- taskset -c 1 $< $(run_args)
 .PHONY: trace
 
 flamegraph:
@@ -72,5 +69,5 @@ flamegraph:
 
 # Can be filtered by passing the syscall to trace, e.g. -emmap
 strace: $(runner)
-> taskset -c 1 strace -o $(strace) -k $< -Xmx$(xmx)
+> taskset -c 1 strace -o $(strace) -k $< $(run_args)
 .PHONY: strace
