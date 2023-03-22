@@ -23,10 +23,6 @@ run-jvm: $(jar)
 > $(java) -Xmx$(xmx) -jar $<
 .PHONY: run-jvm
 
-record-mmap: $(runner)
-> sudo perf record -e syscalls:sys_enter_mmap --call-graph dwarf -a -- $< -Xmx$(xmx)
-.PHONY: record-mmap
-
 $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn_package) $(native_build_args)
@@ -42,3 +38,39 @@ clean:
 clean-app:
 > rm -drf $(app)
 .PHONY: clean-app
+
+### perf
+
+event := syscalls:sys_enter_mmap
+fg_home := /opt/FlameGraph
+flamegraph = $(fg_home)/flamegraph.pl
+perf_data = $(target)/perf.data
+stacks = $(target)/out.stacks
+stackcollapse_perf = $(fg_home)/stackcollapse-perf.pl
+strace = $(target)/strace.log
+svg = $(target)/out.svg
+perf_trace = $(target)/perf-trace.log
+
+record: $(runner)
+> sudo perf record -e $(event) --call-graph dwarf -o $(perf_data) -- taskset -c 1 $< -Xms$(xmx)
+.PHONY: record
+
+trace: $(runner)
+> sudo perf trace -e $(event) --call-graph dwarf -o $(perf_trace) -- taskset -c 1 $< -Xms$(xmx)
+.PHONY: trace
+
+flamegraph:
+> sudo chown $(USER) $(perf_data)
+> perf script -i $(perf_data) > $(stacks)
+> $(stackcollapse_perf) < $(stacks) | $(flamegraph) \
+>   --color=mem \
+>   --title="mmap Flame Graph" \
+>   --countname="calls" > $(svg)
+.PHONY: flamegraph
+
+### strace
+
+# Can be filtered by passing the syscall to trace, e.g. -emmap
+strace: $(runner)
+> taskset -c 1 strace -o $(strace) -k $< -Xmx$(xmx)
+.PHONY: strace
