@@ -12,6 +12,10 @@ ifdef DEBUG
   native_build_args += -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
 endif
 
+ifdef NB_ARGS
+  native_build_args += -Dquarkus.native.additional-build-args=$(NB_ARGS)
+endif
+
 run: $(runner)
 > $< $(run_args)
 .PHONY: run
