@@ -1,8 +1,14 @@
 include ../make/common/QuarkusBase.gmk
 
+ifdef TMPDIR
+  tmp_dir = $(TMPDIR)
+else
+  tmp_dir = /tmp
+endif
+
 $(pom):
-> pushd $(TMPDIR)
+> pushd $(tmp_dir)
 > rm -drf quarkus-quickstarts || true
 > git clone https://github.com/quarkusio/quarkus-quickstarts
 > popd
-> cp -r $(TMPDIR)/quarkus-quickstarts/$(app) .
+> cp -r $(tmp_dir)/quarkus-quickstarts/$(app) .
