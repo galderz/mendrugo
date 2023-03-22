@@ -23,6 +23,10 @@ run-jvm: $(jar)
 > $(java) -Xmx$(xmx) -jar $<
 .PHONY: run-jvm
 
+record-mmap: $(runner)
+> sudo perf record -e syscalls:sys_enter_mmap --call-graph dwarf -a -- $< -Xmx$(xmx)
+.PHONY: record-mmap
+
 $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn_package) $(native_build_args)
