@@ -1,0 +1,29 @@
+# Workaround https://github.com/oracle/graal/issues/5686
+# Use tagged jdk 17.0.4.1 which does not suffer from issue.
+java = $(java_home)/bin/java
+java_home = $(jdk_home)/build/graalbuilder/images/graal-builder-jdk
+jdk_home := $(HOME)/1/jdk17u
+#jdk_sources += $(shell find $(jdk_home) -type f -name '*.java' | sed 's: :\\ :g')
+jfr = $(java_home)/bin/jfr
+graalvm_home := /opt/mandrel-mandrel/substratevm
+graalvm_sources += $(shell find $(graalvm_home) -type f -name '*.java' | sed 's: :\\ :g')
+graalvm_sources += $(shell find $(graalvm_home) -type f -name '*.properties' | sed 's: :\\ :g')
+graalvm_version := 23.0.0
+mx += JAVA_HOME=$(java_home)
+mx += /opt/mx/mx
+
+$(native_image): $(graalvm_sources) $(java)
+> cd $(graalvm_home)
+> $(mx) --debug-images build
+> sed -i'' -e 's/EnableJVMCI/EnableJVMCI -Dorg.graalvm.version=$(graalvm_version)-dev/g' ../sdk/latest_graalvm_home/lib/svm/bin/native-image
+
+$(java): $(jdk_sources)
+> cd $(jdk_home)
+> bash configure \
+>   --disable-warnings-as-errors \
+>   --with-boot-jdk=/opt/java-17 \
+>   --with-conf-name=graalbuilder \
+>   --with-extra-cflags=-fcommon \
+>   --with-jvm-variants=server
+> make CONF=graalbuilder graal-builder-image
+> touch $@

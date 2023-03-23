@@ -1,6 +1,16 @@
 mvn += JAVA_HOME=$(java_home)
 mvn += /opt/boot-maven-3/bin/mvn
 mvn_package += $(mvn)
-mvn_package += dependency:sources
 mvn_package += package
 mvn_package += -DskipTests
+sources += $(shell find $(app) -type f -name '*.java' | sed 's: :\\ :g')
+sources += $(shell find $(app) -type f -name '*.properties' | sed 's: :\\ :g')
+target = $(app)/target
+
+$(jar): $(pom) $(sources)
+> cd $(app)
+> $(mvn_package)
+
+clean:
+> rm -drf $(target)
+.PHONY: clean
