@@ -21,6 +21,12 @@ ifdef VERBOSE
   # mx += -V
 endif
 
+ifdef DEBUG
+  native_image_opts += -H:GenerateDebugInfo=1
+  native_image_opts += -H:+SourceLevelDebug
+  native_image_opts += -H:-DeleteLocalSymbols
+endif
+
 ifdef PATH_TO_GC_ROOTS
   jvm_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/jvm.jfr\,settings=./jfc/base.jfc,path-to-gc-roots=true
   native_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE),path-to-gc-roots=true
