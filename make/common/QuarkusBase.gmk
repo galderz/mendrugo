@@ -18,8 +18,10 @@ endif
 
 ifeq ($(VERBOSE_GC),1)
   run_args += -XX:+PrintGC
+  run_args += -XX:+PrintGCTimeStamps
 else ifeq ($(VERBOSE_GC),2)
   run_args += -XX:+PrintGC
+  run_args += -XX:+PrintGCTimeStamps
   run_args += -XX:+VerboseGC
 else ifeq ($(VERBOSE_GC),3)
   run_args += -XX:+PrintGC
