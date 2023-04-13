@@ -1,0 +1,28 @@
+quarkus_home := /opt/quarkus-quarkus
+quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
+quarkus_sources += $(shell find $(quarkus_home) -type f -name '*.java' | sed 's: :\\ :g')
+quarkus_sources += $(shell find $(quarkus_home) -type f -name 'pom.xml' | sed 's: :\\ :g')
+
+quarkus_maven_args += -Dquickly
+ifdef MAVEN_THREADS
+  quarkus_maven_args += -T
+  quarkus_maven_args += $(MAVEN_THREADS)C
+endif
+
+build-quarkus: $(quarkus_jar_core)
+
+$(quarkus_jar_core): $(quarkus_sources)
+> cd $(quarkus_home)/independent-projects/ide-config
+> $(mvn) $(quarkus_maven_args)
+> cd $(quarkus_home)/independent-projects/enforcer-rules
+> $(mvn) $(quarkus_maven_args)
+> cd $(quarkus_home)/independent-projects/bootstrap
+> $(mvn) $(quarkus_maven_args)
+> cd $(quarkus_home)
+> $(mvn) $(quarkus_maven_args)
+> touch $@
+
+clean-quarkus:
+> cd $(quarkus_home)
+> $(mvn) clean
+.PHONY: clean-quarkus
