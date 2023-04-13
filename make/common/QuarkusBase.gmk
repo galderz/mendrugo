@@ -46,6 +46,10 @@ $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn_package) $(native_build_args)
 
+$(jar): $(pom) $(sources)
+> cd $(app)
+> $(mvn_package)
+
 clean-app:
 > rm -drf $(app)
 .PHONY: clean-app
