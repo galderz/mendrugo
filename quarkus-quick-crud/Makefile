@@ -1,4 +1,5 @@
 app := hibernate-orm-quickstart
+quickstarts_branch := main
 
 default: run
 

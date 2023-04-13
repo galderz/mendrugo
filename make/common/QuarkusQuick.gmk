@@ -10,5 +10,7 @@ $(pom):
 > pushd $(tmp_dir)
 > rm -drf quarkus-quickstarts || true
 > git clone https://github.com/quarkusio/quarkus-quickstarts
+> cd quarkus-quickstarts
+> git checkout $(quickstarts_branch)
 > popd
 > cp -r $(tmp_dir)/quarkus-quickstarts/$(app) .
