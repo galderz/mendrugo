@@ -44,11 +44,11 @@ run-jvm: $(jar)
 
 $(runner): $(pom) $(sources)
 > cd $(app)
-> $(mvn_package) $(native_build_args)
+> $(mvn_package) -Dquarkus.package.quiltflower.enabled $(native_build_args)
 
 $(jar): $(pom) $(sources)
 > cd $(app)
-> $(mvn_package)
+> $(mvn_package) -Dquarkus.package.quiltflower.enabled
 
 clean-app:
 > rm -drf $(app)
