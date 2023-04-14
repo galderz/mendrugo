@@ -42,6 +42,15 @@ run-jvm: $(jar)
 > $(java) $(jvm_args) -jar $<
 .PHONY: run-jvm
 
+run-crac-checkpoint: $(jar)
+> $(java) $(jvm_args) -XX:CRaCCheckpointTo=cr -jar $<
+.PHONY: run-crac-checkpoint
+
+# TODO does it keep previous xmx values around? e.g. Xmx
+run-crac-restore: $(jar)
+> $(java) -XX:CRaCRestoreFrom=cr
+.PHONY: run-crac-restore
+
 $(runner): $(pom) $(sources)
 > cd $(app)
 > $(mvn_package) -Dquarkus.package.quiltflower.enabled $(native_build_args)
