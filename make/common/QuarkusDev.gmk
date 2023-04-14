@@ -18,10 +18,30 @@ $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)/independent-projects/bootstrap
 > $(mvn) $(quarkus_maven_args)
 > cd $(quarkus_home)
-> $(mvn) $(quarkus_maven_args)
+> $(mvn) $(quarkus_maven_args) -Dno-test-modules -pl $(quarkus_projects_skip)
 > touch $@
 
 clean-quarkus:
 > cd $(quarkus_home)
 > $(mvn) clean
 .PHONY: clean-quarkus
+
+quarkus_projects_skip = !:quarkus-amazon-lambda$\
+,!:quarkus-amazon-lambda-archetype$\
+,!:quarkus-amazon-lambda-common$\
+,!:quarkus-amazon-lambda-common-deployment$\
+,!:quarkus-amazon-lambda-deployment$\
+,!:quarkus-amazon-lambda-event-server$\
+,!:quarkus-amazon-lambda-parent$\
+,!:quarkus-google-cloud-functions$\
+,!:quarkus-google-cloud-functions-deployment$\
+,!:quarkus-google-cloud-functions-parent$\
+,!:quarkus-google-cloud-functions-http$\
+,!:quarkus-google-cloud-functions-http-deployment$\
+,!:quarkus-google-cloud-functions-http-parent$\
+,!:io.quarkus.gradle.plugin.parent$\
+,!:quarkus-gradle-model$\
+,!:io.quarkus.gradle.plugin$\
+,!:io.quarkus.extension.gradle.plugin$\
+,!:quarkus-cli$\
+,!:quarkus-documentation
