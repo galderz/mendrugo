@@ -9,3 +9,8 @@ include ../make/common/MakeBase.gmk
 include ../make/common/Maven.gmk
 include ../make/common/QuarkusQuick.gmk
 include ../make/common/QuarkusDev.gmk
+
+build-crac: build-quarkus $(pom) $(sources)
+> cd $(app)
+> $(mvn_package) -Dquarkus.package.quiltflower.enabled -Dquarkus.package.type=crac
+.PHONY: build-crac
