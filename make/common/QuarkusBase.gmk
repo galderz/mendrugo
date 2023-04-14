@@ -1,5 +1,6 @@
 jar = $(target)/quarkus-app/quarkus-run.jar
 java = $(java_home)/bin/java
+jcmd = $(java_home)/bin/jcmd
 native_build_args += -Dnative
 pom = $(app)/pom.xml
 runner = $(target)/$(app)-1.0.0-SNAPSHOT-runner
@@ -45,6 +46,10 @@ run-jvm: $(jar)
 run-crac-checkpoint: $(jar)
 > $(java) $(jvm_args) -XX:CRaCCheckpointTo=cr -jar $<
 .PHONY: run-crac-checkpoint
+
+jcmd-crac-checkpoint: $(jar)
+> $(jcmd) $< JDK.checkpoint
+.PHONY: jcmd-crac-checkpoint
 
 # TODO does it keep previous xmx values around? e.g. Xmx
 run-crac-restore: $(jar)
