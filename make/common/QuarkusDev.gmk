@@ -1,13 +1,12 @@
 quarkus_home := /opt/quarkus-quarkus
 quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
-quarkus_sources += $(shell find $(quarkus_home) -type f -name '*.java' | sed 's: :\\ :g')
-quarkus_sources += $(shell find $(quarkus_home) -type f -name 'pom.xml' | sed 's: :\\ :g')
-
 quarkus_maven_args += -Dquickly
 ifdef MAVEN_THREADS
   quarkus_maven_args += -T
   quarkus_maven_args += $(MAVEN_THREADS)C
 endif
+quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
+quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
 
 build-quarkus: $(quarkus_jar_core)
 
