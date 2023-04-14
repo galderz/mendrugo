@@ -1,5 +1,10 @@
 mvn += JAVA_HOME=$(java_home)
 mvn += /opt/boot-maven-3/bin/mvn
+
+ifdef VERBOSE
+  mvn += -X
+endif
+
 mvn_package += $(mvn)
 mvn_package += package
 mvn_package += -DskipTests
