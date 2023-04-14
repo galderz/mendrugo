@@ -56,6 +56,15 @@ quarkus_projects_skip = !:quarkus-amazon-lambda$\
 ,!:quarkus-google-cloud-functions-http$\
 ,!:quarkus-google-cloud-functions-http-deployment$\
 ,!:quarkus-google-cloud-functions-http-parent$\
+,!:quarkus-liquibase$\
+,!:quarkus-liquibase-deployment$\
+,!:quarkus-liquibase-parent$\
+,!:quarkus-liquibase-mongodb$\
+,!:quarkus-liquibase-mongodb-deployment$\
+,!:quarkus-liquibase-mongodb-parent$\
+,!:quarkus-picocli$\
+,!:quarkus-picocli-deployment$\
+,!:quarkus-picocli-parent$\
 ,!:quarkus-test-amazon-lambda$\
 ,!:io.quarkus.gradle.plugin.parent$\
 ,!:quarkus-gradle-model$\
