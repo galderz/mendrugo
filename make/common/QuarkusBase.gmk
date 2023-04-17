@@ -35,6 +35,10 @@ else ifeq ($(VERBOSE_GC),4)
   run_args += -XX:+TraceHeapChunks
 endif
 
+ifdef JVM_DEBUG
+  jvm_args += -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+endif
+
 run: $(runner)
 > $< $(run_args)
 .PHONY: run
