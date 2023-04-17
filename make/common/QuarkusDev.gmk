@@ -18,7 +18,9 @@ $(quarkus_jar_core): $(quarkus_sources)
 > cd $(quarkus_home)/independent-projects/bootstrap
 > $(mvn) $(quarkus_maven_args)
 > cd $(quarkus_home)
-> $(mvn) $(quarkus_maven_args) -Dno-test-modules -pl $(quarkus_projects_skip)
+#> $(mvn) $(quarkus_maven_args) -Dno-test-modules -pl $(call quarkus-project-group,google-cloud-functions)
+#> $(mvn) $(quarkus_maven_args) -Dno-test-modules -pl $(call quarkus-project-group,google-cloud-functions)
+> $(mvn) $(quarkus_maven_args) -Dno-test-modules -pl $(call project-groups)
 > touch $@
 
 clean-quarkus:
@@ -26,49 +28,55 @@ clean-quarkus:
 > $(mvn) clean
 .PHONY: clean-quarkus
 
-quarkus_projects_skip = !:quarkus-amazon-lambda$\
-,!:quarkus-amazon-lambda-archetype$\
-,!:quarkus-amazon-lambda-common$\
-,!:quarkus-amazon-lambda-common-deployment$\
-,!:quarkus-amazon-lambda-deployment$\
-,!:quarkus-amazon-lambda-event-server$\
-,!:quarkus-amazon-lambda-parent$\
-,!:quarkus-amazon-lambda-http$\
-,!:quarkus-amazon-lambda-http-archetype$\
-,!:quarkus-amazon-lambda-http-event-server$\
-,!:quarkus-amazon-lambda-http-parent$\
-,!:quarkus-amazon-lambda-http-deployment$\
-,!:quarkus-amazon-lambda-rest$\
-,!:quarkus-amazon-lambda-rest-archetype$\
-,!:quarkus-amazon-lambda-rest-event-server$\
-,!:quarkus-amazon-lambda-rest-parent$\
-,!:quarkus-amazon-lambda-rest-deployment$\
-,!:quarkus-amazon-lambda-xray$\
-,!:quarkus-amazon-lambda-xray-parent$\
-,!:quarkus-amazon-lambda-xray-deployment$\
-,!:quarkus-funqy-amazon-lambda$\
-,!:quarkus-funqy-amazon-lambda-archetype$\
-,!:quarkus-funqy-amazon-lambda-deployment$\
-,!:quarkus-funqy-amazon-lambda-parent$\
-,!:quarkus-google-cloud-functions$\
-,!:quarkus-google-cloud-functions-deployment$\
-,!:quarkus-google-cloud-functions-parent$\
-,!:quarkus-google-cloud-functions-http$\
-,!:quarkus-google-cloud-functions-http-deployment$\
-,!:quarkus-google-cloud-functions-http-parent$\
-,!:quarkus-liquibase$\
-,!:quarkus-liquibase-deployment$\
-,!:quarkus-liquibase-parent$\
-,!:quarkus-liquibase-mongodb$\
-,!:quarkus-liquibase-mongodb-deployment$\
-,!:quarkus-liquibase-mongodb-parent$\
-,!:quarkus-picocli$\
-,!:quarkus-picocli-deployment$\
-,!:quarkus-picocli-parent$\
-,!:quarkus-test-amazon-lambda$\
-,!:io.quarkus.gradle.plugin.parent$\
-,!:quarkus-gradle-model$\
+define project-groups
+!:io.quarkus.extension.gradle.plugin$\
 ,!:io.quarkus.gradle.plugin$\
-,!:io.quarkus.extension.gradle.plugin$\
+,!:io.quarkus.gradle.plugin.parent$\
+$(call archetype-group,amazon-lambda)$\
+$(call archetype-group,amazon-lambda-http)$\
+$(call archetype-group,amazon-lambda-rest)$\
+$(call archetype-group,funqy-amazon-lambda)$\
+$(call deploy-group,amazon-lambda-common)$\
+$(call deploy-group,kubernetes-client-internal)$\
+$(call module-group,amazon-lambda-xray)$\
+$(call module-group,google-cloud-functions)$\
+$(call module-group,google-cloud-functions-http)$\
+$(call module-group,kind)$\
+$(call module-group,kubernetes)$\
+$(call module-group,kubernetes-client)$\
+$(call module-group,kubernetes-config)$\
+$(call module-group,liquibase)$\
+$(call module-group,liquibase-mongodb)$\
+$(call module-group,minikube)$\
+$(call module-group,openshift)$\
+$(call module-group,picocli)$\
+$(call module-group,reactive-oracle-client)$\
+$(call module-group,scala)$\
+,!:quarkus-amazon-lambda-event-server$\
+,!:quarkus-amazon-lambda-http-event-server$\
+,!:quarkus-amazon-lambda-rest-event-server$\
 ,!:quarkus-cli$\
+,!:quarkus-gradle-model$\
+,!:quarkus-kubernetes-client-spi$\
+,!:quarkus-kubernetes-vanilla-parent$\
+,!:quarkus-test-amazon-lambda
 ,!:quarkus-documentation
+endef
+
+define archetype-group
+,!:quarkus-$1$\
+,!:quarkus-$1-archetype$\
+,!:quarkus-$1-deployment$\
+,!:quarkus-$1-parent
+endef
+
+define deploy-group
+,!:quarkus-$1$\
+,!:quarkus-$1-deployment
+endef
+
+define module-group
+,!:quarkus-$1$\
+,!:quarkus-$1-deployment$\
+,!:quarkus-$1-parent
+endef
