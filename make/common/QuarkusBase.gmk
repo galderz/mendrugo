@@ -44,7 +44,8 @@ run-jvm: $(jar)
 .PHONY: run-jvm
 
 run-crac-checkpoint: $(jar)
-> $(java) $(jvm_args) -XX:CRaCCheckpointTo=cr -jar $<
+> $(java) $(jvm_args) -XX:CRaCCheckpointTo=$(target)/cr -jar $<
+#> $(java) $(jvm_args) -XX:CRaCCheckpointTo=cr -XX:+UnlockDiagnosticVMOptions -XX:+CRTraceStartupTime -Djdk.crac.trace-startup-time=true -jar $<
 .PHONY: run-crac-checkpoint
 
 jcmd-crac-checkpoint: $(jar)
@@ -53,7 +54,7 @@ jcmd-crac-checkpoint: $(jar)
 
 # TODO does it keep previous xmx values around? e.g. Xmx
 run-crac-restore: $(jar)
-> $(java) -XX:CRaCRestoreFrom=cr
+> sudo $(java) -XX:CRaCRestoreFrom=$(target)/cr
 .PHONY: run-crac-restore
 
 $(runner): $(pom) $(sources)
