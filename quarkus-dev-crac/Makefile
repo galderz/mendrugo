@@ -10,7 +10,12 @@ include ../make/common/Maven.gmk
 include ../make/common/QuarkusQuick.gmk
 include ../make/common/QuarkusDev.gmk
 
+crac_options += -Dquarkus.package.type=crac
+ifdef CRAC_DEBUG
+  crac_options += -Dquarkus.crac.checkpoint.debug=true
+endif
+
 build-crac: build-quarkus $(pom) $(sources)
 > cd $(app)
-> $(mvn_package) -Dquarkus.package.quiltflower.enabled -Dquarkus.package.type=crac
+> $(mvn_package) -Dquarkus.package.quiltflower.enabled $(crac_options)
 .PHONY: build-crac
