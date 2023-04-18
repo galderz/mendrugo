@@ -65,6 +65,10 @@ $(call module-group,kubernetes-config)$\
 $(call module-group,liquibase)$\
 $(call module-group,liquibase-mongodb)$\
 $(call module-group,minikube)$\
+$(call module-group,mongodb-panache)$\
+$(call module-group,mongodb-panache-common)$\
+$(call module-group,mongodb-panache-kotlin)$\
+$(call module-group,mongodb-rest-data-panache)$\
 $(call module-group,oidc)$\
 $(call module-group,oidc-client)$\
 $(call module-group,oidc-client-filter)$\
@@ -77,6 +81,15 @@ $(call module-group,openshift-client)$\
 $(call module-group,picocli)$\
 $(call module-group,reactive-oracle-client)$\
 $(call module-group,scala)$\
+$(call module-group,spring-boot-properties)$\
+$(call module-group,spring-cache)$\
+$(call module-group,spring-cloud-config-client)$\
+$(call module-group,spring-data-jpa)$\
+$(call module-group,spring-data-rest)$\
+$(call module-group,spring-di)$\
+$(call module-group,spring-scheduled)$\
+$(call module-group,spring-security)$\
+$(call module-group,spring-web)$\
 ,!:quarkus-amazon-lambda-event-server$\
 ,!:quarkus-amazon-lambda-http-event-server$\
 ,!:quarkus-amazon-lambda-rest-event-server$\
