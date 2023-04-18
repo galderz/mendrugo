@@ -1,0 +1,7 @@
+colima:
+> colima start
+.PHONY: colima
+
+colima-stop:
+> colima stop
+.PHONY: colima-stop
