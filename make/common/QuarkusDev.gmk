@@ -46,6 +46,9 @@ $(call module-group,container-image-docker)$\
 $(call module-group,container-image-jib)$\
 $(call module-group,container-image-openshift)$\
 $(call module-group,container-image-s2i)$\
+$(call module-group,elasticsearch-rest-client)$\
+$(call module-group,elasticsearch-rest-client-common)$\
+$(call module-group,elasticsearch-rest-high-level-client)$\
 $(call module-group,flyway)$\
 $(call module-group,funqy-http)$\
 $(call module-group,funqy-google-cloud-functions)$\
@@ -54,6 +57,8 @@ $(call module-group,funqy-server-common)$\
 $(call module-group,google-cloud-functions)$\
 $(call module-group,google-cloud-functions-http)$\
 $(call module-group,infinispan-client)$\
+$(call module-group,kafka-client)$\
+$(call module-group,kafka-streams)$\
 $(call module-group,keycloak-admin-client)$\
 $(call module-group,keycloak-admin-client-common)$\
 $(call module-group,keycloak-admin-client-reactive)$\
@@ -100,6 +105,7 @@ $(call tests-group,spring-web-resteasy-reactive)$\
 ,!:quarkus-kubernetes-client-spi$\
 ,!:quarkus-kubernetes-vanilla-parent$\
 ,!:quarkus-test-amazon-lambda$\
+,!:quarkus-test-security-oidc$\
 ,!:quarkus-documentation
 endef
 
