@@ -93,7 +93,6 @@ $(call module-group,reactive-db2-client)$\
 $(call module-group,reactive-mssql-client)$\
 $(call module-group,reactive-mysql-client)$\
 $(call module-group,reactive-oracle-client)$\
-$(call module-group,redis-client)$\
 $(call module-group,scala)$\
 $(call module-group,spring-boot-properties)$\
 $(call module-group,spring-cache)$\
