@@ -62,6 +62,8 @@ $(call module-group,funqy-knative-events)$\
 $(call module-group,funqy-server-common)$\
 $(call module-group,google-cloud-functions)$\
 $(call module-group,google-cloud-functions-http)$\
+$(call module-group,hibernate-search-orm-coordination-outbox-polling)$\
+$(call module-group,hibernate-search-orm-elasticsearch)$\
 $(call module-group,infinispan-client)$\
 $(call module-group,kafka-client)$\
 $(call module-group,kafka-streams)$\
@@ -91,6 +93,7 @@ $(call module-group,openshift)$\
 $(call module-group,openshift-client)$\
 $(call module-group,picocli)$\
 $(call module-group,reactive-oracle-client)$\
+$(call module-group,reactive-routes)$\
 $(call module-group,scala)$\
 $(call module-group,spring-boot-properties)$\
 $(call module-group,spring-cache)$\
