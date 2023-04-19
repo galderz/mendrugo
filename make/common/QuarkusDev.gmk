@@ -46,7 +46,6 @@ $(call module-group,container-image-docker)$\
 $(call module-group,container-image-jib)$\
 $(call module-group,container-image-openshift)$\
 $(call module-group,container-image-s2i)$\
-$(call module-group,elytron-security)$\
 $(call module-group,elytron-security-common)$\
 $(call module-group,elytron-security-jdbc)$\
 $(call module-group,elytron-security-ldap)$\
@@ -91,6 +90,9 @@ $(call module-group,oidc-token-propagation-reactive)$\
 $(call module-group,openshift)$\
 $(call module-group,openshift-client)$\
 $(call module-group,picocli)$\
+$(call module-group,reactive-db2-client)$\
+$(call module-group,reactive-mssql-client)$\
+$(call module-group,reactive-mysql-client)$\
 $(call module-group,reactive-oracle-client)$\
 $(call module-group,scala)$\
 $(call module-group,spring-boot-properties)$\
