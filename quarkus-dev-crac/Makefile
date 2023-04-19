@@ -22,8 +22,10 @@ checkpoint_log = $(checkpoint_dir)/dump4.log
 checkpoint: $(checkpoint_log)
 .PHONY: checkpoint
 
+# sudo not needed, as long as the JDK was extracted as sudo:
+# https://github.com/CRaC/docs#jdk
 restore: $(checkpoint_log)
-> sudo $(java) -XX:CRaCRestoreFrom=$(checkpoint_dir)
+> $(java) -XX:CRaCRestoreFrom=$(checkpoint_dir)
 .PHONY: restore
 
 $(checkpoint_log): $(quarkus_jar_core) $(pom) $(sources)
