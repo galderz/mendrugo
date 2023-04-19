@@ -108,7 +108,6 @@ $(call tests-group,spring-web-resteasy-reactive)$\
 ,!:quarkus-amazon-lambda-rest-event-server$\
 ,!:quarkus-cli$\
 ,!:quarkus-gradle-model$\
-,!:quarkus-kubernetes-client-spi$\
 ,!:quarkus-kubernetes-vanilla-parent$\
 ,!:quarkus-test-amazon-lambda$\
 ,!:quarkus-test-kafka-companion$\
