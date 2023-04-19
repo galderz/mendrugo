@@ -47,3 +47,10 @@ get-crac:
 > sudo tar vxzf openjdk-17-crac+5_linux-x64.tar.gz
 > ln -s openjdk-17-crac+5_linux-x64 crac-17
 .PHONY: get-crac
+
+get-quarkus:
+> cd /opt
+> git clone https://github.com/galderz/quarkus quarkus-quarkus
+> cd quarkus-quarkus
+> git checkout topic.1304.crac-package-type-2.16
+.PHONY: get-quarkus
