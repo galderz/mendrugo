@@ -39,7 +39,6 @@ $(call archetype-group,azure-functions-http)$\
 $(call archetype-group,funqy-amazon-lambda)$\
 $(call deploy-group,amazon-lambda-common)$\
 $(call module-group,amazon-lambda-xray)$\
-$(call module-group,container-image)$\
 $(call module-group,container-image-buildpack)$\
 $(call module-group,container-image-docker)$\
 $(call module-group,container-image-jib)$\
