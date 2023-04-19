@@ -43,9 +43,9 @@ crac: crac-image
 
 get-crac:
 > cd /opt
-> wget https://github.com/CRaC/openjdk-builds/releases/download/17-crac%2B5/openjdk-17-crac+5_linux-x64.tar.gz
+> sudo wget https://github.com/CRaC/openjdk-builds/releases/download/17-crac%2B5/openjdk-17-crac+5_linux-x64.tar.gz
 > sudo tar vxzf openjdk-17-crac+5_linux-x64.tar.gz
-> ln -s openjdk-17-crac+5_linux-x64 crac-17
+> sudo ln -s openjdk-17-crac+5_linux-x64 crac-17
 .PHONY: get-crac
 
 get-quarkus:
