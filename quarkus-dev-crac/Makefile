@@ -11,13 +11,13 @@ include ../make/common/Maven.gmk
 include ../make/common/QuarkusQuick.gmk
 include ../make/common/QuarkusDev.gmk
 
+checkpoint_dir = $(target)/checkpoint
+checkpoint_log = $(checkpoint_dir)/dump4.log
 crac_options += -Dquarkus.package.type=crac
 ifdef CRAC_DEBUG
   crac_options += -Dquarkus.crac.checkpoint.debug=true
 endif
-
-checkpoint_dir = $(target)/checkpoint
-checkpoint_log = $(checkpoint_dir)/dump4.log
+current_dir = $(shell pwd)
 
 checkpoint: $(checkpoint_log)
 .PHONY: checkpoint
@@ -49,8 +49,8 @@ get-crac:
 .PHONY: get-crac
 
 get-quarkus:
-> cd /opt
 > git clone https://github.com/galderz/quarkus quarkus-quarkus
 > cd quarkus-quarkus
 > git checkout topic.1304.crac-package-type-2.16
+> sudo ln -s $(current_dir)/quarkus/quarkus /opt/quarkus-quarkus
 .PHONY: get-quarkus
