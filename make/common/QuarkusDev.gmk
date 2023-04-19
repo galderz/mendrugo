@@ -51,7 +51,6 @@ $(call module-group,elytron-security-common)$\
 $(call module-group,elytron-security-jdbc)$\
 $(call module-group,elytron-security-ldap)$\
 $(call module-group,elytron-security-oauth2)$\
-$(call module-group,elytron-security-properties-file)$\
 $(call module-group,elasticsearch-rest-client)$\
 $(call module-group,elasticsearch-rest-client-common)$\
 $(call module-group,elasticsearch-rest-high-level-client)$\
@@ -93,7 +92,6 @@ $(call module-group,openshift)$\
 $(call module-group,openshift-client)$\
 $(call module-group,picocli)$\
 $(call module-group,reactive-oracle-client)$\
-$(call module-group,reactive-routes)$\
 $(call module-group,scala)$\
 $(call module-group,spring-boot-properties)$\
 $(call module-group,spring-cache)$\
