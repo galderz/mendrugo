@@ -69,8 +69,6 @@ $(call module-group,keycloak-admin-client-common)$\
 $(call module-group,keycloak-admin-client-reactive)$\
 $(call module-group,keycloak-authorization)$\
 $(call module-group,kind)$\
-$(call module-group,kubernetes-client)$\
-$(call module-group,kubernetes-config)$\
 $(call module-group,liquibase)$\
 $(call module-group,liquibase-mongodb)$\
 $(call module-group,minikube)$\
