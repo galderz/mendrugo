@@ -52,5 +52,5 @@ get-quarkus:
 > git clone https://github.com/galderz/quarkus quarkus-quarkus
 > cd quarkus-quarkus
 > git checkout topic.1304.crac-package-type-2.16
-> sudo ln -s $(current_dir)/quarkus/quarkus /opt/quarkus-quarkus
+> sudo ln -s $(current_dir)/quarkus-quarkus /opt/quarkus-quarkus
 .PHONY: get-quarkus
