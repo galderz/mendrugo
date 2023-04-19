@@ -94,6 +94,7 @@ $(call module-group,reactive-mssql-client)$\
 $(call module-group,reactive-mysql-client)$\
 $(call module-group,reactive-oracle-client)$\
 $(call module-group,scala)$\
+$(call module-group,smallrye-reactive-messaging-kafka)$\
 $(call module-group,spring-boot-properties)$\
 $(call module-group,spring-cache)$\
 $(call module-group,spring-cloud-config-client)$\
