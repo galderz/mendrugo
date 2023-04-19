@@ -90,6 +90,8 @@ $(call module-group,spring-di)$\
 $(call module-group,spring-scheduled)$\
 $(call module-group,spring-security)$\
 $(call module-group,spring-web)$\
+$(call tests-group,spring-web-resteasy-classic)$\
+$(call tests-group,spring-web-resteasy-reactive)$\
 ,!:quarkus-amazon-lambda-event-server$\
 ,!:quarkus-amazon-lambda-http-event-server$\
 ,!:quarkus-amazon-lambda-rest-event-server$\
@@ -117,4 +119,11 @@ define module-group
 ,!:quarkus-$1$\
 ,!:quarkus-$1-deployment$\
 ,!:quarkus-$1-parent
+endef
+
+define tests-group
+,!:quarkus-$1$\
+,!:quarkus-$1-deployment$\
+,!:quarkus-$1-parent$\
+,!:quarkus-$1-tests
 endef
