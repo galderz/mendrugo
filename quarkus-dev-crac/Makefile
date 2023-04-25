@@ -1,6 +1,7 @@
+APP ?= getting-started
 JAVA_HOME ?= /opt/crac-17
 
-app := static-init
+app := $(APP)
 java_home := $(JAVA_HOME)
 quarkus_version := 2.16.999-SNAPSHOT
 quickstarts_branch := 2.16
