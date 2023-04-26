@@ -14,3 +14,8 @@ quarkus_version := 2.16.4.Final
 db:
 > docker run --rm=true --name quarkus_test -e POSTGRES_USER=quarkus_test -e POSTGRES_PASSWORD=quarkus_test -e POSTGRES_DB=quarkus_test -p 5432:5432 postgres:13.3
 .PHONY: db
+
+upgrade:
+> cd $(app)
+> $(mvn) io.quarkus.platform:quarkus-maven-plugin:3.0.1.Final:update -N -Dstream=3.0
+.PHONY: upgrade
