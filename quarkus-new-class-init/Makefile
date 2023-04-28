@@ -1,6 +1,6 @@
 app := code-with-quarkus
 
-NB_ARGS := -H:+UseNewExperimentalClassInitialization
+NB_ARGS := -H:+UseNewExperimentalClassInitialization,--initialize-at-run-time=org.acme.B_InitAtRunTime
 
 default: run
 

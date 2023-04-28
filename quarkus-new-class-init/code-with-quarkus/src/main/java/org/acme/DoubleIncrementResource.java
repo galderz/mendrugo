@@ -11,6 +11,6 @@ public class DoubleIncrementResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String doubleIncrement() {
-        return String.format("A_InitAtBuildTime.a = %s%nB_InitAtRunTime.b = %s", A_InitAtBuildTime.a, B_InitAtRunTime.b);
+        return String.format("B_InitAtRunTime.b = %s%nA_InitAtBuildTime.a = %s%n", B_InitAtRunTime.b, A_InitAtBuildTime.a);
     }
 }
