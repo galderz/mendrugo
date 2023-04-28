@@ -1,5 +1,7 @@
 app := code-with-quarkus
 
+NB_ARGS := -H:+UseNewExperimentalClassInitialization
+
 default: run
 
 include ../make/common/MakeBase.gmk
