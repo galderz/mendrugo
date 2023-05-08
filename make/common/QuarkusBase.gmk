@@ -61,10 +61,6 @@ run-crac-restore: $(jar)
 > sudo $(java) -XX:CRaCRestoreFrom=$(target)/cr
 .PHONY: run-crac-restore
 
-$(runner): $(pom) $(sources)
-> cd $(app)
-> $(mvn_package) -Dquarkus.package.quiltflower.enabled $(native_build_args)
-
 $(jar): $(pom) $(sources)
 > cd $(app)
 > $(mvn_package) -Dquarkus.package.quiltflower.enabled

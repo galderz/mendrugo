@@ -1,0 +1,11 @@
+podman:
+> podman machine start
+.PHONY: podman
+
+podman-init:
+> podman machine init --rootful -m 8092 --cpus 4
+.PHONY: podman-init
+
+podman-stop:
+> podman machine stop
+.PHONY: podman-stop

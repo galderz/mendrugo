@@ -1,4 +1,5 @@
 include ../make/common/QuarkusBase.gmk
+include ../make/common/QuarkusProd.gmk
 
 ifdef TMPDIR
   tmp_dir = $(TMPDIR)

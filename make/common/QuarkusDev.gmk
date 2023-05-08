@@ -1,141 +1,29 @@
 quarkus_home := /opt/quarkus-quarkus
-quarkus_jar_core = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
 quarkus_maven_args += -Dquickly
 ifdef MAVEN_THREADS
   quarkus_maven_args += -T
   quarkus_maven_args += $(MAVEN_THREADS)C
 endif
-quarkus_sources += $(shell find $(quarkus_home)/ -type f -name '*.java' | sed 's: :\\ :g')
-quarkus_sources += $(shell find $(quarkus_home)/ -type f -name 'pom.xml' | sed 's: :\\ :g')
 
-build-quarkus: $(quarkus_jar_core)
+quarkus_core_jar = $(quarkus_home)/core/deployment/target/quarkus-core-$(quarkus_version).jar
+quarkus_core_src += $(shell find $(quarkus_home)/core -type f -name '*.java' | sed 's: :\\ :g')
+quarkus_core_src += $(shell find $(quarkus_home)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
 
-$(quarkus_jar_core): $(quarkus_sources)
-> cd $(quarkus_home)/independent-projects/ide-config
-> $(mvn) $(quarkus_maven_args)
-> cd $(quarkus_home)/independent-projects/enforcer-rules
-> $(mvn) $(quarkus_maven_args)
-> cd $(quarkus_home)/independent-projects/bootstrap
-> $(mvn) $(quarkus_maven_args)
+$(runner): $(pom) $(sources) $(quarkus_core_jar)
+> cd $(app)
+> $(mvn_package) -Dquarkus.package.quiltflower.enabled $(native_build_args)
+
+$(quarkus_core_jar): $(quarkus_core_src)
 > cd $(quarkus_home)
-#> $(mvn) $(quarkus_maven_args) -Dno-test-modules -pl $(call quarkus-project-group,google-cloud-functions)
-#> $(mvn) $(quarkus_maven_args) -Dno-test-modules -pl $(call quarkus-project-group,google-cloud-functions)
-> $(mvn) $(quarkus_maven_args) -Dno-test-modules -pl $(call project-groups)
+> $(mvn) -DskipTests -f core install
 > touch $@
+
+build-quarkus:
+> cd $(quarkus_home)
+> $(mvn) -Dquickly
+.PHONY: build-quarkus
 
 clean-quarkus:
 > cd $(quarkus_home)
 > $(mvn) clean
 .PHONY: clean-quarkus
-
-define project-groups
-!:io.quarkus.extension.gradle.plugin$\
-,!:io.quarkus.gradle.plugin$\
-,!:io.quarkus.gradle.plugin.parent$\
-$(call archetype-group,amazon-lambda)$\
-$(call archetype-group,amazon-lambda-http)$\
-$(call archetype-group,amazon-lambda-rest)$\
-$(call archetype-group,azure-functions-http)$\
-$(call archetype-group,funqy-amazon-lambda)$\
-$(call deploy-group,amazon-lambda-common)$\
-$(call module-group,amazon-lambda-xray)$\
-$(call module-group,container-image-buildpack)$\
-$(call module-group,container-image-docker)$\
-$(call module-group,container-image-jib)$\
-$(call module-group,container-image-openshift)$\
-$(call module-group,container-image-s2i)$\
-$(call module-group,elytron-security-jdbc)$\
-$(call module-group,elytron-security-ldap)$\
-$(call module-group,elytron-security-oauth2)$\
-$(call module-group,elasticsearch-rest-client)$\
-$(call module-group,elasticsearch-rest-client-common)$\
-$(call module-group,elasticsearch-rest-high-level-client)$\
-$(call module-group,flyway)$\
-$(call module-group,funqy-http)$\
-$(call module-group,funqy-google-cloud-functions)$\
-$(call module-group,funqy-knative-events)$\
-$(call module-group,funqy-server-common)$\
-$(call module-group,google-cloud-functions)$\
-$(call module-group,google-cloud-functions-http)$\
-$(call module-group,hibernate-search-orm-coordination-outbox-polling)$\
-$(call module-group,hibernate-search-orm-elasticsearch)$\
-$(call module-group,infinispan-client)$\
-$(call module-group,kafka-client)$\
-$(call module-group,kafka-streams)$\
-$(call module-group,keycloak-admin-client)$\
-$(call module-group,keycloak-admin-client-common)$\
-$(call module-group,keycloak-admin-client-reactive)$\
-$(call module-group,keycloak-authorization)$\
-$(call module-group,kind)$\
-$(call module-group,kubernetes-client)$\
-$(call module-group,kubernetes-config)$\
-$(call module-group,liquibase)$\
-$(call module-group,liquibase-mongodb)$\
-$(call module-group,minikube)$\
-$(call module-group,mongodb-panache)$\
-$(call module-group,mongodb-panache-common)$\
-$(call module-group,mongodb-panache-kotlin)$\
-$(call module-group,mongodb-rest-data-panache)$\
-$(call module-group,oidc)$\
-$(call module-group,oidc-client)$\
-$(call module-group,oidc-client-filter)$\
-$(call module-group,oidc-client-reactive-filter)$\
-$(call module-group,oidc-common)$\
-$(call module-group,oidc-token-propagation)$\
-$(call module-group,oidc-token-propagation-reactive)$\
-$(call module-group,openshift)$\
-$(call module-group,openshift-client)$\
-$(call module-group,picocli)$\
-$(call module-group,reactive-db2-client)$\
-$(call module-group,reactive-mssql-client)$\
-$(call module-group,reactive-mysql-client)$\
-$(call module-group,reactive-oracle-client)$\
-$(call module-group,scala)$\
-$(call module-group,smallrye-reactive-messaging-kafka)$\
-$(call module-group,spring-boot-properties)$\
-$(call module-group,spring-cache)$\
-$(call module-group,spring-cloud-config-client)$\
-$(call module-group,spring-data-jpa)$\
-$(call module-group,spring-data-rest)$\
-$(call module-group,spring-di)$\
-$(call module-group,spring-scheduled)$\
-$(call module-group,spring-security)$\
-$(call module-group,spring-web)$\
-$(call tests-group,spring-web-resteasy-classic)$\
-$(call tests-group,spring-web-resteasy-reactive)$\
-,!:quarkus-amazon-lambda-event-server$\
-,!:quarkus-amazon-lambda-http-event-server$\
-,!:quarkus-amazon-lambda-rest-event-server$\
-,!:quarkus-cli$\
-,!:quarkus-gradle-model$\
-,!:quarkus-kubernetes-vanilla-parent$\
-,!:quarkus-test-amazon-lambda$\
-,!:quarkus-test-kafka-companion$\
-,!:quarkus-test-security-oidc$\
-,!:quarkus-documentation
-endef
-
-define archetype-group
-,!:quarkus-$1$\
-,!:quarkus-$1-archetype$\
-,!:quarkus-$1-deployment$\
-,!:quarkus-$1-parent
-endef
-
-define deploy-group
-,!:quarkus-$1$\
-,!:quarkus-$1-deployment
-endef
-
-define module-group
-,!:quarkus-$1$\
-,!:quarkus-$1-deployment$\
-,!:quarkus-$1-parent
-endef
-
-define tests-group
-,!:quarkus-$1$\
-,!:quarkus-$1-deployment$\
-,!:quarkus-$1-parent$\
-,!:quarkus-$1-tests
-endef

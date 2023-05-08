@@ -1,6 +1,7 @@
 app := code-with-quarkus
 
 include ../make/common/QuarkusBase.gmk
+include ../make/common/QuarkusProd.gmk
 
 $(pom):
 > $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(quarkus_version):create \
