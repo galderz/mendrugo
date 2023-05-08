@@ -13,3 +13,4 @@ include ../make/common/QuarkusDev.gmk
 
 mvn_package += -Dquarkus.native.container-build=true
 mvn_package += -Dquarkus.native.container-runtime=podman
+#mvn_package += -Dquarkus.native.container-runtime=podman_rootless
