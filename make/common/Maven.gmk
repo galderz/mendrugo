@@ -1,5 +1,5 @@
 mvn += JAVA_HOME=$(java_home)
-mvn += /opt/boot-maven-3/bin/mvn
+mvn += /opt/apache-maven-3.9.1/bin/mvn
 
 ifdef VERBOSE
   mvn += -X
