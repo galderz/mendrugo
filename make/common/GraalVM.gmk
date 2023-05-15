@@ -2,7 +2,8 @@ java = $(java_home)/bin/java
 java_home = $(jdk_home)/build/graalbuilder/images/graal-builder-jdk
 # Workaround https://github.com/oracle/graal/issues/5686
 # Use tagged jdk 17.0.4.1 which does not suffer from issue.
-jdk_home := $(HOME)/1/jdk17u
+# jdk_home := $(HOME)/1/jdk17u
+jdk_home := $(HOME)/1/jdk17u-dev
 jdk_sources += $(shell find $(jdk_home) -type f -name '*.java' | sed 's: :\\ :g')
 jfr = $(java_home)/bin/jfr
 graalvm_home := /opt/mandrel-mandrel/substratevm
