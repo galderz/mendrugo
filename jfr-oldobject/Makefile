@@ -35,6 +35,11 @@ else
   native_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE)
 endif
 
+test: $(native_image)
+> cd $(graalvm_home)
+> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image com.oracle.svm.test.jfr.oldobject
+.PHONY: test
+
 run-native: $(binary)
 > $< $(native_opts)
 .PHONY: run-native
