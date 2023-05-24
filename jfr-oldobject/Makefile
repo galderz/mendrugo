@@ -14,6 +14,8 @@ native_image_opts += --enable-monitoring=jfr
 native_image_opts += --no-fallback
 native_image_opts += -H:+ReportExceptionStackTraces
 
+jvm_opts += -XX:TLABSize=2k
+
 ifdef VERBOSE
   jvm_opts += -Xlog:jfr+system=trace
   # binary_opts += -XX:FlightRecorderLogging=all=trace
