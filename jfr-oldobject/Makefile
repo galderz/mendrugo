@@ -13,6 +13,7 @@ binary := target/jfr-oldobject
 native_image_opts += --enable-monitoring=jfr
 native_image_opts += --no-fallback
 native_image_opts += -H:+ReportExceptionStackTraces
+native_image_opts += -H:+AllowVMInspection
 
 jvm_opts += -XX:TLABSize=2k
 
@@ -37,6 +38,8 @@ else
   native_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE)
 endif
 
+#> DEBUG_RECORDING=true $(mx) native-unittest --run-args -XX:FlightRecorderLogging=jfr=debug,jfr+dcmd=debug --verbose --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal --preserve-image com.oracle.svm.test.jfr.oldobject
+#> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal com.oracle.svm.test.jfr.oldobject
 test: $(native_image)
 > cd $(graalvm_home)
 > DEBUG_RECORDING=true $(mx) native-unittest --preserve-image com.oracle.svm.test.jfr.oldobject
