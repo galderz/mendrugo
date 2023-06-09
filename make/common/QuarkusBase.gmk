@@ -1,3 +1,5 @@
+QB_ARGS ?=
+
 jar = $(target)/quarkus-app/quarkus-run.jar
 java = $(java_home)/bin/java
 jcmd = $(java_home)/bin/jcmd
@@ -11,6 +13,10 @@ ifdef DEBUG
   mvn_package += dependency:sources
   native_build_args += -Dquarkus.native.debug.enabled
   native_build_args += -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
+endif
+
+ifdef QB_ARGS
+  mvn_package += $(foreach arg,$(QB_ARGS),$(arg))
 endif
 
 ifdef NB_ARGS
@@ -63,7 +69,7 @@ run-crac-restore: $(jar)
 
 $(jar): $(pom) $(sources)
 > cd $(app)
-> $(mvn_package) -Dquarkus.package.quiltflower.enabled
+> $(mvn_package)
 
 clean-app:
 > rm -drf $(app)

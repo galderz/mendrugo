@@ -11,7 +11,7 @@ quarkus_core_src += $(shell find $(quarkus_home)/core -type f -name 'pom.xml' | 
 
 $(runner): $(pom) $(sources) $(quarkus_core_jar)
 > cd $(app)
-> $(mvn_package) -Dquarkus.package.quiltflower.enabled $(native_build_args)
+> $(mvn_package) $(native_build_args)
 
 $(quarkus_core_jar): $(quarkus_core_src)
 > cd $(quarkus_home)
