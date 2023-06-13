@@ -14,4 +14,4 @@ $(pom):
 > cd quarkus-quickstarts
 > git checkout $(quickstarts_branch)
 > popd
-> cp -r $(tmp_dir)/quarkus-quickstarts/$(app) .
+> cp -r $(tmp_dir)/quarkus-quickstarts/$(APP) .

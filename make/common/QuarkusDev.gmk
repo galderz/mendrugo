@@ -10,7 +10,7 @@ quarkus_core_src += $(shell find $(quarkus_home)/core -type f -name '*.java' | s
 quarkus_core_src += $(shell find $(quarkus_home)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
 
 $(runner): $(pom) $(sources) $(quarkus_core_jar)
-> cd $(app)
+> cd $(APP)
 > $(mvn_package) $(native_build_args)
 
 $(quarkus_core_jar): $(quarkus_core_src)

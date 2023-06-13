@@ -1,4 +1,4 @@
-app := getting-started
+APP := getting-started
 java_home := /opt/graalvm-ce-java17-22.3.0
 quarkus_version := 999-SNAPSHOT
 quickstarts_branch := development

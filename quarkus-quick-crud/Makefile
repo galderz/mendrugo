@@ -1,4 +1,4 @@
-app := hibernate-orm-quickstart
+APP := hibernate-orm-quickstart
 quickstarts_branch := main
 
 default: run
@@ -16,6 +16,6 @@ db:
 .PHONY: db
 
 upgrade:
-> cd $(app)
+> cd $(APP)
 > $(mvn) io.quarkus.platform:quarkus-maven-plugin:3.0.1.Final:update -N -Dstream=3.0
 .PHONY: upgrade

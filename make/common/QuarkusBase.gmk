@@ -4,8 +4,8 @@ jar = $(target)/quarkus-app/quarkus-run.jar
 java = $(java_home)/bin/java
 jcmd = $(java_home)/bin/jcmd
 native_build_args += -Dnative
-pom = $(app)/pom.xml
-runner = $(target)/$(app)-1.0.0-SNAPSHOT-runner
+pom = $(APP)/pom.xml
+runner = $(target)/$(APP)-1.0.0-SNAPSHOT-runner
 run_args += -Xmx128m
 jvm_args = $(run_args)
 
@@ -68,11 +68,11 @@ run-crac-restore: $(jar)
 .PHONY: run-crac-restore
 
 $(jar): $(pom) $(sources)
-> cd $(app)
+> cd $(APP)
 > $(mvn_package)
 
 clean-app:
-> rm -drf $(app)
+> rm -drf $(APP)
 .PHONY: clean-app
 
 ### perf

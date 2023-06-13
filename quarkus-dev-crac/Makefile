@@ -1,7 +1,6 @@
 APP ?= getting-started
 JAVA_HOME ?= /opt/crac-17
 
-app := $(APP)
 java_home := $(JAVA_HOME)
 quarkus_version := 2.16.999-SNAPSHOT
 quickstarts_branch := 2.16
@@ -33,7 +32,7 @@ restore: $(checkpoint_log)
 
 $(checkpoint_log): $(quarkus_jar_core) $(pom) $(sources)
 > rm -drf $(checkpoint_dir)
-> cd $(app)
+> cd $(APP)
 > $(mvn_package) -Dquarkus.package.quiltflower.enabled $(crac_options)
 
 crac-image:
@@ -41,7 +40,7 @@ crac-image:
 .PHONY: crac-image
 
 crac: crac-image
-> docker run -t -i -v $(PWD)/$(app):/data --rm -p 8080:8080 crac:v1 /bin/bash
+> docker run -t -i -v $(PWD)/$(APP):/data --rm -p 8080:8080 crac:v1 /bin/bash
 .PHONY: crac
 
 get-crac:

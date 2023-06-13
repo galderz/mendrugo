@@ -1,4 +1,4 @@
-app := code-with-quarkus
+APP := code-with-quarkus
 
 NB_ARGS := -H:+UseNewExperimentalClassInitialization,--initialize-at-run-time=org.acme.B_InitAtRunTime
 

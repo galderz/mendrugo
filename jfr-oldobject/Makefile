@@ -1,4 +1,4 @@
-app := .
+APP := .
 jar = $(target)/jfr-oldobject.jar
 
 include ../make/common/MakeBase.gmk

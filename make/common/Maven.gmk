@@ -8,12 +8,12 @@ endif
 mvn_package += $(mvn)
 mvn_package += package
 mvn_package += -DskipTests
-sources += $(shell find $(app)/src -type f -name '*.java' | sed 's: :\\ :g')
-sources += $(shell find $(app)/src -type f -name '*.properties' | sed 's: :\\ :g')
-target = $(app)/target
+sources += $(shell find $(APP)/src -type f -name '*.java' | sed 's: :\\ :g')
+sources += $(shell find $(APP)/src -type f -name '*.properties' | sed 's: :\\ :g')
+target = $(APP)/target
 
 $(jar): $(pom) $(sources)
-> cd $(app)
+> cd $(APP)
 > $(mvn_package)
 
 clean:
