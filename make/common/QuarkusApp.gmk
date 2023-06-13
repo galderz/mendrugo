@@ -4,7 +4,7 @@ include ../make/common/QuarkusBase.gmk
 include ../make/common/QuarkusProd.gmk
 
 $(pom):
-> $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(quarkus_version):create \
+> $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION):create \
 >   -DprojectGroupId=org.acme \
 >   -DprojectArtifactId=$(APP) \
 >   -Dextensions='$(extensions)'

@@ -1,4 +1,5 @@
 QUARKUS_HOME ?= /opt/quarkus-quarkus
+QUARKUS_VERSION ?= 999-SNAPSHOT
 
 quarkus_maven_args += -Dquickly
 ifdef MAVEN_THREADS
@@ -6,7 +7,7 @@ ifdef MAVEN_THREADS
   quarkus_maven_args += $(MAVEN_THREADS)C
 endif
 
-quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-$(quarkus_version).jar
+quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-$(QUARKUS_VERSION).jar
 quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | sed 's: :\\ :g')
 quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
 
