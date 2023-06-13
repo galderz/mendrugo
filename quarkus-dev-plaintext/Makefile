@@ -1,6 +1,7 @@
-APP := getting-started
+APP ?= getting-started
+QUICKSTARTS_BRANCH ?= development
+
 java_home := /opt/graalvm-ce-java17-22.3.0
-quickstarts_branch := development
 
 default: run
 
