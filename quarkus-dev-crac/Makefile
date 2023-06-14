@@ -2,14 +2,15 @@ APP ?= getting-started
 JAVA_HOME ?= /opt/crac-17
 QUARKUS_VERSION ?= 2.16.999-SNAPSHOT
 QUICKSTARTS_VERSION ?= 2.16
+TOPDIR = ..
 
 default: checkpoint
 
-include ../make/common/MakeBase.gmk
-include ../make/common/Colima.gmk
-include ../make/common/Maven.gmk
-include ../make/common/QuarkusQuick.gmk
-include ../make/common/QuarkusDev.gmk
+include $(TOPDIR)/make/common/MakeBase.gmk
+include $(TOPDIR)/make/common/Colima.gmk
+include $(TOPDIR)/make/common/Maven.gmk
+include $(TOPDIR)/make/common/QuarkusQuick.gmk
+include $(TOPDIR)/make/common/QuarkusDev.gmk
 
 checkpoint_dir = $(target)/checkpoint
 checkpoint_log = $(checkpoint_dir)/dump4.log

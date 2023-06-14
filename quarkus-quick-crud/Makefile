@@ -1,13 +1,14 @@
 APP ?= hibernate-orm-quickstart
 QUARKUS_VERSION ?= 2.16.4.Final
 QUICKSTARTS_BRANCH ?= main
+TOPDIR = ..
 
 default: run
 
-include ../make/common/MakeBase.gmk
-include ../make/common/Colima.gmk
-include ../make/common/Maven.gmk
-include ../make/common/QuarkusQuick.gmk
+include $(TOPDIR)/make/common/MakeBase.gmk
+include $(TOPDIR)/make/common/Colima.gmk
+include $(TOPDIR)/make/common/Maven.gmk
+include $(TOPDIR)/make/common/QuarkusQuick.gmk
 
 java_home := /opt/graalvm-ce-java17-22.3.0
 
