@@ -22,7 +22,6 @@ $(runner): $(dot_quarkus_app_version) $(sources) $(quarkus_core_jar)
 $(quarkus_core_jar): $(quarkus_core_src) $(dot_quarkus_home_version)
 > cd $(QUARKUS_HOME)
 > $(mvn) -DskipTests -f core install
-> touch $@
 
 build-quarkus: $(dot_quarkus_home_version)
 > cd $(QUARKUS_HOME)
