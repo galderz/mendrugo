@@ -19,7 +19,7 @@ $(runner): $(dot_quarkus_app_version) $(sources) $(quarkus_core_jar)
 > cd $(APP)
 > $(mvn_package) $(native_build_args)
 
-$(quarkus_core_jar): $(quarkus_core_src) $(dot_quarkus_home_version)
+$(quarkus_core_jar): $(quarkus_core_src)
 > cd $(QUARKUS_HOME)
 > $(mvn) -DskipTests -f core install
 
