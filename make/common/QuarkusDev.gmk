@@ -7,13 +7,15 @@ ifdef MAVEN_THREADS
   quarkus_maven_args += $(MAVEN_THREADS)C
 endif
 
+dot_quarkus_app_target = $(APP)/target
+dot_quarkus_app_version = $(dot_quarkus_app_target)/.quarkus-version
 dot_quarkus_home_target = $(QUARKUS_HOME)/target
 dot_quarkus_home_version = $(dot_quarkus_home_target)/.quarkus-version
 quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-$(QUARKUS_VERSION).jar
 quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | sed 's: :\\ :g')
 quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
 
-$(runner): $(pom) $(sources) $(quarkus_core_jar)
+$(runner): $(dot_quarkus_app_version) $(sources) $(quarkus_core_jar)
 > cd $(APP)
 > $(mvn_package) $(native_build_args)
 
@@ -31,6 +33,11 @@ $(dot_quarkus_home_version):
 > cd $(QUARKUS_HOME)
 > JAVA_HOME=$(java_home) ./update-version.sh $(QUARKUS_VERSION)
 > mkdir -p $(dot_quarkus_home_target)
+> touch $@
+
+$(dot_quarkus_app_version): $(pom)
+> sed -r -i 's@<quarkus.platform.version>[^<]+</quarkus.platform.version>@<quarkus.platform.version>$(QUARKUS_VERSION)</quarkus.platform.version>@' $<
+> mkdir -p $(dot_quarkus_app_target)
 > touch $@
 
 clean-quarkus:
