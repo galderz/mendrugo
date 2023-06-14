@@ -7,6 +7,8 @@ ifdef MAVEN_THREADS
   quarkus_maven_args += $(MAVEN_THREADS)C
 endif
 
+dot_quarkus_home_target = $(QUARKUS_HOME)/target
+dot_quarkus_home_version = $(dot_quarkus_home_target)/.quarkus-version
 quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-$(QUARKUS_VERSION).jar
 quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | sed 's: :\\ :g')
 quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
@@ -15,15 +17,21 @@ $(runner): $(pom) $(sources) $(quarkus_core_jar)
 > cd $(APP)
 > $(mvn_package) $(native_build_args)
 
-$(quarkus_core_jar): $(quarkus_core_src)
+$(quarkus_core_jar): $(quarkus_core_src) $(dot_quarkus_home_version)
 > cd $(QUARKUS_HOME)
 > $(mvn) -DskipTests -f core install
 > touch $@
 
-build-quarkus:
+build-quarkus: $(dot_quarkus_home_version)
 > cd $(QUARKUS_HOME)
 > $(mvn) -Dquickly
 .PHONY: build-quarkus
+
+$(dot_quarkus_home_version):
+> cd $(QUARKUS_HOME)
+> JAVA_HOME=$(java_home) ./update-version.sh $(QUARKUS_VERSION)
+> mkdir -p $(dot_quarkus_home_target)
+> touch $@
 
 clean-quarkus:
 > cd $(QUARKUS_HOME)
