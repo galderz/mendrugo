@@ -28,16 +28,20 @@ build-quarkus: $(dot_quarkus_home_version)
 > $(mvn) -Dquickly
 .PHONY: build-quarkus
 
-$(dot_quarkus_home_version):
+$(dot_quarkus_home_version): $(dot_quarkus_home_target)
 > cd $(QUARKUS_HOME)
 > JAVA_HOME=$(java_home) ./update-version.sh $(QUARKUS_VERSION)
-> mkdir -p $(dot_quarkus_home_target)
 > touch $@
 
-$(dot_quarkus_app_version): $(pom)
+$(dot_quarkus_home_target):
+> mkdir -p $(dot_quarkus_home_target)
+
+$(dot_quarkus_app_version): $(pom) $(dot_quarkus_app_target)
 > sed -r -i 's@<quarkus.platform.version>[^<]+</quarkus.platform.version>@<quarkus.platform.version>$(QUARKUS_VERSION)</quarkus.platform.version>@' $<
-> mkdir -p $(dot_quarkus_app_target)
 > touch $@
+
+$(dot_quarkus_app_target):
+> mkdir -p $(dot_quarkus_app_target)
 
 clean-quarkus:
 > cd $(QUARKUS_HOME)
