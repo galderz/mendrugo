@@ -1,5 +1,6 @@
 APP ?= getting-started
-QUARKUS_HOME ?= /opt/quarkus-rss-before
+QUARKUS_HOME ?= /opt/quarkus-rss-2.7.6
+# QUARKUS_HOME ?= /opt/quarkus-rss-before
 QUARKUS_VERSION ?= 2.7.6.Final
 # QUARKUS_VERSION ?= 999-RSS-BEFORE
 QUICKSTARTS_BRANCH ?= 2.7
