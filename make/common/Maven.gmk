@@ -1,5 +1,5 @@
 mvn += JAVA_HOME=$(java_home)
-mvn += /opt/maven/bin/mvn
+mvn += ./mvnw
 
 ifdef VERBOSE
   mvn += -X
