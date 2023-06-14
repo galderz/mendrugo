@@ -1,10 +1,13 @@
 APP ?= code-with-quarkus
 
+arch_mvn += JAVA_HOME=$(java_home)
+arch_mvn += /opt/maven/bin/mvn
+
 include ../make/common/QuarkusBase.gmk
 include ../make/common/QuarkusProd.gmk
 
 $(pom):
-> $(mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION):create \
+> $(arch_mvn) io.quarkus.platform:quarkus-maven-plugin:$(QUARKUS_VERSION):create \
 >   -DprojectGroupId=org.acme \
 >   -DprojectArtifactId=$(APP) \
 >   -Dextensions='$(extensions)'
