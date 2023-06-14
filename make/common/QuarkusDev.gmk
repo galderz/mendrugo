@@ -30,9 +30,9 @@ build-quarkus: $(dot_quarkus_home_version)
 
 $(dot_quarkus_home_version): $(dot_quarkus_home_dir)
 > cd $(QUARKUS_HOME)
-ifeq ($(wildcard update-version.sh),)
+> if [ -e "update-version.sh" ]; then
 > JAVA_HOME=$(java_home) ./update-version.sh $(QUARKUS_VERSION)
-endif
+> fi
 > touch $@
 
 $(dot_quarkus_home_dir):
