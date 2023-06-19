@@ -1,5 +1,6 @@
 APP := .
 jar = $(target)/jfr-oldobject.jar
+pom = $(APP)/pom.xml
 
 include ../make/common/MakeBase.gmk
 include ../make/common/GraalVM.gmk
