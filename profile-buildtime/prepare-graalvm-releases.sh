@@ -4,7 +4,7 @@ set -x -e
 
 prepare()
 {
-    local graalvm_home=/opt/$1
+    local graalvm_home=$HOME/opt/$1
 
     # Check that native-image exists, otherwise install it
     native_image=$graalvm_home/bin/native-image

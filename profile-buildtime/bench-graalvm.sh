@@ -4,7 +4,7 @@ set -e
 
 bench()
 {
-    local java_home=$1
+    local java_home=$HOME/opt/$1
     local app="hibernate-orm-quickstart"
     local target_dir="../target"
 
