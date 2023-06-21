@@ -12,10 +12,6 @@ sources += $(shell find $(APP)/src -type f -name '*.java' | sed 's: :\\ :g')
 sources += $(shell find $(APP)/src -type f -name '*.properties' | sed 's: :\\ :g')
 target = $(APP)/target
 
-$(jar): $(pom) $(sources)
-> cd $(APP)
-> $(mvn_package)
-
 clean:
 > rm -drf $(target)
 .PHONY: clean
