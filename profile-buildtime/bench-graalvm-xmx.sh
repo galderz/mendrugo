@@ -23,7 +23,9 @@ bench()
 
     make build \
         JAVA_HOME=$java_home \
-        MAVEN_ARGS="-Dquarkus.native.enable-reports"
+        MAVEN_ARGS="-Dquarkus.native.enable-reports" \
+        NATIVE_BUILD_ARGS="--verbose" \
+       | tee -a "$target_dir/console.log"
 
     cp -r $app/target/$app-1.0.0-SNAPSHOT-native-image-source-jar/reports "$target_dir"
 
