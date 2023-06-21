@@ -23,7 +23,8 @@ bench()
 
     make build \
         JAVA_HOME=$java_home \
-        MAVEN_ARGS="-Dquarkus.native.enable-reports"
+        MAVEN_ARGS="-Dquarkus.native.enable-reports -Dquarkus.native.native-image-xmx=5g"
+
     cp -r $app/target/$app-1.0.0-SNAPSHOT-native-image-source-jar/reports "$target_dir"
 
     for i in `seq 1 $NUM_ITERATIONS`
@@ -31,6 +32,7 @@ bench()
         rm -f $app/target/$app-1.0.0-SNAPSHOT-runner
         make build \
             JAVA_HOME=$java_home \
+            MAVEN_ARGS="-Dquarkus.native.native-image-xmx=5g"
             | tee -a "$target_dir/console.log"
     done
 
