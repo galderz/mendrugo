@@ -1,4 +1,5 @@
 MAVEN_ARGS ?=
+VERBOSE_GC ?=
 
 jar = $(target)/quarkus-app/quarkus-run.jar
 java = $(JAVA_HOME)/bin/java
