@@ -13,6 +13,7 @@ bench()
     local java_home=$HOME/opt/$1
     local app="hibernate-orm-quickstart"
     local target_dir="../target/$java_dir"
+#    local iter_zero_dir="$target/0"
 
     pushd $app
 
@@ -20,22 +21,24 @@ bench()
 
     rm -drf "$target_dir"
     mkdir -p "$target_dir"
-    touch "$target_dir/console.log"
 
-    make build \
-        JAVA_HOME=$java_home \
-        MAVEN_ARGS="-Dquarkus.native.enable-reports" \
-        NATIVE_BUILD_ARGS="--verbose" \
-       | tee -a "$target_dir/console.log"
-
-    cp -r $app/target/$app-1.0.0-SNAPSHOT-native-image-source-jar/reports "$target_dir"
+#    make build \
+#        JAVA_HOME=$java_home \
+#        MAVEN_ARGS="-Dquarkus.native.enable-reports" \
+#        NATIVE_BUILD_ARGS="--verbose"
+#    cp "$app-1.0.0-SNAPSHOT-native-image-source-jar/$app-1.0.0-SNAPSHOT-runner-build-output-stats.json" "$iter_zero_dir"
+#    cp -r $app/target/$app-1.0.0-SNAPSHOT-native-image-source-jar/reports "$iter_zero_dir"
 
     for i in `seq 1 $NUM_ITERATIONS`
     do
         rm -f $app/target/$app-1.0.0-SNAPSHOT-runner
+
         make build \
-            JAVA_HOME=$java_home \
-            | tee -a "$target_dir/console.log"
+            JAVA_HOME=$java_home
+
+        iter_dir="$target/$i"
+        mkdir -p "$iter_dir"
+        cp "$app-1.0.0-SNAPSHOT-native-image-source-jar/$app-1.0.0-SNAPSHOT-runner-build-output-stats.json" "$iter_dir"
     done
 
     popd
