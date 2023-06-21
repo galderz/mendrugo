@@ -2,6 +2,11 @@
 
 set -e
 
+if [ -z "$NUM_ITERATIONS" ]; then
+    echo "NUM_ITERATIONS is not defined"
+    exit 1
+fi
+
 bench()
 {
     local java_home=$HOME/opt/$1
@@ -20,7 +25,7 @@ bench()
         MAVEN_ARGS="-Dquarkus.native.enable-reports"
     cp -r $app/target/$app-1.0.0-SNAPSHOT-native-image-source-jar/reports "$target_dir/$java_home"
 
-    for i in `seq 1 10`
+    for i in `seq 1 $NUM_ITERATIONS`
     do
         rm -f $app/target/$app-1.0.0-SNAPSHOT-runner
         make build \
