@@ -10,13 +10,13 @@ bench()
 
     pushd $app
 
-    make clean-app \
-        JAVA_HOME=$(java_home)
+    make clean-app
 
     mkdir -p "$target_dir/$java_home"
     touch "$target_dir/$java_home/console.log"
 
     make build \
+        JAVA_HOME=$java_home \
         MAVEN_ARGS="-Dquarkus.native.enable-reports"
     cp -r $app/target/$app-1.0.0-SNAPSHOT-native-image-source-jar/reports "$target_dir/$java_home"
 
@@ -24,11 +24,13 @@ bench()
     do
         rm -f $app/target/$app-1.0.0-SNAPSHOT-runner
         make build \
-            JAVA_HOME=$(java_home) \
+            JAVA_HOME=$java_home \
             | tee -a "$target_dir/$java_home/console.log"
     done
 
     mv /tmp/times.log $target_dir/$java_home
+
+    popd
 }
 
 for java_home in \
