@@ -19,7 +19,6 @@ bench()
 
     make clean-app
 
-    rm -drf "$target_dir"
     mkdir -p "$target_dir"
 
 #    make build \
@@ -36,13 +35,15 @@ bench()
         make build \
             JAVA_HOME=$java_home
 
-        iter_dir="$target/$i"
+        iter_dir="$target_dir/$i"
         mkdir -p "$iter_dir"
         cp "$app-1.0.0-SNAPSHOT-native-image-source-jar/$app-1.0.0-SNAPSHOT-runner-build-output-stats.json" "$iter_dir"
     done
 
     popd
 }
+
+rm -drf target
 
 for java_home in \
     graalvm-ce-java17-22.3.2 \
