@@ -37,7 +37,7 @@ bench()
 
         iter_dir="$target_dir/$i"
         mkdir -p "$iter_dir"
-        cp "$app-1.0.0-SNAPSHOT-native-image-source-jar/$app-1.0.0-SNAPSHOT-runner-build-output-stats.json" "$iter_dir"
+        cp "$app/target/$app-1.0.0-SNAPSHOT-native-image-source-jar/$app-1.0.0-SNAPSHOT-runner-build-output-stats.json" "$iter_dir"
     done
 
     popd
