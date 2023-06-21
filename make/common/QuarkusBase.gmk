@@ -19,8 +19,8 @@ ifdef MAVEN_ARGS
   mvn_package += $(foreach arg,$(MAVEN_ARGS),$(arg))
 endif
 
-ifdef NB_ARGS
-  native_build_args += -Dquarkus.native.additional-build-args=$(NB_ARGS)
+ifdef NATIVE_BUILD_ARGS
+  native_build_args += -Dquarkus.native.additional-build-args=$(NATIVE_BUILD_ARGS)
 endif
 
 ifeq ($(VERBOSE_GC),1)
