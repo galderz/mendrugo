@@ -39,8 +39,7 @@ bench()
 }
 
 for java_home in \
-    graalvm-ce-java17-21.3.3.1 \
-    graalvm-ce-java17-22.3.0 \
+    graalvm-ce-java17-22.3.2 \
     graalvm-community-openjdk-17.0.7+7.1
 do
     bench $java_home
