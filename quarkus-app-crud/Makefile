@@ -1,8 +1,8 @@
+JAVA_HOME ?= /opt/graalvm-ce-java17-22.3.0
 QUARKUS_VERSION ?= 2.16.4.Final
 TOPDIR = ..
 
 extensions := resteasy-reactive,hibernate-orm-panache,jdbc-postgresql,smallrye-openapi
-java_home := /opt/graalvm-ce-java17-22.3.0
 
 default: run
 

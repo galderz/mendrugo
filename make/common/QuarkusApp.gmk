@@ -1,6 +1,6 @@
 APP ?= code-with-quarkus
 
-arch_mvn += JAVA_HOME=$(java_home)
+arch_mvn += JAVA_HOME=$(JAVA_HOME)
 arch_mvn += /opt/maven/bin/mvn
 
 include ../make/common/QuarkusBase.gmk

@@ -1,8 +1,7 @@
 APP ?= getting-started
+JAVA_HOME ?= /opt/graalvm-ce-java17-22.3.0
 QUICKSTARTS_BRANCH ?= development
 TOPDIR = ..
-
-java_home := /opt/graalvm-ce-java17-22.3.0
 
 default: run
 

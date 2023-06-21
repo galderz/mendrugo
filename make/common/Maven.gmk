@@ -1,4 +1,4 @@
-mvn += JAVA_HOME=$(java_home)
+mvn += JAVA_HOME=$(JAVA_HOME)
 mvn += ./mvnw
 
 ifdef VERBOSE

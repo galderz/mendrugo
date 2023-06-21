@@ -31,7 +31,7 @@ build-quarkus: $(dot_quarkus_home_version)
 $(dot_quarkus_home_version): $(dot_quarkus_home_dir)
 > cd $(QUARKUS_HOME)
 > if [ -e "update-version.sh" ]; then
-> JAVA_HOME=$(java_home) ./update-version.sh $(QUARKUS_VERSION)
+> JAVA_HOME=$(JAVA_HOME) ./update-version.sh $(QUARKUS_VERSION)
 > fi
 > touch $@
 

@@ -5,7 +5,7 @@ hyperfoil_version := 0.24.1
 hyperfoil_zip = hyperfoil-$(hyperfoil_version).zip
 
 hyperfoil: $(hyperfoil_cli)
-> JAVA_HOME=$(java_home) $<
+> JAVA_HOME=$(JAVA_HOME) $<
 .PHONY: hyperfoil
 
 $(hyperfoil_cli):

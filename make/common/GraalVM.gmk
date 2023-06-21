@@ -1,13 +1,14 @@
-java = $(java_home)/bin/java
-java_home = $(jdk_home)/build/graalbuilder/images/graal-builder-jdk
+JAVA_HOME ?= $(jdk_home)/build/graalbuilder/images/graal-builder-jdk
+
+java = $(JAVA_HOME)/bin/java
 jdk_home := $(HOME)/1/jdk17u-dev
 jdk_sources += $(shell find $(jdk_home) -type f -name '*.java' | sed 's: :\\ :g')
-jfr = $(java_home)/bin/jfr
+jfr = $(JAVA_HOME)/bin/jfr
 graalvm_home := $(HOME)/1/mandrel-mandrel
 graalvm_sources += $(shell find $(graalvm_home) -type f -name '*.java' | sed 's: :\\ :g')
 graalvm_sources += $(shell find $(graalvm_home) -type f -name '*.properties' | sed 's: :\\ :g')
 graalvm_version := 23.0.0
-mx += JAVA_HOME=$(java_home)
+mx += JAVA_HOME=$(JAVA_HOME)
 mx += /opt/mx/mx
 native_image += $(graalvm_home)/sdk/latest_graalvm_home/bin/native-image
 svm_home := $(graalvm_home)/substratevm

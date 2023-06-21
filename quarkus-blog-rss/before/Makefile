@@ -1,4 +1,6 @@
 APP ?= getting-started
+JAVA_HOME ?= /opt/graalvm-ce-java17-21.3.3.1
+# JAVA_HOME ?= /opt/graalvm-ce-java17-22.3.0
 QUARKUS_HOME ?= /opt/quarkus-rss-2.7.6
 # QUARKUS_HOME ?= /opt/quarkus-rss-before
 QUARKUS_VERSION ?= 2.7.6.Final
@@ -7,8 +9,6 @@ QUICKSTARTS_BRANCH ?= 2.7
 # QUICKSTARTS_BRANCH ?= 2.13
 TOPDIR = ../..
 
-java_home := /opt/graalvm-ce-java17-21.3.3.1
-# java_home := /opt/graalvm-ce-java17-22.3.0
 
 default: run
 

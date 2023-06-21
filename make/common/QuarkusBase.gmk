@@ -1,8 +1,8 @@
 QB_ARGS ?=
 
 jar = $(target)/quarkus-app/quarkus-run.jar
-java = $(java_home)/bin/java
-jcmd = $(java_home)/bin/jcmd
+java = $(JAVA_HOME)/bin/java
+jcmd = $(JAVA_HOME)/bin/jcmd
 native_build_args += -Dnative
 pom = $(APP)/pom.xml
 runner = $(target)/$(APP)-1.0.0-SNAPSHOT-runner
