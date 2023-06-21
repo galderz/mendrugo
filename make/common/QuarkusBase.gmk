@@ -1,4 +1,4 @@
-QB_ARGS ?=
+MAVEN_ARGS ?=
 
 jar = $(target)/quarkus-app/quarkus-run.jar
 java = $(JAVA_HOME)/bin/java
@@ -15,8 +15,8 @@ ifdef DEBUG
   native_build_args += -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
 endif
 
-ifdef QB_ARGS
-  mvn_package += $(foreach arg,$(QB_ARGS),$(arg))
+ifdef MAVEN_ARGS
+  mvn_package += $(foreach arg,$(MAVEN_ARGS),$(arg))
 endif
 
 ifdef NB_ARGS
