@@ -23,7 +23,7 @@ bench()
 
     make build \
         JAVA_HOME=$java_home \
-        MAVEN_ARGS="-Dquarkus.native.enable-reports -Dquarkus.native.native-image-xmx=5g"
+        MAVEN_ARGS="-Dquarkus.native.enable-reports"
 
     cp -r $app/target/$app-1.0.0-SNAPSHOT-native-image-source-jar/reports "$target_dir"
 
