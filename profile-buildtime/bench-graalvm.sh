@@ -18,6 +18,7 @@ bench()
 
     make clean-app
 
+    rm -drf "$target_dir"
     mkdir -p "$target_dir"
     touch "$target_dir/console.log"
 
