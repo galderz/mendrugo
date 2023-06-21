@@ -32,7 +32,7 @@ bench()
         rm -f $app/target/$app-1.0.0-SNAPSHOT-runner
         make build \
             JAVA_HOME=$java_home \
-            MAVEN_ARGS="-Dquarkus.native.native-image-xmx=5g"
+            MAVEN_ARGS="-Dquarkus.native.native-image-xmx=5g" \
             | tee -a "$target_dir/console.log"
     done
 
