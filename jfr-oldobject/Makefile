@@ -46,6 +46,17 @@ test: $(native_image)
 > DEBUG_RECORDING=true $(mx) native-unittest --preserve-image com.oracle.svm.test.jfr.oldobject
 .PHONY: test
 
+# TODO how to speed this up? Even after removing "$(graalvm_sources) $(java)" not very fast reading makefile
+compile: $(svm_src_java) $(svm_src_prop) $(java)
+> cd $(svm_home)
+> $(mx) build --no-native
+.PHONY: compile
+
+unittest: compile
+> cd $(svm_home)
+> $(mx) unittest com.oracle.svm.test.jfr.oldobject.TestOldObjectProfiler
+.PHONY: unittest
+
 run-native: $(binary)
 > $< $(native_opts)
 .PHONY: run-native
