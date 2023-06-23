@@ -46,15 +46,19 @@ test: $(native_image)
 > DEBUG_RECORDING=true $(mx) native-unittest --preserve-image com.oracle.svm.test.jfr.oldobject
 .PHONY: test
 
-compile_out = $(svm_home)/mxbuild/jdk17/SVM_TESTS.lastUpdatedJar
-
-$(compile_out): $(shell find $(svm_home)/src -type f -name '*.java')
-$(compile_out): $(shell find $(svm_home)/src -type f -name '*.properties')
-$(compile_out): $(java)
+svm_test_jar = $(svm_home)/mxbuild/jdk17/dists/jdk17/svm-tests.jar
+$(svm_test_jar): $(shell find $(svm_home)/src/com.oracle.svm.test -type f -name '*.java')
 > cd $(svm_home)
-> $(mx) build --no-native
+> $(mx) build --only com.oracle.svm.test
+> $(mx) archive @SVM_TESTS
 
-unittest: $(compile_out)
+svm_core_jar = $(svm_home)/mxbuild/jdk17/dists/jdk17/svm.jar
+$(svm_core_jar): $(shell find $(svm_home)/src/com.oracle.svm.core -type f -name '*.java')
+> cd $(svm_home)
+> $(mx) build --only com.oracle.svm.core
+> $(mx) archive @SVM
+
+unittest: $(svm_core_jar) $(svm_test_jar)
 > cd $(svm_home)
 > $(mx) unittest com.oracle.svm.test.jfr.oldobject.TestOldObjectProfiler
 .PHONY: unittest
