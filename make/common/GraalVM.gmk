@@ -2,7 +2,6 @@ JAVA_HOME ?= $(jdk_home)/build/graalbuilder/images/graal-builder-jdk
 
 java = $(JAVA_HOME)/bin/java
 jdk_home := $(HOME)/1/jdk17u-dev
-jdk_src_java := $(shell find $(jdk_home) -type f -name '*.java' | sed 's: :\\ :g')
 jfr = $(JAVA_HOME)/bin/jfr
 graalvm_home := $(HOME)/1/mandrel-mandrel
 graalvm_version := 23.0.0
@@ -10,15 +9,17 @@ mx += JAVA_HOME=$(JAVA_HOME)
 mx += /opt/mx/mx
 native_image += $(graalvm_home)/sdk/latest_graalvm_home/bin/native-image
 svm_home := $(graalvm_home)/substratevm
-svm_src_java:= $(shell find $(svm_home) -type f -name '*.java' | sed 's: :\\ :g')
-svm_src_prop := $(shell find $(svm_home) -type f -name '*.properties' | sed 's: :\\ :g')
 
-$(native_image): $(svm_src_java) $(svm_src_prop) $(java)
+$(native_image): $(shell find $(svm_home)/src -type f -name '*.java')
+$(native_image): $(shell find $(svm_home)/src -type f -name '*.properties')
+$(native_image): $(java)
 > cd $(svm_home)
 > $(mx) --debug-images build
 > sed -i'' -e 's/EnableJVMCI/EnableJVMCI -Dorg.graalvm.version=$(graalvm_version)-dev/g' ../sdk/latest_graalvm_home/lib/svm/bin/native-image
 
-$(java): $(jdk_src_java)
+$(java): $(shell find $(jdk_home)/src -type f -name '*.java')
+$(java): $(shell find $(jdk_home)/test -type f -name '*.java')
+$(java):
 > cd $(jdk_home)
 > bash configure \
 >   --disable-warnings-as-errors \
