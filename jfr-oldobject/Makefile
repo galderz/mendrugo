@@ -81,18 +81,3 @@ print:
 clean-jfr:
 > rm -f target/jvm.jfr
 .PHONY: clean-jfr
-
-gate:
-> cd $(graalvm_home)
-> $(mx) --primary-suite-path substratevm spotbugs --strict-mode
-> $(mx) --primary-suite-path substratevm checkstyle --primary
-> $(mx) --primary-suite-path substratevm clean --all
-> JAVA_HOME=$(HOME)/opt/labsjdk-ce-20.0.1-jvmci-23.1-b02 /opt/mx/mx --primary-suite-path substratevm build -p --warning-as-error --jdt=builtin
-> $(mx) --primary-suite-path substratevm clean --all
-> $(mx) --primary-suite-path substratevm build -p --warning-as-error --jdt=builtin
-.PHONY: gate
-
-eclipse:
-> cd $(graalvm_home)
-> $(mx) --primary-suite-path substratevm eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
-.PHONY: eclipse

@@ -34,3 +34,28 @@ clean-graalvm: $(java)
 > cd $(svm_home)
 > $(mx) clean
 .PHONY: clean-graalvm
+
+idea: $(java)
+> cd $(svm_home)
+> $(mx) intellijinit
+.PHONY: idea
+
+gate:
+> $(call gate,JAVA_HOME=$(HOME)/opt/labsjdk-ce-17.0.7-jvmci-23.1-b02 /opt/mx/mx)
+> $(call gate,JAVA_HOME=$(HOME)/opt/labsjdk-ce-20.0.1-jvmci-23.1-b02 /opt/mx/mx)
+.PHONY: gate
+
+define gate
+cd $(graalvm_home)
+$(1) --primary-suite-path substratevm clean --all
+$(1) --primary-suite-path substratevm build -p --warning-as-error --jdt=builtin
+$(1) --primary-suite-path substratevm clean --all
+$(1) --primary-suite-path substratevm build -p --warning-as-error --force-javac
+$(1) --primary-suite-path substratevm spotbugs --strict-mode
+$(1) --primary-suite-path substratevm checkstyle --primary
+endef
+
+eclipse:
+> cd $(graalvm_home)
+> $(mx) --primary-suite-path substratevm eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
+.PHONY: eclipse

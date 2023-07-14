@@ -1,5 +1,24 @@
 = JFR Old Object JVM and GraalVM examples
 
+== Prepare code for PR
+
+```bash
+$ make gate
+$ make eclipse
+```
+
+== Run unit tests in JVM mode
+
+```bash
+$ make unittest
+```
+
+== Run native tests
+
+```bash
+$ make test
+```
+
 == Plain object leak
 
 ```bash
