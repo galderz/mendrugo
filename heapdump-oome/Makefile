@@ -6,6 +6,9 @@ include ../make/common/MakeBase.gmk
 include ../make/common/GraalVM.gmk
 include ../make/common/Maven.gmk
 
+jvm_opts += -XX:+HeapDumpOnOutOfMemoryError
+jvm_opts += -XX:HeapDumpPath=target
+
 # TODO move this to Maven makefile
 $(jar): $(pom) $(sources)
 > cd $(APP)
