@@ -1,5 +1,5 @@
-JAVA_HOME ?= /opt/graalvm-ce-java17-22.3.0
-QUARKUS_VERSION ?= 3.0.1.Final
+JAVA_HOME ?= $(HOME)/opt/graalvm-community-openjdk-17.0.7+7.1
+QUARKUS_VERSION ?= 3.2.0.Final
 TOPDIR = ..
 
 default: run
