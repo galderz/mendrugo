@@ -25,6 +25,7 @@ $(jar): $(pom) $(sources) $(mvnw)
 
 $(mvnw): $(java)
 > JAVA_HOME=$(JAVA_HOME) $(maven_home)/bin/mvn -N wrapper:wrapper -Dmaven=$(MAVEN_VERSION)
+> touch $@
 
 clean:
 > rm -drf $(target)
