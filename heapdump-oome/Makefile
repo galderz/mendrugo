@@ -28,7 +28,7 @@ $(binary): $(jar) $(native_image)
 > $(native_image) $(native_image_opts) -cp $< org.example.Main $@
 
 # TODO move this to Maven makefile
-$(jar): $(pom) $(sources)
+$(jar): $(pom) $(sources) $(java)
 > cd $(APP)
 > $(mvn_package)
 
