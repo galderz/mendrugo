@@ -12,8 +12,8 @@ opts += -XX:+HeapDumpOnOutOfMemoryError
 opts += -XX:HeapDumpPath=target
 
 binary := target/heapdump-oome
-#native_image_opts += -ea
-#native_image_opts += -esa
+native_image_opts += -ea
+native_image_opts += -esa
 native_image_opts += --enable-monitoring=heapdump
 native_image_opts += --no-fallback
 native_image_opts += -H:+ReportExceptionStackTraces
