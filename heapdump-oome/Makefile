@@ -9,6 +9,7 @@ include ../make/common/Maven.gmk
 
 opts += -XX:+HeapDumpOnOutOfMemoryError
 opts += -XX:HeapDumpPath=target
+opts += -Xmx1g
 
 binary := target/heapdump-oome
 native_image_opts += -ea
