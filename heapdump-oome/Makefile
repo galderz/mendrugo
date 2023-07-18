@@ -36,3 +36,7 @@ $(binary): $(jar) $(native_image)
 run-jvm: $(jar)
 > $(java) $(opts) -cp $< org.example.Main
 .PHONY: run-jvm
+
+gdb: $(binary)
+> gdb --args $< $(opts)
+.PHONY: gdb
