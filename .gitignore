@@ -14,7 +14,10 @@ target
 .idea
 # generated class folder
 gen
+# generated maven wrapper files and folders
 .mvn
+mvnw
+mvnw.cmd
 # ignore native-image reports
 reports
 # classes

@@ -14,8 +14,4 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <build>
-        <finalName>heapdump-oome</finalName>
-    </build>
-
 </project>

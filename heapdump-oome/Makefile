@@ -1,6 +1,5 @@
 APP := .
-jar := target/heapdump-oome.jar
-pom = $(APP)/pom.xml
+NAME := heapdump-oome
 
 default: run
 
@@ -27,12 +26,7 @@ run: $(binary)
 $(binary): $(jar) $(native_image)
 > $(native_image) $(native_image_opts) -cp $< org.example.Main $@
 
-# TODO move this to Maven makefile
-$(jar): $(pom) $(sources) $(java)
-> cd $(APP)
-> $(mvn_package)
-
-# TODO move this to Maven makefile
+# TODO make generic when opts splits into params and opts and the native opts can be copied to jvm ones
 run-jvm: $(jar)
 > $(java) $(opts) -cp $< org.example.Main
 .PHONY: run-jvm
