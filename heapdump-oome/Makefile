@@ -12,18 +12,26 @@ opts += -XX:HeapDumpPath=target
 opts += -Xmx1g
 
 binary := target/heapdump-oome
-native_image_opts += -ea
-native_image_opts += -esa
 native_image_opts += --enable-monitoring=heapdump
 native_image_opts += --no-fallback
 native_image_opts += -H:+ReportExceptionStackTraces
+
 # todo add option to select when to use these
+# todo only apply them when it's linux
 native_image_opts += -g
 native_image_opts += -O0
 native_image_opts += -H:+SourceLevelDebug
 native_image_opts += -H:-DeleteLocalSymbols
+
 # todo add option to select when to use this
 # native_image_opts += --debug-attach=*:8000
+
+# todo add option to select when to use these
+# native_image_opts += -ea
+# native_image_opts += -esa
+
+# todo add option to select when to enable trace logging
+# native_image_opts += -H:+TraceVMOperations
 
 run: $(binary)
 > $< $(opts)
