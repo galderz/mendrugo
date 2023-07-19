@@ -30,10 +30,10 @@ $(java):
 > make CONF=graalbuilder graal-builder-image
 > touch $@
 
-clean-graalvm: $(java)
+clean-graal: $(java)
 > cd $(svm_home)
 > $(mx) clean
-.PHONY: clean-graalvm
+.PHONY: clean-graal
 
 idea: $(java)
 > cd $(svm_home)

@@ -1,21 +1,41 @@
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-  arch := amd64
-  JAVA_HOME = $(opt)/graalvm-ce-java$(JAVA_MAJOR)-$(graalvm_version)
-  os := linux
+  arch_jdk := x64
+  arch_vm := amd64
+  java_home_suffix =
+  os_jdk := linux
+  os_vm := $(os_jdk)
 endif
 ifeq ($(UNAME_S),Darwin)
-  arch := aarch64
-  JAVA_HOME = $(opt)/graalvm-ce-java$(JAVA_MAJOR)-$(graalvm_version)/Contents/Home
-  os := darwin
+  arch_jdk := aarch64
+  arch_vm := $(arch_jdk)
+  java_home_suffix = /Contents/Home
+  os_jdk := macos
+  os_vm := darwin
 endif
+
+ifeq ($(GRAALVM_FLAVOUR),jdk)
+  java_home_root = $(opt)/graalvm-community-openjdk-$(graalvm_version)+$(GRAALVM_BUILD)
+  tar_name = graalvm-community-$(GRAALVM_FLAVOUR)-$(graalvm_version)_$(os_jdk)-$(arch_jdk)_bin.tar.gz
+  tar_path_suffix = $(GRAALVM_FLAVOUR)-$(graalvm_version)
+endif
+ifeq ($(GRAALVM_FLAVOUR),vm)
+  java_home_root = $(opt)/graalvm-ce-java$(JAVA_MAJOR)-$(graalvm_version)
+  tar_name = graalvm-ce-java$(JAVA_MAJOR)-$(os_vm)-$(arch_vm)-$(graalvm_version).tar.gz
+  tar_path_suffix = vm-$(graalvm_version)
+endif
+
+#ifeq ($(UNAME_S),Darwin)
+#  JAVA_HOME := $(subst  ,,$(JAVA_HOME)),/Contents/Home
+#endif
 
 graalvm_version = $(GRAALVM_MAJOR).$(GRAALVM_MINOR).$(GRAALVM_MICRO)
 gu = $(JAVA_HOME)/bin/gu
 java = $(JAVA_HOME)/bin/java
+JAVA_HOME = $(java_home_root)/$(java_home_suffix)
 native_image = $(JAVA_HOME)/bin/native-image
 opt = $(HOME)/opt
-tar_name = graalvm-ce-java$(JAVA_MAJOR)-$(os)-$(arch)-$(graalvm_version).tar.gz
+tar_path_prefix = https://github.com/graalvm/graalvm-ce-builds/releases/download
 tar_path = $(opt)/$(tar_name)
 
 $(native_image): $(java)
@@ -29,4 +49,9 @@ $(java): $(tar_path)
 
 $(tar_path):
 > cd $(opt)
-> wget https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-$(graalvm_version)/$(tar_name)
+> wget $(tar_path_prefix)/$(tar_path_suffix)/$(tar_name)
+
+clean-graal:
+> rm -f $(tar_path)
+> rm -drf $(java_home_root)
+.PHONY: clean-graal
