@@ -134,14 +134,14 @@ trace: $(runner)
 > sudo perf trace -e $(event) --call-graph dwarf -o $(perf_trace) -- taskset -c 1 $< $(run_args)
 .PHONY: trace
 
-flamegraph:
+flame:
 > sudo chown $(USER) $(perf_data)
 > perf script -i $(perf_data) > $(stacks)
 > $(stackcollapse_perf) < $(stacks) | $(flamegraph) \
 >   --color=mem \
 >   --title="mmap Flame Graph" \
 >   --countname="calls" > $(svg)
-.PHONY: flamegraph
+.PHONY: flame
 
 ### strace
 
