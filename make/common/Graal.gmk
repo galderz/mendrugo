@@ -20,6 +20,7 @@ tar_path = $(opt)/$(tar_name)
 
 $(native_image): $(java)
 > $(gu) install native-image
+> touch $@
 
 $(java): $(tar_path)
 > cd $(opt)
