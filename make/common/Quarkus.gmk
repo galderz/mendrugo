@@ -86,7 +86,7 @@ clean-app:
 .PHONY: clean-app
 
 rss:
-> ps -p $(pidof $(APP)-1.0.0-SNAPSHOT-runner) -o rss=
+> ps -p $$(pidof $(APP)-1.0.0-SNAPSHOT-runner) -o rss=
 .PHONY: rss
 
 ### crac
