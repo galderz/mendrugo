@@ -1,11 +1,12 @@
 APP := .
 NAME := heapdump-oome
+TOPDIR = ..
 
 default: run
 
-include ../make/common/MakeBase.gmk
-include ../make/common/GraalVM.gmk
-include ../make/common/Maven.gmk
+include $(TOPDIR)/make/common/MakeBase.gmk
+include $(TOPDIR)/make/common/GraalDev.gmk
+include $(TOPDIR)/make/common/Maven.gmk
 
 opts += -XX:+HeapDumpOnOutOfMemoryError
 opts += -XX:HeapDumpPath=target
@@ -20,8 +21,9 @@ native_image_opts += -H:+ReportExceptionStackTraces
 # todo only apply them when it's linux
 native_image_opts += -g
 native_image_opts += -O0
-native_image_opts += -H:+SourceLevelDebug
 native_image_opts += -H:-DeleteLocalSymbols
+native_image_opts += -H:+SourceLevelDebug
+native_image_opts += -H:-OmitInlinedMethodDebugLineInfo
 
 # todo add option to select when to use this
 # native_image_opts += --debug-attach=*:8000

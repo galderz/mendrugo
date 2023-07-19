@@ -1,19 +1,18 @@
 MAVEN_ARGS ?=
 VERBOSE_GC ?=
+QUICKSTARTS_BRANCH ?= main
 
 jar = $(target)/quarkus-app/quarkus-run.jar
-java = $(JAVA_HOME)/bin/java
 jcmd = $(JAVA_HOME)/bin/jcmd
 native_build_args += -Dnative
+opts += -Xmx128m
 pom = $(APP)/pom.xml
 runner = $(target)/$(APP)-1.0.0-SNAPSHOT-runner
-run_args += -Xmx128m
-jvm_args = $(run_args)
 
 ifdef DEBUG
   mvn_package += dependency:sources
   native_build_args += -Dquarkus.native.debug.enabled
-  native_build_args += -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
+  native_build_args += -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo,-O0,-H:+SourceLevelDebug,-H:-DeleteLocalSymbols
 endif
 
 ifdef MAVEN_ARGS
@@ -23,6 +22,8 @@ endif
 ifdef NATIVE_BUILD_ARGS
   native_build_args += -Dquarkus.native.additional-build-args=$(NATIVE_BUILD_ARGS)
 endif
+
+run_args += -Xmx64m
 
 ifeq ($(VERBOSE_GC),1)
   run_args += -XX:+PrintGC
@@ -43,23 +44,56 @@ else ifeq ($(VERBOSE_GC),4)
 endif
 
 ifdef JVM_DEBUG
-  jvm_args += -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+  opts += -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+endif
+
+ifdef TMPDIR
+  tmp_dir = $(TMPDIR)
+else
+  tmp_dir = /tmp
 endif
 
 run: $(runner)
 > $< $(run_args)
 .PHONY: run
 
+run-jvm: $(jar)
+> $(java) $(opts) -jar $<
+.PHONY: run-jvm
+
 build: $(runner)
 .PHONY: build
 
-run-jvm: $(jar)
-> $(java) $(jvm_args) -jar $<
-.PHONY: run-jvm
+$(runner): $(pom) $(native_image)
+> cd $(APP)
+> $(mvn_package) $(native_build_args)
+
+$(jar): $(pom) $(java) $(mvnw)
+> cd $(APP)
+> $(mvn_package)
+
+$(pom):
+> pushd $(tmp_dir)
+> rm -drf quarkus-quickstarts || true
+> git clone https://github.com/quarkusio/quarkus-quickstarts
+> cd quarkus-quickstarts
+> git checkout $(QUICKSTARTS_BRANCH)
+> popd
+> cp -r $(tmp_dir)/quarkus-quickstarts/$(APP) .
+
+clean-app:
+> rm -drf $(APP)
+.PHONY: clean-app
+
+rss:
+> ps -p $(pidof $(APP)-1.0.0-SNAPSHOT-runner) -o rss=
+.PHONY: rss
+
+### crac
 
 run-crac-checkpoint: $(jar)
-> $(java) $(jvm_args) -XX:CRaCCheckpointTo=$(target)/cr -jar $<
-#> $(java) $(jvm_args) -XX:CRaCCheckpointTo=cr -XX:+UnlockDiagnosticVMOptions -XX:+CRTraceStartupTime -Djdk.crac.trace-startup-time=true -jar $<
+> $(java) $(opts) -XX:CRaCCheckpointTo=$(target)/cr -jar $<
+#> $(java) $(opts) -XX:CRaCCheckpointTo=cr -XX:+UnlockDiagnosticVMOptions -XX:+CRTraceStartupTime -Djdk.crac.trace-startup-time=true -jar $<
 .PHONY: run-crac-checkpoint
 
 jcmd-crac-checkpoint: $(jar)
@@ -70,14 +104,6 @@ jcmd-crac-checkpoint: $(jar)
 run-crac-restore: $(jar)
 > sudo $(java) -XX:CRaCRestoreFrom=$(target)/cr
 .PHONY: run-crac-restore
-
-$(jar): $(pom) $(sources)
-> cd $(APP)
-> $(mvn_package)
-
-clean-app:
-> rm -drf $(APP)
-.PHONY: clean-app
 
 ### perf
 

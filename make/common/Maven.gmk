@@ -13,17 +13,17 @@ sources += $(shell find $(APP)/src -type f -name '*.properties' | sed 's: :\\ :g
 target = $(APP)/target
 
 mvn_cmd += JAVA_HOME=$(JAVA_HOME)
-mvn_cmd += $(mvnw)
+mvn_cmd += ./mvnw
 
 ifdef VERBOSE
   mvn_cmd += -X
 endif
 
-$(jar): $(pom) $(sources) $(mvnw)
+$(jar): $(pom) $(sources) $(java) $(mvnw)
 > cd $(APP)
 > $(mvn_package)
 
-$(mvnw): $(java)
+$(mvnw):
 > JAVA_HOME=$(JAVA_HOME) $(maven_home)/bin/mvn -N wrapper:wrapper -Dmaven=$(MAVEN_VERSION)
 > touch $@
 

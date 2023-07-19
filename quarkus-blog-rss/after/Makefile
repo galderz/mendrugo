@@ -1,16 +1,15 @@
 APP ?= getting-started
-JAVA_HOME ?= /opt/graalvm-ce-java17-22.3.0
-QUARKUS_HOME ?= /opt/quarkus-rss-2.13.4
-# QUARKUS_HOME ?= /opt/quarkus-rss-after
+JAVA_MAJOR ?= 17
+GRAALVM_MAJOR ?= 22
+GRAALVM_MINOR ?= 3
+GRAALVM_MICRO ?= 0
 QUARKUS_VERSION ?= 2.13.4.Final
-# QUARKUS_VERSION ?= 999-RSS-AFTER
 QUICKSTARTS_BRANCH ?= 2.13
 TOPDIR = ../..
 
 default: run
 
 include $(TOPDIR)/make/common/MakeBase.gmk
-include $(TOPDIR)/make/common/Podman.gmk
+include $(TOPDIR)/make/common/Graal.gmk
 include $(TOPDIR)/make/common/Maven.gmk
-include $(TOPDIR)/make/common/QuarkusQuick.gmk
-include $(TOPDIR)/make/common/QuarkusDev.gmk
+include $(TOPDIR)/make/common/Quarkus.gmk
