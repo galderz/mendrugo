@@ -8,9 +8,10 @@ include $(TOPDIR)/make/common/MakeBase.gmk
 include $(TOPDIR)/make/common/GraalDev.gmk
 include $(TOPDIR)/make/common/Maven.gmk
 
-opts += -XX:+HeapDumpOnOutOfMemoryError
-opts += -XX:HeapDumpPath=target
-opts += -Xmx1g
+run_args += -XX:+HeapDumpOnOutOfMemoryError
+run_args += -XX:HeapDumpPath=target
+run_args += -Xmx1g
+run_jvm_opts += $(run_args)
 
 binary := target/heapdump-oome
 native_image_opts += --enable-monitoring=heapdump
@@ -36,7 +37,7 @@ native_image_opts += -H:-OmitInlinedMethodDebugLineInfo
 # native_image_opts += -H:+TraceVMOperations
 
 run: $(binary)
-> $< $(opts)
+> $< $(run_args)
 .PHONY: run
 
 $(binary): $(jar) $(native_image)
@@ -44,7 +45,7 @@ $(binary): $(jar) $(native_image)
 
 # TODO make generic when opts splits into params and opts and the native opts can be copied to jvm ones
 run-jvm: $(jar)
-> $(java) $(opts) -cp $< org.example.Main
+> $(java) $(run_jvm_opts) -cp $< org.example.Main
 .PHONY: run-jvm
 
 gdb: $(binary)
