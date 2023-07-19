@@ -18,6 +18,17 @@ $ cd before
 $ make
 ...
 $ make rss
+ps -p $(pidof getting-started-1.0.0-SNAPSHOT-runner) -o rss=
+33024
 ```
 
 Do the same after the RSS fix and compare values:
+
+```bash
+$ cd after
+$ make
+...
+$ make rss
+ps -p $(pidof getting-started-1.0.0-SNAPSHOT-runner) -o rss=
+36608
+```
