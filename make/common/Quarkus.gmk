@@ -32,6 +32,10 @@ ifdef NATIVE_BUILD_ARGS
   native_build_args += -Dquarkus.native.additional-build-args=$(NATIVE_BUILD_ARGS)
 endif
 
+ifdef RUN_ARGS
+  run_args += $(foreach arg,$(RUN_ARGS),$(arg))
+endif
+
 run_args += -Xmx64m
 run_jvm_opts += $(run_args)
 
@@ -61,6 +65,10 @@ ifdef TMPDIR
   tmp_dir = $(TMPDIR)
 else
   tmp_dir = /tmp
+endif
+
+ifdef JFR
+  mvn_package += -Dquarkus.native.monitoring=jfr
 endif
 
 run: $(runner)

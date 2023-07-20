@@ -32,6 +32,7 @@ endif
 graalvm_version = $(GRAALVM_MAJOR).$(GRAALVM_MINOR).$(GRAALVM_MICRO)
 gu = $(JAVA_HOME)/bin/gu
 java = $(JAVA_HOME)/bin/java
+jfr = $(JAVA_HOME)/bin/jfr
 JAVA_HOME = $(java_home_root)/$(java_home_suffix)
 native_image = $(JAVA_HOME)/bin/native-image
 opt = $(HOME)/opt
