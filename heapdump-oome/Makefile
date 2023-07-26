@@ -1,5 +1,6 @@
 APP := .
 NAME := heapdump-oome
+MAIN_CLASS ?= Main
 TOPDIR = ..
 
 default: run
@@ -41,11 +42,11 @@ run: $(binary)
 .PHONY: run
 
 $(binary): $(jar) $(native_image)
-> $(native_image) $(native_image_opts) -cp $< org.example.Main $@
+> $(native_image) $(native_image_opts) -cp $< org.example.$(MAIN_CLASS) $@
 
 # TODO make generic when opts splits into params and opts and the native opts can be copied to jvm ones
 run-jvm: $(jar)
-> $(java) $(run_jvm_opts) -cp $< org.example.Main
+> $(java) $(run_jvm_opts) -cp $< org.example.$(MAIN_CLASS)
 .PHONY: run-jvm
 
 gdb: $(binary)
