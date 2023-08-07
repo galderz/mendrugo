@@ -114,7 +114,7 @@ rss:
 .PHONY: rss
 
 add-app-property:
-> echo $APP_PROPERTY > $(application_properties)
+> echo $(APP_PROPERTY) > $(application_properties)
 .PHONY: add-application-property
 
 ### crac
