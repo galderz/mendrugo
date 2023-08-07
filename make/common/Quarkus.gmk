@@ -1,6 +1,6 @@
 MAVEN_ARGS ?=
 VERBOSE_GC ?=
-QUICKSTARTS_BRANCH ?= main
+QUICKSTART_BRANCH ?= main
 
 application_properties = $(APP)/src/main/resources/application.properties
 jar = $(target)/quarkus-app/quarkus-run.jar
@@ -106,9 +106,10 @@ $(pom):
 > rm -drf quarkus-quickstarts || true
 > git clone https://github.com/quarkusio/quarkus-quickstarts
 > cd quarkus-quickstarts
-> git checkout $(QUICKSTARTS_BRANCH)
+> git checkout $(QUICKSTART_BRANCH)
 > popd
-> cp -r $(tmp_dir)/quarkus-quickstarts/$(APP) .
+> cp -r $(tmp_dir)/quarkus-quickstarts/$(QUICKSTART_NAME) .
+> mv $(QUICKSTART_NAME) $(APP)
 
 clean-app:
 > rm -drf $(APP)

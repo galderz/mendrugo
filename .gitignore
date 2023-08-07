@@ -35,3 +35,5 @@ out
 *~
 # nohup output file
 nohup.out
+# ignore downloded quickstarts
+quickstart
