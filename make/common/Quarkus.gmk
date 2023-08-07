@@ -85,6 +85,11 @@ run-jvm: $(jar)
 > $(java) $(run_jvm_opts) -jar $<
 .PHONY: run-jvm
 
+run-dev:
+> cd $(APP)
+> $(mvn_cmd) quarkus:dev
+.PHONY: run-dev
+
 build: $(runner)
 .PHONY: build
 
