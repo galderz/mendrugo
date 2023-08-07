@@ -5,8 +5,7 @@ GRAALVM_MICRO ?= 7
 GRAALVM_BUILD ?= 7.1
 
 APP ?= rest-json-quickstart
-QUARKUS_VERSION ?= 3.2.2.Final
-QUICKSTARTS_BRANCH ?= main
+QUICKSTARTS_BRANCH ?= 3.2.3.Final
 TOPDIR = ..
 
 default: run
