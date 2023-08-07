@@ -1,15 +1,15 @@
-hyperfoil_cli = /opt/$(hyperfoil_dir_name)/bin/cli.sh
+hyperfoil_cli = $(opt)/$(hyperfoil_dir_name)/bin/cli.sh
 hyperfoil_dir_name = hyperfoil-$(hyperfoil_version)
 hyperfoil_url = https://github.com/Hyperfoil/Hyperfoil/releases/download/hyperfoil-all-$(hyperfoil_version)/$(hyperfoil_zip)
-hyperfoil_version := 0.24.1
+hyperfoil_version := 0.25
 hyperfoil_zip = hyperfoil-$(hyperfoil_version).zip
 
-hyperfoil: $(hyperfoil_cli)
+run-hyperfoil: $(hyperfoil_cli)
 > JAVA_HOME=$(JAVA_HOME) $<
-.PHONY: hyperfoil
+.PHONY: run-hyperfoil
 
 $(hyperfoil_cli):
 > pushd /tmp
 > wget $(hyperfoil_url)
 > unzip $(hyperfoil_zip)
-> mv $(hyperfoil_dir_name) /opt
+> mv $(hyperfoil_dir_name) $(opt)
