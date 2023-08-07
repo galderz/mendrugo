@@ -36,7 +36,12 @@ ifdef RUN_ARGS
   run_args += $(foreach arg,$(RUN_ARGS),$(arg))
 endif
 
-run_args += -Xmx64m
+ifdef XMX
+  run_args += -Xmx$(XMX)
+else
+  run_args += -Xmx64m
+endif
+
 run_jvm_opts += $(run_args)
 
 ifeq ($(VERBOSE_GC),1)
