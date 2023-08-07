@@ -36,8 +36,8 @@ jfr = $(JAVA_HOME)/bin/jfr
 JAVA_HOME = $(java_home_root)/$(java_home_suffix)
 native_image = $(JAVA_HOME)/bin/native-image
 opt = $(HOME)/opt
-tar_path_prefix = https://github.com/graalvm/graalvm-ce-builds/releases/download
 tar_path = $(opt)/$(tar_name)
+tar_path_prefix = https://github.com/graalvm/graalvm-ce-builds/releases/download
 
 $(native_image): $(java)
 > $(gu) install native-image
