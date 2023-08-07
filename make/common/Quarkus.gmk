@@ -2,6 +2,7 @@ MAVEN_ARGS ?=
 VERBOSE_GC ?=
 QUICKSTARTS_BRANCH ?= main
 
+application_properties = $(APP)/src/main/resources/application.properties
 jar = $(target)/quarkus-app/quarkus-run.jar
 jcmd = $(JAVA_HOME)/bin/jcmd
 native_build_args += -Dnative
@@ -111,6 +112,10 @@ clean-app:
 rss:
 > ps -p $$(pidof $(APP)-1.0.0-SNAPSHOT-runner) -o rss=
 .PHONY: rss
+
+add-app-property:
+> echo $APP_PROPERTY > $(application_properties)
+.PHONY: add-application-property
 
 ### crac
 
