@@ -3,7 +3,7 @@ jar = $(target)/jfr-oldobject.jar
 pom = $(APP)/pom.xml
 
 include ../make/common/MakeBase.gmk
-include ../make/common/GraalVM.gmk
+include ../make/common/GraalDev.gmk
 include ../make/common/Maven.gmk
 
 JFC_FILE ?= jfc/base.jfc
