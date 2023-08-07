@@ -1,0 +1,20 @@
+AP_VERSION ?= 2.9
+
+ap_agent = $(ap_home)/build/libasyncProfiler.so
+ap_home = $(opt)/async-profiler-$(AP_VERSION)-linux-x64
+ap_tar_name = async-profiler-$(AP_VERSION)-linux-x64.tar.gz
+ap_tar_path = $(opt)/$(ap_tar_name)
+ap_tar_path_prefix = https://github.com/async-profiler/async-profiler/releases/download/v$(AP_VERSION)
+
+run-ap-threads: $(jar) $(ap_agent)
+> $(java) -agentpath:$(ap_agent)=start,event=wall,threads,interval=5ms,file=$(target)/profile-threads.html $(run_jvm_opts) -jar $<
+.PHONY: run-ap-threads
+
+$(ap_agent): $(ap_tar_path)
+> cd $(opt)
+> tar -xzvpf $<
+#> touch $@
+
+$(ap_tar_path):
+> cd $(opt)
+> wget $(ap_tar_path_prefix)/$(ap_tar_name)
