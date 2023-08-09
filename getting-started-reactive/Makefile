@@ -24,6 +24,7 @@ nonblocking_fix_marker = $(APP)/.nonblocking-fix.marker
 $(jar): $(nonblocking_fix_marker)
 
 $(nonblocking_fix_marker): $(greeting_resource_file)
-> @sed -i.bak "/@Produces(MediaType.TEXT_PLAIN)/a\    @io.smallrye.common.annotation.NonBlocking" $<
-> @rm "$<.bak"
+> @sed -i.bak "/@Produces(MediaType.TEXT_PLAIN)/{N;N;/public String hello() {/s/@Produces(MediaType.TEXT_PLAIN)/@io.smallrye.common.annotation.NonBlocking\n    &/}" $<
+> @echo "Differences between original and modified files:"
+> @diff -U2 "$<.bak" $< || true
 > touch $@
