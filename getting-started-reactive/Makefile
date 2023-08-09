@@ -17,3 +17,13 @@ include $(TOPDIR)/make/common/Maven.gmk
 include $(TOPDIR)/make/common/Quarkus.gmk
 include $(TOPDIR)/make/common/Hyperfoil.gmk
 include $(TOPDIR)/make/common/AsyncProfiler.gmk
+
+greeting_resource_file = $(APP)/src/main/java/org/acme/getting/started/ReactiveGreetingResource.java
+nonblocking_fix_marker = $(APP)/.nonblocking-fix.marker
+
+$(jar): $(nonblocking_fix_marker)
+
+$(nonblocking_fix_marker): $(greeting_resource_file)
+> @sed -i.bak "/@Produces(MediaType.TEXT_PLAIN)/a\    @io.smallrye.common.annotation.NonBlocking" $<
+> @rm "$<.bak"
+> touch $@
