@@ -1,0 +1,16 @@
+numactl += numactl
+
+# E.g. NUM_NODES=3 or NUMA_CORES=12,13
+ifdef NUMA_NODES
+  numactl += --cpunodebind=$(NUMA_NODES)
+else ifdef NUMA_CORES
+  numactl += --physcpubind=$(NUMA_CORES)
+endif
+
+numactl += --localalloc
+numactl += /usr/bin/time
+numactl += -v
+
+run-jvm-numa: $(jar)
+> $(numactl) $(java) $(run_jvm_opts) -jar $<
+.PHONY: run-jvm-numa
