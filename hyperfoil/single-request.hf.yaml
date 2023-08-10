@@ -1,5 +1,7 @@
 # This is the name of the benchmark. It's recommended to keep this in sync with
 # name of this file, adding extension `.hf.yaml`.
+# To run, execute:
+# run single-request -PSERVER=x.x.x.x
 name: single-request
 # We must define at least one HTTP target, in this case it becomes a default
 # for all HTTP requests.
