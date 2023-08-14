@@ -3,6 +3,7 @@ threads: !param THREADS 2 # option -t
 http:
   host: !concat [ "http://", !param SERVER localhost, ":8080" ]
   allowHttp2: false
+  pipeliningLimit: !param PIPELINE 1
   sharedConnections: !param CONNECTIONS 10 # option -c
 ergonomics:
   repeatCookies: false
