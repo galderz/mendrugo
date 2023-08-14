@@ -3,7 +3,7 @@ VERBOSE_GC ?=
 QUICKSTART_BRANCH ?= main
 
 application_properties = $(APP)/src/main/resources/application.properties
-graalvm_version_cmd := strings $runner | grep GraalVM
+graalvm_version_cmd = strings $runner | grep GraalVM
 jar = $(target)/quarkus-app/quarkus-run.jar
 jcmd = $(JAVA_HOME)/bin/jcmd
 native_build_args += -Dnative
