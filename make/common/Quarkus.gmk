@@ -78,6 +78,7 @@ ifdef JFR
 endif
 
 run: $(runner)
+> strings $< | grep GraalVM
 > $< $(run_args)
 .PHONY: run
 
