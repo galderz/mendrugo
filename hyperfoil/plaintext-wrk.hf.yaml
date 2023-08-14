@@ -1,4 +1,4 @@
-name: wrk
+name: plaintext-wrk
 threads: !param THREADS 2 # option -t
 http:
   host: !concat [ "http://", !param SERVER localhost, ":8080" ]
@@ -10,20 +10,20 @@ ergonomics:
 phases:
   - calibration:
       always:
-      users: !param CONNECTIONS 10 # option -c
-      duration: 6s
-      maxDuration: 70s # This is duration + default timeout 60s
-      scenario: &scenario
-        - request:
-            - httpRequest:
-                GET: /
-                timeout: !param TIMEOUT 60s # option --timeout
-                headers:
-                  - accept: text/plain # option -H
-                handler:
-                  # We'll check that the response was successful (status 200-299)
-                  status:
-                    range: 2xx
+        users: !param CONNECTIONS 10 # option -c
+        duration: 6s
+        maxDuration: 70s # This is duration + default timeout 60s
+        scenario: &scenario
+          - request:
+              - httpRequest:
+                  GET: /
+                  timeout: !param TIMEOUT 60s # option --timeout
+                  headers:
+                    - accept: text/plain # option -H
+                  handler:
+                    # We'll check that the response was successful (status 200-299)
+                    status:
+                      range: 2xx
   - test:
       always:
         users: !param CONNECTIONS 10 # option -c
