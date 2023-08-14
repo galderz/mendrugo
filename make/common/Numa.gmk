@@ -12,7 +12,8 @@ numactl += /usr/bin/time
 numactl += -v
 
 run-numa: $(runner)
-> echo $(shell strings $< | grep GraalVM)
+> @echo "Executing: $(graalvm_version_cmd)"
+> @$(graalvm_version_cmd)
 > $(numactl) $< $(run_args)
 .PHONY: run-numa
 
