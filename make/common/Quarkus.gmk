@@ -78,11 +78,13 @@ ifdef JFR
   mvn_package += -Dquarkus.native.monitoring=jfr
 endif
 
-run: $(runner)
-> @echo "Executing: $(graalvm_version_cmd)"
-> @$(graalvm_version_cmd)
+run: $(runner) print-graalvm-version
 > $< $(run_args)
 .PHONY: run
+
+print-graalvm-version: $(runner)
+> strings $(runner) | grep GraalVM
+.PHONY: print-graalvm-version
 
 run-jvm: $(jar)
 > $(java) $(run_jvm_opts) -jar $<

@@ -11,9 +11,7 @@ numactl += --localalloc
 numactl += /usr/bin/time
 numactl += -v
 
-run-numa: $(runner)
-> @echo "Executing: $(graalvm_version_cmd)"
-> @$(graalvm_version_cmd)
+run-numa: $(runner) print-graalvm-version
 > $(numactl) $< $(run_args)
 .PHONY: run-numa
 
