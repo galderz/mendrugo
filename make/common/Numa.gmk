@@ -11,6 +11,10 @@ numactl += --localalloc
 numactl += /usr/bin/time
 numactl += -v
 
+run-numa: $(runner)
+> $(numactl) $< $(run_args)
+.PHONY: run-numa
+
 run-jvm-numa: $(jar)
 > $(numactl) $(java) $(run_jvm_opts) -jar $<
 .PHONY: run-jvm-numa
