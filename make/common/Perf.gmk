@@ -4,6 +4,7 @@ flamegraph_pl = $(flamegraph_home)/flamegraph.pl
 perf_data = $(target)/perf.data
 perf_record += perf
 perf_record += record
+stackcollapse_perf = $(flamegraph_home)/stackcollapse-perf.pl
 
 # E.g. FLAMEGRAPH_ARGS="--color=mem --title=$(EVENT) --countname=calls"
 ifdef FLAMEGRAPH_ARGS
