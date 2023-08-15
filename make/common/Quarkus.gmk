@@ -112,6 +112,7 @@ $(runner_debug): $(pom) $(native_image)
 > $(mvn_package) $(native_build_args) -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols
 > popd
 > mv $(runner) $(runner_debug)
+> mv $(runner).debug $(runner_debug).debug
 
 $(jar): $(pom) $(java) $(mvnw)
 > cd $(APP_DIR)
