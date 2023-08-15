@@ -1,16 +1,15 @@
 MAVEN_VERSION ?= 3.9.2
-NAME ?= $(APP)
 
-jar := $(APP)/target/$(NAME)-1.0-SNAPSHOT.jar
+jar := $(APP_DIR)/target/$(APP_NAME)-1.0-SNAPSHOT.jar
 maven_home = $(HOME)/opt/maven
-mvnw = $(APP)/mvnw
+mvnw = $(APP_DIR)/mvnw
 mvn_package += $(mvn_cmd)
 mvn_package += package
 mvn_package += -DskipTests
-pom = $(APP)/pom.xml
-sources += $(shell find $(APP)/src -type f -name '*.java' | sed 's: :\\ :g')
-sources += $(shell find $(APP)/src -type f -name '*.properties' | sed 's: :\\ :g')
-target = $(APP)/target
+pom = $(APP_DIR)/pom.xml
+sources += $(shell find $(APP_DIR)/src -type f -name '*.java' | sed 's: :\\ :g')
+sources += $(shell find $(APP_DIR)/src -type f -name '*.properties' | sed 's: :\\ :g')
+target = $(APP_DIR)/target
 
 mvn_cmd += JAVA_HOME=$(JAVA_HOME)
 mvn_cmd += ./mvnw
@@ -20,7 +19,7 @@ ifdef VERBOSE
 endif
 
 $(jar): $(pom) $(sources) $(java) $(mvnw)
-> cd $(APP)
+> cd $(APP_DIR)
 > $(mvn_package)
 
 $(mvnw):

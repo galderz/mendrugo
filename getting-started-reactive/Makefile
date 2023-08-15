@@ -4,9 +4,9 @@ GRAALVM_MINOR ?= 0
 GRAALVM_MICRO ?= 8
 GRAALVM_BUILD ?= 7.1
 
-APP ?= quickstart
+APP_DIR ?= quickstart
+APP_NAME ?= getting-started-reactive
 QUICKSTART_BRANCH ?= 3.2.3.Final
-QUICKSTART_NAME ?= getting-started-reactive
 TOPDIR = ..
 
 default: run
@@ -19,8 +19,8 @@ include $(TOPDIR)/make/common/Hyperfoil.gmk
 include $(TOPDIR)/make/common/AsyncProfiler.gmk
 include $(TOPDIR)/make/common/Numa.gmk
 
-greeting_resource_file = $(APP)/src/main/java/org/acme/getting/started/ReactiveGreetingResource.java
-nonblocking_fix_marker = $(APP)/.nonblocking-fix.marker
+greeting_resource_file = $(APP_DIR)/src/main/java/org/acme/getting/started/ReactiveGreetingResource.java
+nonblocking_fix_marker = $(APP_DIR)/.nonblocking-fix.marker
 
 $(jar): $(nonblocking_fix_marker)
 

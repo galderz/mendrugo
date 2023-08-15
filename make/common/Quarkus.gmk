@@ -8,7 +8,7 @@ jar = $(target)/quarkus-app/quarkus-run.jar
 jcmd = $(JAVA_HOME)/bin/jcmd
 native_build_args += -Dnative
 pom = $(APP)/pom.xml
-runner = $(target)/$(QUICKSTART_NAME)-1.0.0-SNAPSHOT-runner
+runner = $(target)/$(APP_NAME)-1.0.0-SNAPSHOT-runner
 
 ifdef DEBUG
   mvn_package += dependency:sources
@@ -91,7 +91,7 @@ run-jvm: $(jar)
 .PHONY: run-jvm
 
 run-dev:
-> cd $(APP)
+> cd $(APP_DIR)
 > $(mvn_cmd) quarkus:dev
 .PHONY: run-dev
 
@@ -99,11 +99,11 @@ build: $(runner)
 .PHONY: build
 
 $(runner): $(pom) $(native_image)
-> cd $(APP)
+> cd $(APP_DIR)
 > $(mvn_package) $(native_build_args)
 
 $(jar): $(pom) $(java) $(mvnw)
-> cd $(APP)
+> cd $(APP_DIR)
 > $(mvn_package)
 
 $(pom):
@@ -113,15 +113,15 @@ $(pom):
 > cd quarkus-quickstarts
 > git checkout $(QUICKSTART_BRANCH)
 > popd
-> cp -r $(tmp_dir)/quarkus-quickstarts/$(QUICKSTART_NAME) .
-> mv $(QUICKSTART_NAME) $(APP)
+> cp -r $(tmp_dir)/quarkus-quickstarts/$(APP_NAME) .
+> mv $(APP_NAME) $(APP_DIR)
 
 clean-app:
-> rm -drf $(APP)
+> rm -drf $(APP_DIR)
 .PHONY: clean-app
 
 rss:
-> ps -p $$(pidof $(APP)-1.0.0-SNAPSHOT-runner) -o rss=
+> ps -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o rss=
 .PHONY: rss
 
 add-app-property:
