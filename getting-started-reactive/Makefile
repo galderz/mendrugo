@@ -18,6 +18,7 @@ include $(TOPDIR)/make/common/Quarkus.gmk
 include $(TOPDIR)/make/common/Hyperfoil.gmk
 include $(TOPDIR)/make/common/AsyncProfiler.gmk
 include $(TOPDIR)/make/common/Numa.gmk
+include $(TOPDIR)/make/common/Perf.gmk
 
 greeting_resource_file = $(APP_DIR)/src/main/java/org/acme/getting/started/ReactiveGreetingResource.java
 nonblocking_fix_marker = $(APP_DIR)/.nonblocking-fix.marker

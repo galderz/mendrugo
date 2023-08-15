@@ -1,0 +1,30 @@
+flamegraph = $(target)/flamegraph.svg
+flamegraph_home := /opt/FlameGraph
+flamegraph_pl = $(flamegraph_home)/flamegraph.pl
+perf_data = $(target)/perf.data
+perf_record += perf
+perf_record += record
+
+# E.g. FLAMEGRAPH_ARGS="--color=mem --title=$(EVENT) --countname=calls"
+ifdef FLAMEGRAPH_ARGS
+  flamegraph_pl += $(foreach arg,$(FLAMEGRAPH_ARGS),$(arg))
+endif
+
+# E.g. EVENT=syscalls:sys_enter_mmap
+ifdef EVENT
+  perf_record += -e
+  perf_record += $(EVENT)
+endif
+
+record: $(runner_debug)
+> sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $< $(run_args)
+.PHONY: record
+
+record-numa: $(runner_debug)
+> sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $(numactl) $< $(run_args)
+.PHONY: record-numa
+
+flamegraph: $(perf_data)
+> sudo chown $(USER) $<
+> perf script -i $< | $(stackcollapse_perf) | $(flamegraph_pl) > $(flamegraph)
+.PHONY: flamegraph

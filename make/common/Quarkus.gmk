@@ -155,35 +155,6 @@ run-crac-restore: $(jar)
 > sudo $(java) -XX:CRaCRestoreFrom=$(target)/cr
 .PHONY: run-crac-restore
 
-### perf
-
-event := syscalls:sys_enter_mmap
-fg_home := /opt/FlameGraph
-flamegraph = $(fg_home)/flamegraph.pl
-perf_data = $(target)/perf.data
-stacks = $(target)/out.stacks
-stackcollapse_perf = $(fg_home)/stackcollapse-perf.pl
-strace = $(target)/strace.log
-svg = $(target)/out.svg
-perf_trace = $(target)/perf-trace.log
-
-record: $(runner)
-> sudo perf record -e $(event) --call-graph dwarf -o $(perf_data) -- taskset -c 1 $< $(run_args)
-.PHONY: record
-
-trace: $(runner)
-> sudo perf trace -e $(event) --call-graph dwarf -o $(perf_trace) -- taskset -c 1 $< $(run_args)
-.PHONY: trace
-
-flame:
-> sudo chown $(USER) $(perf_data)
-> perf script -i $(perf_data) > $(stacks)
-> $(stackcollapse_perf) < $(stacks) | $(flamegraph) \
->   --color=mem \
->   --title="mmap Flame Graph" \
->   --countname="calls" > $(svg)
-.PHONY: flame
-
 ### strace
 
 # Can be filtered by passing the syscall to trace, e.g. -emmap
