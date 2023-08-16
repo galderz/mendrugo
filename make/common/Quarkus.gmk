@@ -97,7 +97,7 @@ run-dev:
 .PHONY: run-dev
 
 run-debug: $(debuginfo)
-> gdb --args $< $(run_args)
+> gdb --args $(runner) $(run_args)
 .PHONY: run-debug
 
 build: $(runner)
