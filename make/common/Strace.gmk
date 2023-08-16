@@ -1,0 +1,4 @@
+# Can be filtered by passing the syscall to trace, e.g. -emmap
+strace: $(runner)
+> taskset -c 1 strace -o $(strace) -k $< $(run_args)
+.PHONY: strace
