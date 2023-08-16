@@ -3,6 +3,7 @@ VERBOSE_GC ?=
 QUICKSTART_BRANCH ?= main
 
 application_properties = $(APP_DIR)/src/main/resources/application.properties
+debuginfo_args := -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols
 graalvm_version_cmd = strings $(runner) | grep GraalVM
 jar = $(target)/quarkus-app/quarkus-run.jar
 jcmd = $(JAVA_HOME)/bin/jcmd
@@ -79,6 +80,10 @@ ifdef JFR
   mvn_package += -Dquarkus.native.monitoring=jfr
 endif
 
+ifdef NO_OPT
+  debuginfo_args = $(debuginfo_args),-O0,-H:-OmitInlinedMethodDebugLineInfo,-H:+SourceLevelDebug
+endif
+
 run: $(runner) print-graalvm-version
 > $< $(run_args)
 .PHONY: run
@@ -109,7 +114,7 @@ $(runner): $(pom) $(native_image)
 
 $(debuginfo): $(pom) $(native_image)
 > cd $(APP_DIR)
-> $(mvn_package) $(native_build_args) -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols
+> $(mvn_package) $(native_build_args) -Dquarkus.native.debug.enabled $(debuginfo_args)
 
 $(jar): $(pom) $(java) $(mvnw)
 > cd $(APP_DIR)
