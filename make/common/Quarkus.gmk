@@ -96,8 +96,8 @@ run-dev:
 > $(mvn_cmd) quarkus:dev
 .PHONY: run-dev
 
-run-debug: $(runner_debug)
-> $< $(run_args)
+run-debug: $(debuginfo)
+> gdb --args $< $(run_args)
 .PHONY: run-debug
 
 build: $(runner)
