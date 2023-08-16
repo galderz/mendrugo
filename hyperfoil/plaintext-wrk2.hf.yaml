@@ -19,7 +19,7 @@ phases:
         scenario: &scenario
           - request:
               - httpRequest:
-                  GET: /
+                  GET: /hello
                   timeout: !param TIMEOUT 60s # option --timeout
                   headers:
                     - accept: text/plain # option -H
