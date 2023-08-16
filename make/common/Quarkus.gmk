@@ -81,7 +81,7 @@ ifdef JFR
 endif
 
 ifdef NO_OPT
-  debuginfo_args = $(debuginfo_args),-O0,-H:-OmitInlinedMethodDebugLineInfo,-H:+SourceLevelDebug
+  debuginfo_args := $(debuginfo_args),-O0,-H:-OmitInlinedMethodDebugLineInfo,-H:+SourceLevelDebug
 endif
 
 run: $(runner) print-graalvm-version
