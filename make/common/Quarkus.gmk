@@ -9,7 +9,7 @@ jcmd = $(JAVA_HOME)/bin/jcmd
 native_build_args += -Dnative
 pom = $(APP_DIR)/pom.xml
 runner = $(target)/$(APP_NAME)-1.0.0-SNAPSHOT-runner
-runner_debug = $(target)/$(APP_NAME)-1.0.0-SNAPSHOT-runner-debug
+debuginfo = $(runner).debug
 
 ifdef DEBUG
   mvn_package += dependency:sources
@@ -107,12 +107,9 @@ $(runner): $(pom) $(native_image)
 > cd $(APP_DIR)
 > $(mvn_package) $(native_build_args)
 
-$(runner_debug): $(pom) $(native_image)
-> pushd $(APP_DIR)
+$(debuginfo): $(pom) $(native_image)
+> cd $(APP_DIR)
 > $(mvn_package) $(native_build_args) -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols
-> popd
-> mv $(runner) $(runner_debug)
-> mv $(runner).debug $(runner_debug).debug
 
 $(jar): $(pom) $(java) $(mvnw)
 > cd $(APP_DIR)
