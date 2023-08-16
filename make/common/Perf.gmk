@@ -18,11 +18,11 @@ ifdef EVENT
 endif
 
 record: $(debuginfo)
-> sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $< $(run_args)
+> sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $(runner) $(run_args)
 .PHONY: record
 
 record-numa: $(debuginfo)
-> sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $(numactl) $< $(run_args)
+> sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $(numactl) $(runner) $(run_args)
 .PHONY: record-numa
 
 flamegraph: $(perf_data)
