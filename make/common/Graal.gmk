@@ -48,7 +48,7 @@ $(java): $(tar_path)
 > tar -xzvpf $<
 > touch $@
 
-$(tar_path):
+$(tar_path): $(opt)
 > cd $(opt)
 > wget $(tar_path_prefix)/$(tar_path_suffix)/$(tar_name)
 
