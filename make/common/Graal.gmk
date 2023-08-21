@@ -44,11 +44,11 @@ $(native_image): $(java)
 > touch $@
 
 $(java): $(tar_path)
-> cd $(opt)
 > tar -xzvpf $<
 > touch $@
 
-$(tar_path): $(opt)
+$(tar_path):
+> mkdir -p $(opt)
 > cd $(opt)
 > wget $(tar_path_prefix)/$(tar_path_suffix)/$(tar_name)
 
