@@ -1,5 +1,5 @@
 flamegraph = $(target)/flamegraph.svg
-flamegraph_home := /opt/FlameGraph
+flamegraph_home := $(opt)/FlameGraph
 flamegraph_pl = $(flamegraph_home)/flamegraph.pl
 perf_data = $(target)/perf.data
 perf_record += perf
@@ -36,10 +36,14 @@ record-numa: $(debuginfo) delete-perf-data
 > sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $(numactl) $(runner) $(run_args)
 .PHONY: record-numa
 
-flamegraph: $(perf_data)
+flamegraph: $(perf_data) $(flamegraph_pl)
 > sudo chown $(USER) $<
 > $(perf_script) | $(stackcollapse_perf) | $(flamegraph_pl) > $(flamegraph)
 .PHONY: flamegraph
+
+$(flamegraph_pl):
+> cd $(opt)
+> git clone https://github.com/brendangregg/FlameGraph
 
 delete-perf-data:
 > rm -f $(perf_data) || true
