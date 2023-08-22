@@ -1,5 +1,6 @@
 # For startup work, switch frequency to say 1009
-FREQ ?= 99
+PERF_RECORD_FREQ ?= 99
+PERF_RECORD_DURATION ?= 3
 
 flamegraph = $(target)/flamegraph.svg
 flamegraph_home := $(opt)/FlameGraph
@@ -9,7 +10,7 @@ perf_record += sudo
 perf_record += perf
 perf_record += record
 perf_record += -F
-perf_record += $(FREQ)
+perf_record += $(PERF_RECORD_FREQ)
 perf_record += --call-graph
 perf_record += dwarf
 perf_record += -o
@@ -47,7 +48,7 @@ record-numa: $(debuginfo) delete-perf-data
 .PHONY: record-numa
 
 record-pid:
-> $(perf_record) -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o $(perf_data) sleep 5
+> $(perf_record) -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o $(perf_data) sleep $(PERF_RECORD_DURATION)
 .PHONY: record-pid
 
 flamegraph: $(perf_data) $(flamegraph_pl)
