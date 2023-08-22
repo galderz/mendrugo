@@ -36,6 +36,10 @@ record-numa: $(debuginfo) delete-perf-data
 > sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $(numactl) $(runner) $(run_args)
 .PHONY: record-numa
 
+record-pid:
+> perf record -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) sleep 5
+.PHONY: record-pid
+
 flamegraph: $(perf_data) $(flamegraph_pl)
 > sudo chown $(USER) $<
 > $(perf_script) | $(stackcollapse_perf) | $(flamegraph_pl) > $(flamegraph)
