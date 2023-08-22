@@ -2,8 +2,15 @@ flamegraph = $(target)/flamegraph.svg
 flamegraph_home := $(opt)/FlameGraph
 flamegraph_pl = $(flamegraph_home)/flamegraph.pl
 perf_data = $(target)/perf.data
+perf_record += sudo
 perf_record += perf
 perf_record += record
+perf_record += -F
+perf_record += 1009
+perf_record += --call-graph
+perf_record += dwarf
+perf_record += -o
+perf_record += $(perf_data)
 perf_script += perf
 perf_script += script
 perf_script += -i
@@ -29,15 +36,15 @@ ifdef COLLAPSE_THREADS
 endif
 
 record: $(debuginfo) delete-perf-data
-> sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $(runner) $(run_args)
+> $(perf_record) -- $(runner) $(run_args)
 .PHONY: record
 
 record-numa: $(debuginfo) delete-perf-data
-> sudo perf record -F 1009 --call-graph dwarf -o $(perf_data) -- $(numactl) $(runner) $(run_args)
+> $(perf_record) -- $(numactl) $(runner) $(run_args)
 .PHONY: record-numa
 
 record-pid:
-> perf record -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o $(perf_data) sleep 5
+> $(perf_record) -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o $(perf_data) sleep 5
 .PHONY: record-pid
 
 flamegraph: $(perf_data) $(flamegraph_pl)
