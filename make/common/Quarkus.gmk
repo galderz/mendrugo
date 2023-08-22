@@ -102,6 +102,10 @@ run-dev:
 .PHONY: run-dev
 
 run-debug: $(debuginfo)
+> $(runner) $(run_args)
+.PHONY: run-debug
+
+run-gdb: $(debuginfo)
 > gdb --args $(runner) $(run_args)
 .PHONY: run-debug
 
