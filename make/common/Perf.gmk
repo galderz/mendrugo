@@ -1,3 +1,6 @@
+# For startup work, switch frequency to say 1009
+FREQ ?= 99
+
 flamegraph = $(target)/flamegraph.svg
 flamegraph_home := $(opt)/FlameGraph
 flamegraph_pl = $(flamegraph_home)/flamegraph.pl
@@ -6,7 +9,7 @@ perf_record += sudo
 perf_record += perf
 perf_record += record
 perf_record += -F
-perf_record += 1009
+perf_record += $(FREQ)
 perf_record += --call-graph
 perf_record += dwarf
 perf_record += -o
