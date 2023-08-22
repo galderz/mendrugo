@@ -37,7 +37,7 @@ record-numa: $(debuginfo) delete-perf-data
 .PHONY: record-numa
 
 record-pid:
-> perf record -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) sleep 5
+> perf record -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o $(perf_data) sleep 5
 .PHONY: record-pid
 
 flamegraph: $(perf_data) $(flamegraph_pl)
