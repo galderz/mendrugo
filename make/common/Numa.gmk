@@ -8,8 +8,6 @@ else ifdef NUMA_CORES
 endif
 
 numactl += --localalloc
-numactl += /usr/bin/time
-numactl += -v
 
 run-numa: $(runner) print-graalvm-version
 > $(numactl) $< $(run_args)
