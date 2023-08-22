@@ -14,7 +14,7 @@ run-numa: $(runner) print-graalvm-version
 .PHONY: run-numa
 
 run-debug-numa: $(debuginfo) print-graalvm-version
-> $(numactl) $< $(run_args)
+> $(numactl) $(runner) $(run_args)
 .PHONY: run-debug-numa
 
 run-jvm-numa: $(jar)
