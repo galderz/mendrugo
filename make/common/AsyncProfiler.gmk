@@ -16,8 +16,8 @@ run-ap-threads: $(jar) $(ap_agent)
 > $(java) -agentpath:$(ap_agent)=start,event=wall,threads,interval=5ms,file=$(target)/profile-threads.html $(run_jvm_opts) -jar $<
 .PHONY: run-ap-threads
 
-ap-cpu: $(ap_profiler)
-> $< -e cpu -d 3 $(target)/cpu-profile.svg $$($(jps) | grep "quarkus-run.jar" | awk '{print $$1}')
+ap-cpu: $(ap_agent)
+> $(ap_profiler) -e cpu -d 3 $(target)/cpu-profile.svg $$($(jps) | grep "quarkus-run.jar" | awk '{print $$1}')
 .PHONY: ap-cpu
 
 $(ap_agent): $(ap_tar_path)
