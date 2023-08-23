@@ -2,9 +2,10 @@
 PERF_RECORD_FREQ ?= 99
 PERF_RECORD_DURATION ?= 3
 
-flamegraph = $(target)/flamegraph.svg
-flamegraph_home := $(opt)/FlameGraph
-flamegraph_pl = $(flamegraph_home)/flamegraph.pl
+fg_raw = $(target)/raw.svg
+fg_collapsed = $(target)/collapsed.svg
+fg_home := $(opt)/FlameGraph
+fg_pl = $(fg_home)/flamegraph.pl
 perf_data = $(target)/perf.data
 perf_record += sudo
 perf_record += perf
@@ -20,11 +21,11 @@ perf_script += script
 perf_script += -i
 perf_script += $(perf_data)
 perf_stacks = $(target)/perf.stacks
-stackcollapse_perf = $(flamegraph_home)/stackcollapse-perf.pl
+stackcollapse_perf = $(fg_home)/stackcollapse-perf.pl
 
 # E.g. FLAMEGRAPH_ARGS="--color=mem --title=$(EVENT) --countname=calls"
 ifdef FLAMEGRAPH_ARGS
-  flamegraph_pl += $(foreach arg,$(FLAMEGRAPH_ARGS),$(arg))
+  fg_pl += $(foreach arg,$(FLAMEGRAPH_ARGS),$(arg))
 endif
 
 # E.g. EVENT=syscalls:sys_enter_mmap
@@ -59,11 +60,12 @@ $(perf_stacks): $(perf_data)
 > sudo chown $(USER) $<
 > $(perf_script) > $@
 
-flamegraph: $(perf_data) $(flamegraph_pl)
-> $(perf_script) | $(stackcollapse_perf) | $(flamegraph_pl) > $(flamegraph)
-.PHONY: flamegraph
+flamegraphs: $(fg_pl)
+> cat $(perf_stacks) | $(stackcollapse_perf) --all | $(fg_pl) > $(fg_raw)
+> cat $(perf_stacks) | sed -E "s/ntloop-thread-[0-9]*/ntloop-thread/" | $(stackcollapse_perf) --all | $(fg_pl) > $(fg_collapsed)
+.PHONY: flamegraphs
 
-$(flamegraph_pl):
+$(fg_pl):
 > cd $(opt)
 > git clone https://github.com/brendangregg/FlameGraph
 
