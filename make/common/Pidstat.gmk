@@ -1,3 +1,9 @@
+jps = $(JAVA_HOME)/bin/jps
+
 pidstat: $(runner)
 > pidstat -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -l 1
 .PHONY: pidstat
+
+pidstat-jvm: $(jar)
+> pidstat -p $$($(jps) | grep "quarkus-run.jar" | awk '{print $1}') -l 1
+.PHONY: pidstat-jvm
