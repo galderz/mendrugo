@@ -6,6 +6,11 @@ ap_tar_name = async-profiler-$(AP_VERSION)-linux-x64.tar.gz
 ap_tar_path = $(opt)/$(ap_tar_name)
 ap_tar_path_prefix = https://github.com/async-profiler/async-profiler/releases/download/v$(AP_VERSION)
 
+ifdef AP
+  run_jvm_opts += -XX:+UnlockDiagnosticVMOptions
+  run_jvm_opts += -XX:+DebugNonSafepoints
+endif
+
 run-ap-threads: $(jar) $(ap_agent)
 > $(java) -agentpath:$(ap_agent)=start,event=wall,threads,interval=5ms,file=$(target)/profile-threads.html $(run_jvm_opts) -jar $<
 .PHONY: run-ap-threads
