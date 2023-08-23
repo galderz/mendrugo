@@ -5,5 +5,5 @@ pidstat: $(runner)
 .PHONY: pidstat
 
 pidstat-jvm: $(jar)
-> pidstat -p $$($(jps) | grep "quarkus-run.jar" | awk '{print $1}') -l 1
+> pidstat -p $$($(jps) | grep "quarkus-run.jar" | awk '{print $$1}') -l 1
 .PHONY: pidstat-jvm
