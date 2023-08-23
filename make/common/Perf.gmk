@@ -51,8 +51,12 @@ record-pid:
 > $(perf_record) -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o $(perf_data) sleep $(PERF_RECORD_DURATION)
 .PHONY: record-pid
 
-flamegraph: $(perf_data) $(flamegraph_pl)
+script: $(perf_data)
 > sudo chown $(USER) $<
+> $(perf_script) > perf.stacks
+> gzip perf.stacks
+
+flamegraph: $(perf_data) $(flamegraph_pl)
 > $(perf_script) | $(stackcollapse_perf) | $(flamegraph_pl) > $(flamegraph)
 .PHONY: flamegraph
 
