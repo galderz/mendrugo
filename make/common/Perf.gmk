@@ -19,6 +19,7 @@ perf_script += perf
 perf_script += script
 perf_script += -i
 perf_script += $(perf_data)
+perf_stacks = $(target)/perf.stacks
 stackcollapse_perf = $(flamegraph_home)/stackcollapse-perf.pl
 
 # E.g. FLAMEGRAPH_ARGS="--color=mem --title=$(EVENT) --countname=calls"
@@ -51,10 +52,12 @@ record-pid:
 > $(perf_record) -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o $(perf_data) sleep $(PERF_RECORD_DURATION)
 .PHONY: record-pid
 
-script: $(perf_data)
+script: $(perf_stacks)
+.PHONY: script
+
+$(perf_stacks): $(perf_data)
 > sudo chown $(USER) $<
-> $(perf_script) > perf.stacks
-> gzip perf.stacks
+> $(perf_script) > $@
 
 flamegraph: $(perf_data) $(flamegraph_pl)
 > $(perf_script) | $(stackcollapse_perf) | $(flamegraph_pl) > $(flamegraph)
