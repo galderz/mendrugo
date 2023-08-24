@@ -1,6 +1,7 @@
-APP := .
-jar = $(target)/jfr-oldobject.jar
-pom = $(APP)/pom.xml
+APP_DIR := .
+APP_NAME := jfr-oldobject
+
+pom = $(APP_DIR)/pom.xml
 
 include ../make/common/MakeBase.gmk
 include ../make/common/GraalDev.gmk
