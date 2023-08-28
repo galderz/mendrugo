@@ -1,15 +1,16 @@
+include ../make/common/MakeBase.gmk
+
 APP_DIR := .
 APP_NAME := jfr-oldobject
-
-pom = $(APP_DIR)/pom.xml
-
-include ../make/common/MakeBase.gmk
-include ../make/common/GraalDev.gmk
-include ../make/common/Maven.gmk
-
+BOOT_JDK := $(opt)/java-21
+GRAALVM_VERSION := 23.2.0
+JDK_HOME := $(HOME)/1/jdk21u
 JFC_FILE ?= jfc/base.jfc
 JFR_FILE ?= target/native.jfr
 TEST_CLASS ?= PlainObjectLeak
+
+include ../make/common/GraalDev.gmk
+include ../make/common/Maven.gmk
 
 binary := target/jfr-oldobject
 native_image_opts += --enable-monitoring=jfr
@@ -40,11 +41,17 @@ else
   native_opts += -XX:StartFlightRecording=dumponexit=true\,filename=target/native.jfr\,settings=$(JFC_FILE)
 endif
 
+ifdef TEST
+  native_test_pattern := $(TEST)
+else
+  native_test_pattern := com.oracle.svm.test.jfr.oldobject
+endif
+
 #> DEBUG_RECORDING=true $(mx) native-unittest --run-args -XX:FlightRecorderLogging=jfr=debug,jfr+dcmd=debug --verbose --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal --preserve-image com.oracle.svm.test.jfr.oldobject
 #> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal com.oracle.svm.test.jfr.oldobject
 test: $(native_image)
 > cd $(svm_home)
-> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image com.oracle.svm.test.jfr.oldobject
+> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image $(native_test_pattern)
 .PHONY: test
 
 svm_test_jar = $(svm_home)/mxbuild/jdk17/dists/jdk17/svm-tests.jar

@@ -1,10 +1,8 @@
-JAVA_HOME ?= $(jdk_home)/build/graalbuilder/images/graal-builder-jdk
+JAVA_HOME ?= $(JDK_HOME)/build/graalbuilder/images/graal-builder-jdk
 
 java = $(JAVA_HOME)/bin/java
-jdk_home := $(HOME)/1/jdk17u-dev
 jfr = $(JAVA_HOME)/bin/jfr
 graalvm_home := $(HOME)/1/mandrel-mandrel
-graalvm_version := 23.0.0
 mx += JAVA_HOME=$(JAVA_HOME)
 mx += /opt/mx/mx
 native_image += $(graalvm_home)/sdk/latest_graalvm_home/bin/native-image
@@ -15,15 +13,15 @@ $(native_image): $(shell find $(svm_home)/src -type f -name '*.properties')
 $(native_image): $(java)
 > cd $(svm_home)
 > $(mx) --debug-images build
-> sed -i'' -e 's/EnableJVMCI/EnableJVMCI -Dorg.graalvm.version=$(graalvm_version)-dev/g' ../sdk/latest_graalvm_home/lib/svm/bin/native-image
+> sed -i'' -e 's/EnableJVMCI/EnableJVMCI -Dorg.graalvm.version=$(GRAALVM_VERSION)-dev/g' ../sdk/latest_graalvm_home/lib/svm/bin/native-image
 
-$(java): $(shell find $(jdk_home)/src -type f -name '*.java')
-$(java): $(shell find $(jdk_home)/test -type f -name '*.java')
+$(java): $(shell find $(JDK_HOME)/src -type f -name '*.java')
+$(java): $(shell find $(JDK_HOME)/test -type f -name '*.java')
 $(java):
-> cd $(jdk_home)
+> cd $(JDK_HOME)
 > bash configure \
 >   --disable-warnings-as-errors \
->   --with-boot-jdk=/opt/java-17 \
+>   --with-boot-jdk=$(BOOT_JDK) \
 >   --with-conf-name=graalbuilder \
 >   --with-extra-cflags=-fcommon \
 >   --with-jvm-variants=server
@@ -41,8 +39,7 @@ idea: $(java)
 .PHONY: idea
 
 gate:
-> $(call gate,JAVA_HOME=$(HOME)/opt/labsjdk-ce-17.0.7-jvmci-23.1-b02 /opt/mx/mx)
-> $(call gate,JAVA_HOME=$(HOME)/opt/labsjdk-ce-20.0.1-jvmci-23.1-b02 /opt/mx/mx)
+> $(call gate,JAVA_HOME=$(HOME)/opt/labsjdk-ce-21-jvmci-23.1-b14 /opt/mx/mx)
 .PHONY: gate
 
 define gate
@@ -59,3 +56,7 @@ eclipse:
 > cd $(graalvm_home)
 > $(mx) --primary-suite-path substratevm eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
 .PHONY: eclipse
+
+mx-update:
+> $(mx) update
+.PHONY: mx-update
