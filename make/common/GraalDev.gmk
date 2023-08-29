@@ -1,19 +1,19 @@
 JAVA_HOME ?= $(JDK_HOME)/build/graalbuilder/images/graal-builder-jdk
+GRAALVM_HOME ?= $(gdk_home)/sdk/latest_graalvm_home
 
 java = $(JAVA_HOME)/bin/java
 jfr = $(JAVA_HOME)/bin/jfr
-graalvm_home := $(HOME)/1/mandrel-mandrel
+gdk_home := $(HOME)/1/mandrel-mandrel
 mx += JAVA_HOME=$(JAVA_HOME)
 mx += /opt/mx/mx
-native_image += $(graalvm_home)/sdk/latest_graalvm_home/bin/native-image
-svm_home := $(graalvm_home)/substratevm
+native_image += $(GRAALVM_HOME)/bin/native-image
+svm_home := $(gdk_home)/substratevm
 
 $(native_image): $(shell find $(svm_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(svm_home)/src -type f -name '*.properties')
 $(native_image): $(java)
 > cd $(svm_home)
 > $(mx) --debug-images build
-> sed -i'' -e 's/EnableJVMCI/EnableJVMCI -Dorg.graalvm.version=$(GRAALVM_VERSION)-dev/g' ../sdk/latest_graalvm_home/lib/svm/bin/native-image
 
 $(java): $(shell find $(JDK_HOME)/src -type f -name '*.java')
 $(java): $(shell find $(JDK_HOME)/test -type f -name '*.java')
@@ -24,7 +24,8 @@ $(java):
 >   --with-boot-jdk=$(BOOT_JDK) \
 >   --with-conf-name=graalbuilder \
 >   --with-extra-cflags=-fcommon \
->   --with-jvm-variants=server
+>   --with-jvm-variants=server \
+>   --with-version-opt=jvmci-$(GRAALVM_VERSION)-dev
 > make CONF=graalbuilder graal-builder-image
 > touch $@
 
@@ -32,6 +33,11 @@ clean-graal: $(java)
 > cd $(svm_home)
 > $(mx) clean
 .PHONY: clean-graal
+
+clean-jdk: clean-graal
+> cd $(JDK_HOME)
+> make CONF=graalbuilder clean
+.PHONY: clean-jdk
 
 idea: $(java)
 > cd $(svm_home)
@@ -43,7 +49,7 @@ gate:
 .PHONY: gate
 
 define gate
-cd $(graalvm_home)
+cd $(gdk_home)
 $(1) --primary-suite-path substratevm clean --all
 $(1) --primary-suite-path substratevm build -p --warning-as-error --jdt=builtin
 $(1) --primary-suite-path substratevm clean --all
@@ -53,7 +59,7 @@ $(1) --primary-suite-path substratevm checkstyle --primary
 endef
 
 eclipse:
-> cd $(graalvm_home)
+> cd $(gdk_home)
 > $(mx) --primary-suite-path substratevm eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
 .PHONY: eclipse
 
