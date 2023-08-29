@@ -5,7 +5,7 @@ hyperfoil_version := 0.25
 hyperfoil_zip = hyperfoil-$(hyperfoil_version).zip
 
 run-hyperfoil: $(hyperfoil_cli)
-> PATH=$$PATH:$(JAVA_HOME)/bin $<
+> PATH=$$PATH:$(GRAALVM_HOME)/bin $<
 .PHONY: run-hyperfoil
 
 $(hyperfoil_cli):
