@@ -1,5 +1,5 @@
 # For startup work, switch frequency to say 1009
-PERF_RECORD_FREQ ?= 99
+PERF_RECORD_FREQ ?= 100
 PERF_RECORD_DURATION ?= 3
 
 fg_raw = $(target)/raw.svg
@@ -28,7 +28,7 @@ ifdef FLAMEGRAPH_ARGS
   fg_pl += $(foreach arg,$(FLAMEGRAPH_ARGS),$(arg))
 endif
 
-# E.g. EVENT=syscalls:sys_enter_mmap
+# E.g. EVENT=syscalls:sys_enter_mmap EVENT=cycles EVENT=cpu-clock
 ifdef EVENT
   perf_record += -e
   perf_record += $(EVENT)
