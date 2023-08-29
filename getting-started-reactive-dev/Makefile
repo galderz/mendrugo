@@ -3,7 +3,7 @@ TOPDIR = ..
 include $(TOPDIR)/make/common/MakeBase.gmk
 
 BOOT_JDK := $(opt)/java-21
-JDK_HOME ?= $(HOME)/1/jdk21u
+JDK_REPO := jdk21u
 GRAALVM_VERSION ?= 23.1
 
 APP_DIR ?= quickstart

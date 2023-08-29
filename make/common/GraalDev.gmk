@@ -1,7 +1,9 @@
+JDK_HOME ?= $(HOME)/1/$(JDK_REPO)
 JAVA_HOME ?= $(JDK_HOME)/build/graalbuilder/images/graal-builder-jdk
 GRAALVM_HOME ?= $(gdk_home)/sdk/latest_graalvm_home
 
 java = $(JAVA_HOME)/bin/java
+jdk_makefile = $(JDK_HOME)/Makefile
 jfr = $(JAVA_HOME)/bin/jfr
 gdk_home := $(HOME)/1/mandrel-mandrel
 mx += JAVA_HOME=$(JAVA_HOME)
@@ -15,6 +17,7 @@ $(native_image): $(java)
 > cd $(svm_home)
 > $(mx) --debug-images build
 
+$(java): $(jdk_makefile)
 $(java): $(shell find $(JDK_HOME)/src -type f -name '*.java')
 $(java): $(shell find $(JDK_HOME)/test -type f -name '*.java')
 $(java):
@@ -28,6 +31,10 @@ $(java):
 >   --with-version-opt=jvmci-$(GRAALVM_VERSION)-dev
 > make CONF=graalbuilder graal-builder-image
 > touch $@
+
+$(jdk_makefile):
+> cd $(HOME)/1
+> git clone https://github.com/openjdk/$(JDK_REPO)
 
 clean-graal: $(java)
 > cd $(svm_home)
