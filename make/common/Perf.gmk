@@ -3,7 +3,7 @@ PERF_RECORD_FREQ ?= 100
 PERF_RECORD_DURATION ?= 3
 
 fg_raw = $(target)/raw.svg
-fg_collapsed = $(target)/collapsed.svg
+fg_polished = $(target)/polished.svg
 fg_home := $(opt)/FlameGraph
 fg_pl = $(fg_home)/flamegraph.pl
 perf_data = $(target)/perf.data
@@ -62,7 +62,7 @@ $(perf_stacks): $(perf_data)
 
 flamegraphs: $(fg_pl)
 > cat $(perf_stacks) | $(stackcollapse_perf) --all | $(fg_pl) > $(fg_raw)
-> cat $(perf_stacks) | sed -E "s/ntloop-thread-[0-9]*/ntloop-thread/" | $(stackcollapse_perf) --all | $(fg_pl) > $(fg_collapsed)
+> cat $(perf_stacks) | grep -v unknown | sed -E "s/ntloop-thread-[0-9]*/ntloop-thread/" | $(stackcollapse_perf) --all | $(fg_pl) > $(fg_polished)
 .PHONY: flamegraphs
 
 $(fg_pl):
