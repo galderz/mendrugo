@@ -33,6 +33,6 @@ phases:
         variance: false
         maxSessions: !param MAX_SESSIONS 300 # request rate x 15
         duration: !param DURATION 10s # option -d
-        maxDuration: !param DURATION 10s # option -d
+        maxDuration: 70s # This is duration + default timeout 60s
         startAfterStrict: calibration
         scenario: *scenario
