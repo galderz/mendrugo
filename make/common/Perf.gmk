@@ -34,11 +34,10 @@ ifdef EVENT
   perf_record += $(EVENT)
 endif
 
-ifdef COLLAPSE_THREADS
+# Force demangling manually
+ifdef DEMANGLE
   perf_script += |
-  perf_script += sed
-  perf_script += -E
-  perf_script += "s/ntloop-thread-[0-9]*/ntloop-thread/"
+  perf_script += c++filt
 endif
 
 record: $(debuginfo) delete-perf-data
