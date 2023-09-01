@@ -12,22 +12,6 @@ pom = $(APP_DIR)/pom.xml
 runner = $(target)/$(APP_NAME)-1.0.0-SNAPSHOT-runner
 debuginfo = $(runner).debug
 
-ifdef DEBUG
-  mvn_package += dependency:sources
-  native_build_args += -Dquarkus.native.debug.enabled
-
-  graalvm_build_args := -H:-OmitInlinedMethodDebugLineInfo,-O0,-H:-DeleteLocalSymbols
-  release_file := $(GRAALVM_HOME)/release
-  ifneq ($(wildcard $(release_file)),)
-    GRAALVM_GTEQ_22_2_0 := $(shell expr `sed -nE 's/GRAALVM_VERSION="([^"]+)"/\1/p' $(release_file) | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$$/&00/' | cut -c 1-6` \>= 220200)
-    ifeq ("$(GRAALVM_GTEQ_22_2_0)","1")
-      graalvm_build_args := $(subst  ,,$(graalvm_build_args)),-H:+SourceLevelDebug
-    endif
-  endif
-
-  native_build_args += -Dquarkus.native.additional-build-args=$(graalvm_build_args)
-endif
-
 ifdef MAVEN_ARGS
   mvn_package += $(foreach arg,$(MAVEN_ARGS),$(arg))
 endif
