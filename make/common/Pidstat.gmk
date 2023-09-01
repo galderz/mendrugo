@@ -1,4 +1,4 @@
-jps = $(JAVA_HOME)/bin/jps
+jps = $(GRAALVM_HOME)/bin/jps
 
 pidstat: $(runner)
 > pidstat -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -l 1
