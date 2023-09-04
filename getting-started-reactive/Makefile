@@ -14,7 +14,7 @@ default: run
 include $(TOPDIR)/make/common/MakeBase.gmk
 include $(TOPDIR)/make/common/Graal.gmk
 include $(TOPDIR)/make/common/Maven.gmk
-include $(TOPDIR)/make/common/Quarkus.gmk
+include $(TOPDIR)/make/common/QuarkusApp.gmk
 include $(TOPDIR)/make/common/Hyperfoil.gmk
 include $(TOPDIR)/make/common/AsyncProfiler.gmk
 include $(TOPDIR)/make/common/Numa.gmk
