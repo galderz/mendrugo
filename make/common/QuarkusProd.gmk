@@ -1,3 +1,0 @@
-$(runner): $(pom) $(sources)
-> cd $(APP)
-> $(mvn_package) $(native_build_args)
