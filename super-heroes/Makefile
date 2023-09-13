@@ -34,6 +34,7 @@ $(villains_pom): $(super_heroes_mvnw)
 >   -DclassName="io.quarkus.workshop.superheroes.villain.VillainResource" \
 >   -Dpath="api/villains" \
 >   -Dextensions="resteasy-reactive-jackson"
+> touch ./mvnw
 
 $(super_heroes_mvnw): $(zip)
 > unzip $<
