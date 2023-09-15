@@ -25,6 +25,7 @@ villains:
 > cp villains/Villain.java $(villains_dir)/src/main/java/io/quarkus/workshop/superheroes/villain
 > cp villains/VillainService.java $(villains_dir)/src/main/java/io/quarkus/workshop/superheroes/villain
 > cp villains/VillainResource.java $(villains_dir)/src/main/java/io/quarkus/workshop/superheroes/villain
+> cp villains/VillainResourceTest.java $(villains_dir)/src/test/java/io/quarkus/workshop/superheroes/villain
 > cp villains/application.properties $(villains_dir)/src/main/resources
 > cp villains/import.sql $(villains_dir)/src/main/resources
 .PHONY: villains
