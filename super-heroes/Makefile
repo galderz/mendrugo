@@ -16,6 +16,7 @@ include $(TOPDIR)/make/common/Colima.gmk
 QUARKUS_VERSION ?= 3.3.2
 
 villains_dir = $(super_heroes_dir)/rest-villains
+villains_jar = $(villains_dir)/target/quarkus-app/quarkus-run.jar
 villains_pom = $(villains_dir)/pom.xml
 super_heroes_dir := $(APP_DIR)/super-heroes
 super_heroes_mvnw := $(super_heroes_dir)/mvnw
@@ -30,7 +31,15 @@ villains:
 > cp villains/import.sql $(villains_dir)/src/main/resources
 .PHONY: villains
 
-run-villains-dev: $(villains_pom)
+run-villains: $(villains_jar)
+> $(GRAALVM_HOME)/bin/java -jar $(villains_jar)
+.PHONY: run-villains
+
+$(villains_jar): $(villains_pom) villains
+> cd $(villains_dir)
+> JAVA_HOME=$(GRAALVM_HOME) ./mvnw package
+
+run-villains-dev: $(villains_pom) villains
 > cd $(villains_dir)
 > JAVA_HOME=$(GRAALVM_HOME) ../mvnw quarkus:dev
 .PHONY: run-dev
@@ -53,6 +62,16 @@ $(super_heroes_mvnw): $(zip)
 
 $(zip):
 > wget https://raw.githubusercontent.com/quarkusio/quarkus-workshops/refs/heads/main/quarkus-workshop-super-heroes/dist/$(zip)
+
+compose:
+> cd $(super_heroes_dir)/infrastructure
+> docker compose -f docker-compose.yaml up -d
+.PHONY: compose
+
+compose-down:
+> cd $(super_heroes_dir)/infrastructure
+> docker compose -f docker-compose.yaml down
+.PHONY: compose-down
 
 clean:
 > rm -drf $(APP_DIR)
