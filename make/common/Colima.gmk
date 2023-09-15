@@ -1,5 +1,5 @@
 colima:
-> colima start --network-address
+> colima start --network-address --cpu 4 --memory 8
 .PHONY: colima
 
 colima-stop:
