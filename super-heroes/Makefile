@@ -71,7 +71,7 @@ $(fights_pom): $(super_heroes_mvnw)
 >   -DprojectArtifactId=rest-fights \
 >   -DclassName="io.quarkus.workshop.superheroes.fight.FightResource" \
 >   -Dpath="api/fights" \
->   -Dextensions="jdbc-postgresql,hibernate-orm-panache,hibernate-validator,quarkus-resteasy-reactive-jackson,smallrye-openapi,kafka"
+>   -Dextensions="jdbc-postgresql,hibernate-orm-panache,hibernate-validator,quarkus-resteasy-reactive-jackson,smallrye-openapi,kafka,quarkus-rest-client-reactive-jackson"
 > cd rest-fights
 > touch ./mvnw
 
