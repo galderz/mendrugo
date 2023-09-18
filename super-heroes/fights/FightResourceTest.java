@@ -99,10 +99,12 @@ public class FightResourceTest {
         hero.name = DEFAULT_WINNER_NAME;
         hero.picture = DEFAULT_WINNER_PICTURE;
         hero.level = DEFAULT_WINNER_LEVEL;
+        hero.powers = DEFAULT_WINNER_POWERS;
         Villain villain = new Villain();
         villain.name = DEFAULT_LOSER_NAME;
         villain.picture = DEFAULT_LOSER_PICTURE;
         villain.level = DEFAULT_LOSER_LEVEL;
+        villain.powers = DEFAULT_LOSER_POWERS;
         Fighters fighters = new Fighters();
         fighters.hero = hero;
         fighters.villain = villain;
@@ -115,28 +117,36 @@ public class FightResourceTest {
             .post("/api/fights")
             .then()
             .statusCode(OK.getStatusCode())
-            .body(containsString("winner"), containsString("loser"))
-            .extract().body().jsonPath().getString("id");
+            .body(containsString("winner"),
+                containsString("loser"))
+            .extract()
+            .body()
+            .jsonPath()
+            .getString("id");
 
         assertNotNull(fightId);
 
-        given()
-            .pathParam("id", fightId)
-            .when().get("/api/fights/{id}")
+        given().pathParam("id", fightId)
+            .when()
+            .get("/api/fights/{id}")
             .then()
             .statusCode(OK.getStatusCode())
             .contentType(APPLICATION_JSON)
             .body("winnerName", Is.is(DEFAULT_WINNER_NAME))
             .body("winnerPicture", Is.is(DEFAULT_WINNER_PICTURE))
             .body("winnerLevel", Is.is(DEFAULT_WINNER_LEVEL))
+            .body("winnerPowers", Is.is(DEFAULT_WINNER_POWERS))
             .body("loserName", Is.is(DEFAULT_LOSER_NAME))
             .body("loserPicture", Is.is(DEFAULT_LOSER_PICTURE))
             .body("loserLevel", Is.is(DEFAULT_LOSER_LEVEL))
+            .body("loserPowers", Is.is(DEFAULT_LOSER_POWERS))
             .body("fightDate", Is.is(notNullValue()));
 
         List<Fight> fights = get("/api/fights").then()
             .statusCode(OK.getStatusCode())
-            .extract().body().as(getFightTypeRef());
+            .extract()
+            .body()
+            .as(getFightTypeRef());
         assertEquals(NB_FIGHTS + 1, fights.size());
     }
 
