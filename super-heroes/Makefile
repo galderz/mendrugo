@@ -27,7 +27,15 @@ villains_runner = $(villains_dir)/target/rest-villains-1.0.0-SNAPSHOT-runner
 super_heroes_dir := $(APP_DIR)/super-heroes
 super_heroes_mvnw := $(super_heroes_dir)/mvnw
 ui_dir = $(super_heroes_dir)/ui-super-heroes
+ui_runner = $(super_heroes_dir)/ui-super-heroes/target/ui-super-heroes-1.0.0-SNAPSHOT-runner
 zip := quarkus-super-heroes-workshop.zip
+
+run-ui-native: $(ui_runner)
+> $<
+
+$(ui_runner): $(super_heroes_mvnw)
+> cd $(ui_dir)
+> JAVA_HOME=$(GRAALVM_HOME) ../mvnw package -Pnative
 
 run-ui-dev: $(super_heroes_mvnw)
 > cd $(ui_dir)
