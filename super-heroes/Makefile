@@ -60,7 +60,10 @@ fights:
 > cp fights/FightService.java $(fights_dir)/src/main/java/io/quarkus/workshop/superheroes/fight
 > cp fights/application.properties $(fights_dir)/src/main/resources
 > cp fights/import.sql $(fights_dir)/src/main/resources
+> cp fights/pom.xml $(fights_dir)
 > cp -r fights/client $(fights_dir)/src/main/java/io/quarkus/workshop/superheroes/fight
+> mkdir -p $(fights_dir)/src/test/java/io/quarkus/workshop/superheroes/fight/client
+> cp -r fights/test/client $(fights_dir)/src/test/java/io/quarkus/workshop/superheroes/fight/client
 .PHONY: fights
 
 $(fights_pom): $(super_heroes_mvnw)
