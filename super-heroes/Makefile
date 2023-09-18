@@ -150,6 +150,7 @@ $(villains_pom): $(super_heroes_mvnw)
 
 $(super_heroes_mvnw): $(zip)
 > unzip $<
+> touch $@
 
 $(zip):
 > wget https://raw.githubusercontent.com/quarkusio/quarkus-workshops/refs/heads/main/quarkus-workshop-super-heroes/dist/$(zip)
