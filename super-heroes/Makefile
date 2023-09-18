@@ -26,7 +26,13 @@ villains_pom = $(villains_dir)/pom.xml
 villains_runner = $(villains_dir)/target/rest-villains-1.0.0-SNAPSHOT-runner
 super_heroes_dir := $(APP_DIR)/super-heroes
 super_heroes_mvnw := $(super_heroes_dir)/mvnw
+ui_dir = $(super_heroes_dir)/ui-super-heroes
 zip := quarkus-super-heroes-workshop.zip
+
+run-ui-dev: $(super_heroes_mvnw)
+> cd $(ui_dir)
+> JAVA_HOME=$(GRAALVM_HOME) ../mvnw quarkus:dev
+.PHONY: run-ui-dev
 
 run-fights-dev: $(fights_pom) fights
 > cd $(fights_dir)
