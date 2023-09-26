@@ -8,6 +8,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>greeting-extension</module>
+    <module>greeting-app</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
