@@ -9,6 +9,7 @@ import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.ClassOutput;
 import io.quarkus.gizmo.Gizmo;
 import io.quarkus.gizmo.MethodCreator;
+import jakarta.enterprise.context.ApplicationScoped;
 
 class CommandExtensionProcessor
 {
@@ -32,6 +33,7 @@ class CommandExtensionProcessor
             .className("org.acme.command.generated.GeneratedCommand")
             .interfaces("org.acme.command.main.Command") // todo share class
             .build();
+        command.addAnnotation(ApplicationScoped.class);
 
         final MethodCreator run = command.getMethodCreator("run", void.class);
         Gizmo.systemOutPrintln(run, run.load("A generated command"));
