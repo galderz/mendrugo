@@ -10,6 +10,7 @@
     <module>command-extension</module>
     <module>command-main</module>
     <module>command-sample</module>
+    <module>command-annotations</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
