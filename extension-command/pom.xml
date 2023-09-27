@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>command-extension</module>
-    <module>command-app</module>
+    <module>command-main</module>
     <module>command-sample</module>
   </modules>
   <properties>

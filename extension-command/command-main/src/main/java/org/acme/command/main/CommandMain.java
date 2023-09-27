@@ -1,4 +1,4 @@
-package org.acme.command.app;
+package org.acme.command.main;
 
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
