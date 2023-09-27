@@ -37,6 +37,7 @@ class CommandExtensionProcessor
 
         final MethodCreator run = command.getMethodCreator("run", void.class);
         Gizmo.systemOutPrintln(run, run.load("A generated command"));
+        run.returnValue(null);
         run.close();
 
         command.close();
