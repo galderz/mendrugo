@@ -3,12 +3,13 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.acme</groupId>
-  <artifactId>extensions-parent</artifactId>
+  <artifactId>command-parent</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>command-extension</module>
     <module>command-app</module>
+    <module>command-sample</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
