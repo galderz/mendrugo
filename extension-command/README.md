@@ -1,3 +1,4 @@
 - [ ] Inject List<>
 - [ ] Create infrastructure module
 - [ ] Use vertx.timer and run something for a number of seconds
+- [ ] Check how qollider processed command line options before picocli
