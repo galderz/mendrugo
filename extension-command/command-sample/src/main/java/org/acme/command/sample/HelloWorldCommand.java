@@ -5,8 +5,14 @@ import org.acme.command.annotations.WithCommand;
 public class HelloWorldCommand
 {
     @WithCommand
-    public void helloWorld()
+    public void firstCommand()
     {
-        System.out.println("Annotated hello world!");
+        System.out.println("Executing first annotated command!");
+    }
+
+    @WithCommand
+    public void secondCommand()
+    {
+        System.out.println("Executing second annotated command!");
     }
 }

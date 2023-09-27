@@ -38,38 +38,51 @@ class CommandExtensionProcessor
     {
         System.out.println("Generating command...");
 
-        MethodInfo methodInfo = null;
+        CommandInfo.Builder builder = new CommandInfo.Builder();
         for (AnnotationInstance ann : index.getIndex().getAnnotations(WITH_COMMAND))
         {
-            methodInfo = ann.target().asMethod();
+            MethodInfo methodInfo = ann.target().asMethod();
+            builder.withMethod(methodInfo);
             System.out.println(methodInfo);
         }
 
-        if (methodInfo != null)
+        final ClassOutput beanOutput = new GeneratedBeanGizmoAdaptor(generatedBeanClasses);
+        final CommandInfo build = builder.build();
+        if (build.methods().isEmpty())
         {
-            final ClassOutput beanOutput = new GeneratedBeanGizmoAdaptor(generatedBeanClasses);
-
-            final ClassCreator command = ClassCreator.builder()
-                .classOutput(beanOutput)
-                .className("org.acme.command.generated.GeneratedCommand")
-                .interfaces("org.acme.command.main.Command") // todo share class
-                .build();
-            command.addAnnotation(ApplicationScoped.class);
-
-            final MethodCreator run = command.getMethodCreator("run", void.class);
-            Gizmo.systemOutPrintln(run, run.load("A generated command"));
-
-            final ClassInfo classInfo = methodInfo.declaringClass();
-            final String typeName = classInfo.name().toString();
-            final String typeDescriptor = "L" + typeName.replace('.', '/') + ";";
-            final AssignableResultHandle variable = run.createVariable(typeDescriptor);
-            run.assign(variable, run.newInstance(MethodDescriptor.ofConstructor(classInfo.name().toString())));
-            run.invokeVirtualMethod(MethodDescriptor.of(methodInfo), variable);
-
-            run.returnValue(null);
-            run.close();
-
-            command.close();
+            return;
         }
+
+        build.methods().forEach(m -> generate(m, beanOutput));
+    }
+
+    private void generate(MethodInfo methodInfo, ClassOutput beanOutput)
+    {
+        final ClassInfo classInfo = methodInfo.declaringClass();
+
+        final ClassCreator command = ClassCreator.builder()
+            .classOutput(beanOutput)
+            .className(String.format(
+                "org.acme.command.generated.%s_%s_Command"
+                , classInfo.simpleName()
+                , methodInfo.name())
+            )
+            .interfaces("org.acme.command.main.Command") // todo share class
+            .build();
+        command.addAnnotation(ApplicationScoped.class);
+
+        final MethodCreator run = command.getMethodCreator("run", void.class);
+        Gizmo.systemOutPrintln(run, run.load("A generated command"));
+
+        final String typeName = classInfo.name().toString();
+        final String typeDescriptor = "L" + typeName.replace('.', '/') + ";";
+        final AssignableResultHandle variable = run.createVariable(typeDescriptor);
+        run.assign(variable, run.newInstance(MethodDescriptor.ofConstructor(classInfo.name().toString())));
+        run.invokeVirtualMethod(MethodDescriptor.of(methodInfo), variable);
+
+        run.returnValue(null);
+        run.close();
+
+        command.close();
     }
 }
