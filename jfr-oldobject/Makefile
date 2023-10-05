@@ -51,7 +51,7 @@ endif
 #> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal com.oracle.svm.test.jfr.oldobject
 test: $(native_image)
 > cd $(svm_home)
-> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image $(native_test_pattern) --build-args --enable-monitoring=heapdump,jvmstat -H:+DumpThreadStacksOnSignal -g
+> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image $(native_test_pattern) --build-args --enable-monitoring=heapdump,jvmstat -H:+UnlockExperimentalVMOptions -H:+DumpThreadStacksOnSignal -g
 .PHONY: test
 
 svm_test_jar = $(svm_home)/mxbuild/jdk17/dists/jdk17/svm-tests.jar
