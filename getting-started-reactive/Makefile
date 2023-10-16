@@ -1,12 +1,12 @@
 GRAALVM_FLAVOUR ?= jdk
-GRAALVM_MAJOR ?= 17
+GRAALVM_MAJOR ?= 21
 GRAALVM_MINOR ?= 0
-GRAALVM_MICRO ?= 8
-GRAALVM_BUILD ?= 7.1
+GRAALVM_MICRO ?= 0
+GRAALVM_BUILD ?= 35.1
 
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
-QUICKSTART_BRANCH ?= 3.2.3.Final
+QUICKSTART_BRANCH ?= 3.4.3
 TOPDIR = ..
 
 default: run
@@ -20,16 +20,3 @@ include $(TOPDIR)/make/common/AsyncProfiler.gmk
 include $(TOPDIR)/make/common/Numa.gmk
 include $(TOPDIR)/make/common/Perf.gmk
 include $(TOPDIR)/make/common/Pidstat.gmk
-
-greeting_resource_file = $(APP_DIR)/src/main/java/org/acme/getting/started/ReactiveGreetingResource.java
-nonblocking_fix_marker = $(APP_DIR)/.nonblocking-fix.marker
-
-$(runner): $(nonblocking_fix_marker)
-
-$(jar): $(nonblocking_fix_marker)
-
-$(nonblocking_fix_marker): $(greeting_resource_file)
-> @sed -i.bak "/@Produces(MediaType.TEXT_PLAIN)/{N;N;/public String hello() {/s/@Produces(MediaType.TEXT_PLAIN)/@io.smallrye.common.annotation.NonBlocking\n    &/}" $<
-> @echo "Differences between original and modified files:"
-> @diff -U2 "$<.bak" $< || true
-> touch $@
