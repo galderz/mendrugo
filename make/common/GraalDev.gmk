@@ -52,7 +52,7 @@ idea: $(java)
 .PHONY: idea
 
 gate:
-> $(call gate,JAVA_HOME=$(HOME)/opt/labsjdk-ce-21-jvmci-23.1-b14 /opt/mx/mx)
+> $(call gate,JAVA_HOME=$(HOME)/opt/labsjdk-ce-21-jvmci-23.1-b15 /opt/mx/mx)
 .PHONY: gate
 
 define gate
