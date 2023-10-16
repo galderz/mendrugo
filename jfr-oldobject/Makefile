@@ -22,6 +22,7 @@ jvm_opts += -XX:TLABSize=2k
 
 ifdef VERBOSE
   jvm_opts += -Xlog:jfr+system=trace
+  # For queue size, add -XX:FlightRecorderLogging=jfr=debug
   # binary_opts += -XX:FlightRecorderLogging=all=trace
   # native_image_opts += -H:+TraceVMOperations
   # mx += -V
@@ -47,6 +48,13 @@ else
   native_test_pattern := com.oracle.svm.test.jfr.oldobject
 endif
 
+mx_unittest += $(mx)
+mx_unittest += unittest
+
+ifdef REMOTE_DEBUG
+  mx_unittest += -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
+endif
+
 #> DEBUG_RECORDING=true $(mx) native-unittest --run-args -XX:FlightRecorderLogging=jfr=debug,jfr+dcmd=debug --verbose --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal --preserve-image com.oracle.svm.test.jfr.oldobject
 #> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal com.oracle.svm.test.jfr.oldobject
 test: $(native_image)
@@ -68,7 +76,7 @@ $(svm_core_jar): $(shell find $(svm_home)/src/com.oracle.svm.core -type f -name 
 
 unittest: $(svm_core_jar) $(svm_test_jar)
 > cd $(svm_home)
-> $(mx) unittest com.oracle.svm.test.jfr.oldobject.TestOldObjectProfiler
+> $(mx_unittest) com.oracle.svm.test.jfr.oldobject.TestOldObjectProfiler
 .PHONY: unittest
 
 run-native: $(binary)
