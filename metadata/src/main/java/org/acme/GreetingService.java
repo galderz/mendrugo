@@ -21,7 +21,7 @@ public class GreetingService
         }
         catch (Exception e)
         {
-            Log.errorf(e, "Unable to create a greeting");
+            Log.debugf(e, "Unable to create a greeting");
             throw new NotFoundException("Unknown name: " + name);
         }
     }
