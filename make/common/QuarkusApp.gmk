@@ -94,6 +94,14 @@ run-gdb: $(debuginfo)
 build: $(runner)
 .PHONY: build
 
+verify: $(pom) $(native_image)
+> $(mvn_cmd) verify $(native_build_args)
+.PHONY: verify
+
+verify-jvm: $(pom)
+> $(mvn_cmd) verify
+.PHONY: verify-jvm
+
 $(runner): $(pom) $(native_image)
 > cd $(APP_DIR)
 > $(mvn_package) $(native_build_args)
