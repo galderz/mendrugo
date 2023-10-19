@@ -14,3 +14,8 @@ include $(TOPDIR)/make/common/MakeBase.gmk
 include $(TOPDIR)/make/common/Graal.gmk
 include $(TOPDIR)/make/common/Maven.gmk
 include $(TOPDIR)/make/common/QuarkusApp.gmk
+include $(TOPDIR)/make/common/QuarkusDev.gmk
+
+#verify-with-agent: $(pom) $(native_image)
+#> $(mvn_cmd) verify -Dnative-with-agent
+#.PHONY: verify-with-agent
