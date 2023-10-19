@@ -1,51 +1,20 @@
-QUARKUS_HOME ?= /opt/quarkus-quarkus
+QUARKUS_HOME ?= $(HOME)/1/quarkus-quarkus
 QUARKUS_VERSION ?= 999-SNAPSHOT
 
-quarkus_maven_args += -Dquickly
-ifdef MAVEN_THREADS
-  quarkus_maven_args += -T
-  quarkus_maven_args += $(MAVEN_THREADS)C
-endif
-
-dot_quarkus_app_dir = $(APP)/target/markers
-dot_quarkus_app_version = $(dot_quarkus_app_dir)/.quarkus-version
-dot_quarkus_home_dir = $(QUARKUS_HOME)/target/markers
-dot_quarkus_home_version = $(dot_quarkus_home_dir)/.quarkus-version
 quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-deployment-$(QUARKUS_VERSION).jar
 quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
 
-$(runner): $(dot_quarkus_app_version) $(sources) $(quarkus_core_jar)
-> cd $(APP)
-> $(mvn_package) $(native_build_args)
-
 $(quarkus_core_jar): $(quarkus_core_src)
 > cd $(QUARKUS_HOME)
-> $(mvn) -DskipTests -f core install
+> $(mvn_cmd) -DskipTests -f core install
 
-build-quarkus: $(dot_quarkus_home_version)
+build-quarkus:
 > cd $(QUARKUS_HOME)
-> $(mvn) -Dquickly
+> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvn_cmd) -Dquickly
 .PHONY: build-quarkus
-
-$(dot_quarkus_home_version): $(dot_quarkus_home_dir)
-> cd $(QUARKUS_HOME)
-> if [ -e "update-version.sh" ]; then
-> JAVA_HOME=$(JAVA_HOME) ./update-version.sh $(QUARKUS_VERSION)
-> fi
-> touch $@
-
-$(dot_quarkus_home_dir):
-> mkdir -p $(dot_quarkus_home_dir)
-
-$(dot_quarkus_app_version): $(pom) $(dot_quarkus_app_dir)
-> sed -r -i 's@<quarkus.platform.version>[^<]+</quarkus.platform.version>@<quarkus.platform.version>$(QUARKUS_VERSION)</quarkus.platform.version>@' $<
-> touch $@
-
-$(dot_quarkus_app_dir):
-> mkdir -p $(dot_quarkus_app_dir)
 
 clean-quarkus:
 > cd $(QUARKUS_HOME)
-> $(mvn) clean
+> $(mvn_cmd) clean
 .PHONY: clean-quarkus
