@@ -1,0 +1,59 @@
+{
+  "rules": [
+    {
+      "excludeClasses": "com.sun.**"
+    },
+    {
+      "excludeClasses": "java.**"
+    },
+    {
+      "excludeClasses": "javax.**"
+    },
+    {
+      "excludeClasses": "jdk.**"
+    },
+    {
+      "excludeClasses": "sun.**"
+    },
+    {
+      "excludeClasses": "groovy.**"
+    },
+    {
+      "excludeClasses": "io.netty.**"
+    },
+    {
+      "excludeClasses": "io.quarkus.**"
+    },
+    {
+      "excludeClasses": "io.restassured.**"
+    },
+    {
+      "excludeClasses": "io.smallrye.**"
+    },
+    {
+      "excludeClasses": "io.vertx.**"
+    },
+    {
+      "excludeClasses": "jakarta.**"
+    },
+    {
+      "excludeClasses": "org.aesh.**"
+    },
+    {
+      "excludeClasses": "org.apache.maven.**"
+    },
+    {
+      "excludeClasses": "org.apache.http.**"
+    },
+    {
+      "excludeClasses": "org.codehaus.groovy.**"
+    },
+    {
+      "excludeClasses": "org.jboss.**"
+    },
+    {
+      "excludeClasses": "org.junit.**"
+    }
+  ],
+  "regexRules": []
+}
