@@ -8,7 +8,8 @@ GRAALVM_VERSION ?= 23.1
 
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
-QUICKSTART_BRANCH ?= development
+#QUICKSTART_BRANCH ?= development
+QUICKSTART_BRANCH ?= 3.5.0
 
 default: run
 
