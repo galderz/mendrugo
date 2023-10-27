@@ -16,6 +16,25 @@ include $(TOPDIR)/make/common/Maven.gmk
 include $(TOPDIR)/make/common/QuarkusApp.gmk
 include $(TOPDIR)/make/common/QuarkusDev.gmk
 
-#verify-with-agent: $(pom) $(native_image)
-#> $(mvn_cmd) verify -Dnative-with-agent
-#.PHONY: verify-with-agent
+verify: $(quarkus_core_jar) $(pom) $(native_image)
+> $(mvn_cmd) verify -Dnative-with-agent
+.PHONY: verify
+
+verify-with-agent-trace: $(pom) $(native_image)
+> $(mvn_cmd) verify -Dnative-with-agent-trace
+.PHONY: verify-with-agent-trace
+
+new_project := new-project
+new_project_pom := $(new_project)/pom.xml
+
+new-project: $(new_project_pom)
+.PHONY: new-project
+
+$(new_project_pom): $(quarkus_core_jar)
+> $(mvn_cmd) io.quarkus:quarkus-maven-plugin:999-SNAPSHOT:create \
+>   -DprojectGroupId=org.acme \
+>   -DprojectArtifactId=new-project
+
+clean-new-project:
+> rm -drf $(new_project)
+.PHONY: clean-new-project
