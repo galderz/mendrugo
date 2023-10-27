@@ -13,7 +13,7 @@ runner = $(target)/$(APP_NAME)-1.0.0-SNAPSHOT-runner
 debuginfo = $(runner).debug
 
 ifdef MAVEN_ARGS
-  mvn_package += $(foreach arg,$(MAVEN_ARGS),$(arg))
+  mvnw_package += $(foreach arg,$(MAVEN_ARGS),$(arg))
 endif
 
 ifdef NATIVE_BUILD_ARGS
@@ -59,7 +59,7 @@ else
 endif
 
 ifdef JFR
-  mvn_package += -Dquarkus.native.monitoring=jfr
+  mvnw_package += -Dquarkus.native.monitoring=jfr
 endif
 
 ifdef NO_OPT
@@ -80,7 +80,7 @@ run-jvm: $(jar)
 
 run-dev:
 > cd $(APP_DIR)
-> $(mvn_cmd) quarkus:dev
+> $(mvnw_cmd) quarkus:dev
 .PHONY: run-dev
 
 run-debug: $(debuginfo)
@@ -95,24 +95,24 @@ build: $(runner)
 .PHONY: build
 
 verify: $(pom) $(native_image)
-> $(mvn_cmd) verify $(native_build_args)
+> $(mvnw_cmd) verify $(native_build_args)
 .PHONY: verify
 
 verify-jvm: $(pom)
-> $(mvn_cmd) verify
+> $(mvnw_cmd) verify
 .PHONY: verify-jvm
 
 $(runner): $(pom) $(native_image)
 > cd $(APP_DIR)
-> $(mvn_package) $(native_build_args)
+> $(mvnw_package) $(native_build_args)
 
 $(debuginfo): $(pom) $(native_image)
 > cd $(APP_DIR)
-> $(mvn_package) $(native_build_args) -Dquarkus.native.debug.enabled $(debuginfo_args)
+> $(mvnw_package) $(native_build_args) -Dquarkus.native.debug.enabled $(debuginfo_args)
 
 $(jar): $(pom) $(java) $(mvnw)
 > cd $(APP_DIR)
-> $(mvn_package)
+> $(mvnw_package)
 
 $(pom):
 > pushd $(tmp_dir)

@@ -2,20 +2,31 @@ MAVEN_VERSION ?= 3.9.2
 
 jar := $(APP_DIR)/target/$(APP_NAME)-1.0-SNAPSHOT.jar
 maven_home = $(HOME)/opt/maven
+mvn = $(maven_home)/bin/mvn
 mvnw = $(APP_DIR)/mvnw
-mvn_package += $(mvn_cmd)
-mvn_package += package
-mvn_package += -DskipTests
+mvnw_package += $(mvnw_cmd)
+mvnw_package += package
+mvnw_package += -DskipTests
 pom = $(APP_DIR)/pom.xml
 sources += $(shell find $(APP_DIR)/src -type f -name '*.java' | sed 's: :\\ :g')
 sources += $(shell find $(APP_DIR)/src -type f -name '*.properties' | sed 's: :\\ :g')
 target = $(APP_DIR)/target
 
+mvnw_cmd += JAVA_HOME=$(GRAALVM_HOME)
+ifdef MAVEN_DEBUG
+  mvnw_cmd += MAVEN_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
+endif
+mvnw_cmd += ./mvnw
+
+ifdef VERBOSE
+  mvnw_cmd += -X
+endif
+
 mvn_cmd += JAVA_HOME=$(GRAALVM_HOME)
 ifdef MAVEN_DEBUG
   mvn_cmd += MAVEN_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 endif
-mvn_cmd += ./mvnw
+mvn_cmd += $(mvn)
 
 ifdef VERBOSE
   mvn_cmd += -X
@@ -23,10 +34,10 @@ endif
 
 $(jar): $(pom) $(sources) $(java) $(mvnw)
 > cd $(APP_DIR)
-> $(mvn_package)
+> $(mvnw_package)
 
 $(mvnw):
-> JAVA_HOME=$(GRAALVM_HOME) $(maven_home)/bin/mvn -N wrapper:wrapper -Dmaven=$(MAVEN_VERSION)
+> $(mvn_cmd) -N wrapper:wrapper -Dmaven=$(MAVEN_VERSION)
 > touch $@
 
 clean:

@@ -7,14 +7,14 @@ quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | 
 
 $(quarkus_core_jar): $(quarkus_core_src)
 > cd $(QUARKUS_HOME)
-> $(mvn_cmd) -DskipTests -f core install
+> $(mvnw_cmd) -DskipTests -f core install
 
 build-quarkus:
 > cd $(QUARKUS_HOME)
-> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvn_cmd) -Dquickly
+> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvnw_cmd) -Dquickly
 .PHONY: build-quarkus
 
 clean-quarkus:
 > cd $(QUARKUS_HOME)
-> $(mvn_cmd) clean
+> $(mvnw_cmd) clean
 .PHONY: clean-quarkus
