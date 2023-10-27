@@ -8,9 +8,13 @@ mvnw_package += $(mvnw_cmd)
 mvnw_package += package
 mvnw_package += -DskipTests
 pom = $(APP_DIR)/pom.xml
-sources += $(shell find $(APP_DIR)/src -type f -name '*.java' | sed 's: :\\ :g')
-sources += $(shell find $(APP_DIR)/src -type f -name '*.properties' | sed 's: :\\ :g')
 target = $(APP_DIR)/target
+
+sources :=
+ifneq ("$(wildcard $(APP_DIR)/src)","")
+  sources += $(shell find $(APP_DIR)/src -type f -name '*.java' | sed 's: :\\ :g')
+  sources += $(shell find $(APP_DIR)/src -type f -name '*.properties' | sed 's: :\\ :g')
+endif
 
 mvnw_cmd += JAVA_HOME=$(GRAALVM_HOME)
 ifdef MAVEN_DEBUG
