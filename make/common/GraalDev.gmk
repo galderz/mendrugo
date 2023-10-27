@@ -7,13 +7,15 @@ jdk_makefile = $(JDK_HOME)/Makefile
 jfr = $(JAVA_HOME)/bin/jfr
 gdk_home := $(HOME)/1/mandrel-mandrel
 mx += JAVA_HOME=$(JAVA_HOME)
-mx += /opt/mx/mx
+mx += $(mx_bin)
+mx_bin = $(mx_path)/mx
+mx_path = $(opt)/mx
 native_image += $(GRAALVM_HOME)/bin/native-image
 svm_home := $(gdk_home)/substratevm
 
 $(native_image): $(shell find $(svm_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(svm_home)/src -type f -name '*.properties')
-$(native_image): $(java)
+$(native_image): $(java) $(mx_bin)
 > cd $(svm_home)
 > $(mx) --debug-images build
 
@@ -31,6 +33,9 @@ $(java):
 >   --with-version-opt=jvmci-$(GRAALVM_VERSION)-dev
 > make CONF=graalbuilder graal-builder-image
 > touch $@
+
+$(mx_bin):
+> git clone --depth 1 https://github.com/graalvm/mx $(mx_path)
 
 $(jdk_makefile):
 > cd $(HOME)/1
