@@ -55,5 +55,9 @@
       "excludeClasses": "org.junit.**"
     }
   ],
-  "regexRules": []
+  "regexRules": [
+    {
+      "excludeClasses": ".*_Bean"
+    }
+  ]
 }
