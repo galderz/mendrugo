@@ -79,7 +79,7 @@ run-jvm: $(jar)
 .PHONY: run-jvm
 
 run-jvm-native-agent: $(jar) $(libnative-image-agent)
-> $(GRAALVM_HOME)/bin/java $(run_jvm_opts) -agentlib:native-image-agent=config-output-dir=target/native-image-config -jar $<
+> $(GRAALVM_HOME)/bin/java $(run_jvm_opts) -agentlib:native-image-agent=config-output-dir=$(target)/native-image-config -jar $<
 .PHONY: run-jvm-native-agent
 
 run-dev:
