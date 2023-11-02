@@ -2,7 +2,7 @@ JDK_HOME ?= $(HOME)/1/$(JDK_REPO)
 JAVA_HOME ?= $(JDK_HOME)/build/graalbuilder/images/graal-builder-jdk
 GRAALVM_HOME ?= $(gdk_home)/sdk/latest_graalvm_home
 
-java = $(JAVA_HOME)/bin/java
+java = $(GRAALVM_HOME)/bin/java
 jdk_makefile = $(JDK_HOME)/Makefile
 jfr = $(JAVA_HOME)/bin/jfr
 gdk_home := $(HOME)/1/mandrel-mandrel
