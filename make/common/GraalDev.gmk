@@ -14,11 +14,15 @@ mx_path = $(opt)/mx
 native_image += $(GRAALVM_HOME)/bin/native-image
 svm_home := $(gdk_home)/substratevm
 
+ifdef DEBUG_IMAGES
+  mx += --debug-images
+endif
+
 $(native_image): $(shell find $(svm_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(svm_home)/src -type f -name '*.properties')
 $(native_image): $(java) $(mx_bin)
 > cd $(svm_home)
-> $(mx) --debug-images build
+> $(mx) build
 
 $(libnative-image-agent): $(shell find $(svm_home)/src/com.oracle.svm.agent/src -type f -name '*.java')
 $(libnative-image-agent): $(shell find $(svm_home)/src/com.oracle.svm.agent/src -type f -name '*.properties')
