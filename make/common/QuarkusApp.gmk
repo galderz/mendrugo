@@ -66,10 +66,6 @@ ifdef NO_OPT
   debuginfo_args := $(debuginfo_args),-O0,-H:-OmitInlinedMethodDebugLineInfo,-H:+SourceLevelDebug
 endif
 
-ifdef NATIVE_AGENT
-  run_jvm_opts += -agentlib:native-image-agent=config-output-dir=target/native-image-config
-endif
-
 run: $(runner) print-graalvm-version
 > $< $(run_args)
 .PHONY: run
@@ -81,6 +77,10 @@ print-graalvm-version: $(runner)
 run-jvm: $(jar)
 > $(java) $(run_jvm_opts) -jar $<
 .PHONY: run-jvm
+
+run-jvm-native-agent: $(jar) $(libnative-image-agent)
+> $(java) $(run_jvm_opts) -agentlib:native-image-agent=config-output-dir=target/native-image-config -jar $<
+.PHONY: run-jvm-native-agent
 
 run-dev:
 > cd $(APP_DIR)

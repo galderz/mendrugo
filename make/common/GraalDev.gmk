@@ -6,6 +6,7 @@ java = $(JAVA_HOME)/bin/java
 jdk_makefile = $(JDK_HOME)/Makefile
 jfr = $(JAVA_HOME)/bin/jfr
 gdk_home := $(HOME)/1/mandrel-mandrel
+libnative-image-agent = $(GRAALVM_HOME)/lib/libnative-image-agent.so
 mx += JAVA_HOME=$(JAVA_HOME)
 mx += $(mx_bin)
 mx_bin = $(mx_path)/mx
@@ -18,6 +19,12 @@ $(native_image): $(shell find $(svm_home)/src -type f -name '*.properties')
 $(native_image): $(java) $(mx_bin)
 > cd $(svm_home)
 > $(mx) --debug-images build
+
+$(libnative-image-agent): $(shell find $(svm_home)/src/com.oracle.svm.agent/src -type f -name '*.java')
+$(libnative-image-agent): $(shell find $(svm_home)/src/com.oracle.svm.agent/src -type f -name '*.properties')
+$(libnative-image-agent): $(native_image)
+> cd $(svm_home)
+> $< -g --macro:native-image-agent-library
 
 $(java): $(jdk_makefile)
 $(java): $(shell find $(JDK_HOME)/src -type f -name '*.java')
