@@ -6,7 +6,7 @@ GRAALVM_BUILD ?= 35.1
 
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
-QUICKSTART_BRANCH ?= 3.4.3
+QUICKSTART_BRANCH ?= 3.5.0
 TOPDIR = ..
 
 default: run
