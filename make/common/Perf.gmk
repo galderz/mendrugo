@@ -1,6 +1,6 @@
 # For startup work, switch frequency to say 1009
 PERF_RECORD_FREQ ?= 100
-PERF_RECORD_DURATION ?= 3
+PERF_RECORD_DURATION ?= 10
 
 fg_raw = $(target)/raw.svg
 fg_polished = $(target)/polished.svg
