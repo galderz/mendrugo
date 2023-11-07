@@ -29,6 +29,6 @@ phases:
       always:
         users: !param CONNECTIONS 10 # option -c
         duration: !param DURATION 10s # option -d
-        maxDuration: !param DURATION 10s # option -d
+        maxDuration: 70s # This is duration + default timeout 60s
         startAfterStrict: calibration
         scenario: *scenario
