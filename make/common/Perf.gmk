@@ -20,6 +20,10 @@ perf_script += perf
 perf_script += script
 perf_script += -i
 perf_script += $(perf_data)
+# Force demangling manually
+perf_script += --no-demangle
+perf_script += |
+perf_script += c++filt
 perf_stacks = $(target)/perf.stacks
 stackcollapse_perf = $(fg_home)/stackcollapse-perf.pl
 
@@ -32,12 +36,6 @@ endif
 ifdef EVENT
   perf_record += -e
   perf_record += $(EVENT)
-endif
-
-# Force demangling manually
-ifdef DEMANGLE
-  perf_script += |
-  perf_script += c++filt
 endif
 
 record: $(debuginfo) delete-perf-data
