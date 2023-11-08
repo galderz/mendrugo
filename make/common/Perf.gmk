@@ -6,6 +6,7 @@ fg_raw = $(target)/raw.svg
 fg_polished = $(target)/polished.svg
 fg_home := $(opt)/FlameGraph
 fg_pl = $(fg_home)/flamegraph.pl
+perf_archive_tar = $(target)/perf.data.tar.bz2
 perf_data = $(target)/perf.data
 perf_record += perf
 perf_record += record
@@ -50,6 +51,12 @@ record-numa: $(debuginfo) delete-perf-data
 record-pid:
 > $(perf_record) -p $$(pidof $(APP_NAME)-1.0.0-SNAPSHOT-runner) -o $(perf_data) sleep $(PERF_RECORD_DURATION)
 .PHONY: record-pid
+
+archive: $(perf_archive_tar)
+.PHONY: archive
+
+$(perf_archive_tar): $(perf_data)
+> perf archive $<
 
 script: $(perf_stacks)
 .PHONY: script
