@@ -4,3 +4,7 @@ export:
 > mkdir -p $(export_dir)
 > cp -r $(target) $(export_dir)
 .PHONY: export
+
+clean-export:
+> rm -drf $(export_dir)/target
+.PHONY: clean-export
