@@ -113,7 +113,7 @@ $(runner): $(pom) $(native_image)
 # Make sure dependency sources are downloaded before doing the packaging
 $(debuginfo): $(pom) $(native_image)
 > cd $(APP_DIR)
-> $(mvnw) dependency:sources
+> $(mvnw_cmd) dependency:sources
 > $(mvnw_package) $(native_build_args) -Dquarkus.native.debug.enabled $(debuginfo_args)
 
 $(jar): $(pom) $(java) $(mvnw)
