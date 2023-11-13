@@ -1,0 +1,6 @@
+export_dir := target
+
+export:
+> mkdir -p $(export_dir)
+> cp -r $(target) $(export_dir)
+.PHONY: export
