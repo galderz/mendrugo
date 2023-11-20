@@ -73,7 +73,7 @@ run: $(runner) print-graalvm-version
 > $< $(run_args)
 .PHONY: run
 
-print-graalvm-version: $(runner)
+print-graalvm-version:
 > strings $(runner) | grep GraalVM
 .PHONY: print-graalvm-version
 
