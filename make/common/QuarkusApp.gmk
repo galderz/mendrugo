@@ -18,6 +18,7 @@ endif
 
 ifdef NATIVE_BUILD_ARGS
   native_build_args += -Dquarkus.native.additional-build-args=$(NATIVE_BUILD_ARGS)
+  debuginfo_args += $(NATIVE_BUILD_ARGS)
 endif
 
 ifdef RUN_ARGS
