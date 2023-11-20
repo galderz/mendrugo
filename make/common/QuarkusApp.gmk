@@ -7,7 +7,6 @@ debuginfo_base_args := -Dquarkus.native.additional-build-args=-H:-DeleteLocalSym
 graalvm_version_cmd = strings $(runner) | grep GraalVM
 jar = $(target)/quarkus-app/quarkus-run.jar
 jcmd = $(GRAALVM_HOME)/bin/jcmd
-native_build_args += -Dnative
 pom = $(APP_DIR)/pom.xml
 runner = $(target)/$(APP_NAME)-1.0.0-SNAPSHOT-runner
 debuginfo = $(runner).debug
@@ -20,6 +19,7 @@ ifdef NATIVE_BUILD_ARGS
   native_build_args += -Dquarkus.native.additional-build-args=$(NATIVE_BUILD_ARGS)
   debuginfo_args = $(debuginfo_base_args),$(NATIVE_BUILD_ARGS)
 else
+  native_build_args =
   debuginfo_args = $(debuginfo_base_args)
 endif
 
@@ -102,7 +102,7 @@ build: $(runner)
 .PHONY: build
 
 verify: $(pom) $(native_image)
-> $(mvnw_cmd) verify $(native_build_args)
+> $(mvnw_cmd) verify -Dnative
 .PHONY: verify
 
 verify-jvm: $(pom)
@@ -111,7 +111,7 @@ verify-jvm: $(pom)
 
 $(runner): $(pom) $(native_image)
 > cd $(APP_DIR)
-> $(mvnw_package) $(native_build_args)
+> $(mvnw_package) -Dnative $(native_build_args)
 
 # Make sure dependency sources are downloaded before doing the packaging
 $(debuginfo): $(pom) $(native_image)
