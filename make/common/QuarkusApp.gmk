@@ -3,7 +3,7 @@ VERBOSE_GC ?=
 QUICKSTART_BRANCH ?= main
 
 application_properties = $(APP_DIR)/src/main/resources/application.properties
-debuginfo_args := -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-H:-OmitInlinedMethodDebugLineInfo
+debuginfo_base_args := -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-H:-OmitInlinedMethodDebugLineInfo
 graalvm_version_cmd = strings $(runner) | grep GraalVM
 jar = $(target)/quarkus-app/quarkus-run.jar
 jcmd = $(GRAALVM_HOME)/bin/jcmd
@@ -18,7 +18,9 @@ endif
 
 ifdef NATIVE_BUILD_ARGS
   native_build_args += -Dquarkus.native.additional-build-args=$(NATIVE_BUILD_ARGS)
-  debuginfo_args = $(debuginfo_args),$(NATIVE_BUILD_ARGS)
+  debuginfo_args = $(debuginfo_base_args),$(NATIVE_BUILD_ARGS)
+else
+  debuginfo_args = $(debuginfo_base_args)
 endif
 
 ifdef RUN_ARGS
