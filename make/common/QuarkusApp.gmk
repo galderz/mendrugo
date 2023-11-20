@@ -117,7 +117,7 @@ $(runner): $(pom) $(native_image)
 $(debuginfo): $(pom) $(native_image)
 > cd $(APP_DIR)
 > $(mvnw_cmd) dependency:sources
-> $(mvnw_package) -Dquarkus.native.debug.enabled $(debuginfo_args)
+> $(mvnw_package) -Dnative -Dquarkus.native.debug.enabled $(debuginfo_args)
 
 $(jar): $(pom) $(java) $(mvnw)
 > cd $(APP_DIR)
