@@ -18,7 +18,7 @@ endif
 
 ifdef NATIVE_BUILD_ARGS
   native_build_args += -Dquarkus.native.additional-build-args=$(NATIVE_BUILD_ARGS)
-  debuginfo_args += $(NATIVE_BUILD_ARGS)
+  debuginfo_args = $(debuginfo_args),$(NATIVE_BUILD_ARGS)
 endif
 
 ifdef RUN_ARGS
@@ -115,7 +115,7 @@ $(runner): $(pom) $(native_image)
 $(debuginfo): $(pom) $(native_image)
 > cd $(APP_DIR)
 > $(mvnw_cmd) dependency:sources
-> $(mvnw_package) $(native_build_args) -Dquarkus.native.debug.enabled $(debuginfo_args)
+> $(mvnw_package) -Dquarkus.native.debug.enabled $(debuginfo_args)
 
 $(jar): $(pom) $(java) $(mvnw)
 > cd $(APP_DIR)
