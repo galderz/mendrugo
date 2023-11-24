@@ -22,3 +22,4 @@ include $(TOPDIR)/make/common/Numa.gmk
 include $(TOPDIR)/make/common/Perf.gmk
 include $(TOPDIR)/make/common/Pidstat.gmk
 include $(TOPDIR)/make/common/Export.gmk
+include $(TOPDIR)/make/common/Wrk.gmk

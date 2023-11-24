@@ -1,0 +1,11 @@
+wrk = $(wrk)/wrk
+wrk_home = $(opt)/wrk
+wrk_makefile = $(wrk)/Makefile
+
+$(wrk): $(wrk_makefile)
+> cd $(wrk_home)
+> make
+
+$(wrk_makefile):
+> cd $(opt)
+> git clone https://github.com/wg/wrk
