@@ -1,6 +1,6 @@
-wrk = $(wrk)/wrk
+wrk = $(wrk_home)/wrk
 wrk_home = $(opt)/wrk
-wrk_makefile = $(wrk)/Makefile
+wrk_makefile = $(wrk_home)/Makefile
 
 run-wrk: $(wrk)
 > $< $(WRK_PARAMS)
