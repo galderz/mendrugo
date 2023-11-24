@@ -12,22 +12,24 @@ mx += $(mx_bin)
 mx_bin = $(mx_path)/mx
 mx_path = $(opt)/mx
 native_image += $(GRAALVM_HOME)/bin/native-image
-svm_home := $(gdk_home)/substratevm
+graal_svm_home := $(gdk_home)/substratevm
+graal_compiler_home := $(gdk_home)/compiler
 
 ifdef DEBUG_IMAGES
   mx += --debug-images
 endif
 
-$(native_image): $(shell find $(svm_home)/src -type f -name '*.java')
-$(native_image): $(shell find $(svm_home)/src -type f -name '*.properties')
+$(native_image): $(shell find $(graal_compiler_home)/src -type f -name '*.java')
+$(native_image): $(shell find $(graal_svm_home)/src -type f -name '*.java')
+$(native_image): $(shell find $(graal_svm_home)/src -type f -name '*.properties')
 $(native_image): $(java) $(mx_bin)
-> cd $(svm_home)
+> cd $(graal_svm_home)
 > $(mx) build
 
-$(libnative-image-agent): $(shell find $(svm_home)/src/com.oracle.svm.agent/src -type f -name '*.java')
-$(libnative-image-agent): $(shell find $(svm_home)/src/com.oracle.svm.agent/src -type f -name '*.properties')
+$(libnative-image-agent): $(shell find $(graal_svm_home)/src/com.oracle.svm.agent/src -type f -name '*.java')
+$(libnative-image-agent): $(shell find $(graal_svm_home)/src/com.oracle.svm.agent/src -type f -name '*.properties')
 $(libnative-image-agent): $(native_image)
-> cd $(svm_home)
+> cd $(graal_svm_home)
 > $< -g --macro:native-image-agent-library
 
 $(java): $(jdk_makefile)
@@ -53,7 +55,7 @@ $(jdk_makefile):
 > git clone https://github.com/openjdk/$(JDK_REPO)
 
 clean-graal: $(java)
-> cd $(svm_home)
+> cd $(graal_svm_home)
 > $(mx) clean
 .PHONY: clean-graal
 
@@ -63,7 +65,7 @@ clean-jdk: clean-graal
 .PHONY: clean-jdk
 
 idea: $(java)
-> cd $(svm_home)
+> cd $(graal_svm_home)
 > $(mx) intellijinit
 .PHONY: idea
 
