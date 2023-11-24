@@ -12,4 +12,4 @@ $(wrk): $(wrk_makefile)
 
 $(wrk_makefile):
 > cd $(opt)
-> git clone https://github.com/wg/wrk
+> git clone https://github.com/galderz/wrk
