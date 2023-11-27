@@ -5,9 +5,14 @@ GRAALVM_MICRO ?= 0
 GRAALVM_BUILD ?= 35.1
 
 greeting_resource_java = $(project)/src/main/java/org/acme/GreetingResource.java
+native_build_args =
 project = new-project
 project_pom = $(project)/pom.xml
 runner = $(project)/target/$(project)-1.0.0-SNAPSHOT-native-image-source-jar/$(project)-1.0.0-SNAPSHOT-runner
+
+ifdef NATIVE_BUILD_ARGS
+  native_build_args += -Dquarkus.native.additional-build-args=$(NATIVE_BUILD_ARGS)
+endif
 
 APP_DIR ?= $(project)
 APP_NAME ?= $(project)
@@ -22,11 +27,11 @@ include $(TOPDIR)/make/common/QuarkusDev.gmk
 
 $(runner): $(greeting_resource_java)
 > cd $(APP_DIR)
-> $(mvnw_cmd) verify -Dnative-with-agent
+> $(mvnw_cmd) verify -Dnative-with-agent $(native_build_args)
 
 no-agent: $(greeting_resource_java)
 > cd $(APP_DIR)
-> $(mvnw_cmd) verify -Dnative
+> $(mvnw_cmd) verify -Dnative $(native_build_args)
 .PHONY: no-agent
 
 all-config: reflect-config resource-config
