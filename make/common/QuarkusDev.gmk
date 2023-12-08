@@ -2,12 +2,22 @@ QUARKUS_HOME ?= $(HOME)/1/quarkus-quarkus
 QUARKUS_VERSION ?= 999-SNAPSHOT
 
 quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-deployment-$(QUARKUS_VERSION).jar
-quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
-quarkus_core_src += $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
-
-$(quarkus_core_jar): $(quarkus_core_src)
+$(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
 > $(mvnw_cmd) -DskipTests -f core install
+
+quarkus_devtools_jar = $(QUARKUS_HOME)/devtools/cli/target/quarkus-cli-$(QUARKUS_VERSION).jar
+$(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvnw_cmd) -DskipTests -f devtools install
+
+quarkus_tools_jar = $(QUARKUS_HOME)/independent-projects/tools/analytics-common/target/quarkus-analytics-common-$(QUARKUS_VERSION).jar
+$(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvnw_cmd) -DskipTests -f independent-projects/tools install
 
 build-quarkus:
 > cd $(QUARKUS_HOME)
@@ -18,12 +28,3 @@ clean-quarkus:
 > cd $(QUARKUS_HOME)
 > $(mvnw_cmd) clean
 .PHONY: clean-quarkus
-
-# Manually add -Dorg.gradle.debug=true in the gradle invocation
-# to debug Quarkus build process with IDE,
-# then connect with IDE on port 5005.
-test-quarkus:
-> cd $(QUARKUS_HOME)
-> GRADLE_JAVA_HOME=$(HOME)/opt/graalvm-community-openjdk-17.0.9+9.1/Contents/Home $(mvnw_cmd) verify -f integration-tests/gradle -Dtest=NativeAgentIntegrationTestIT
-> $(mvnw_cmd) clean verify -f integration-tests/maven -Dit.test=NativeAgentIT -Dnative
-.PHONY: test-quarkus

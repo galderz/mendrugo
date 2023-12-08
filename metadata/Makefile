@@ -16,6 +16,7 @@ endif
 
 APP_DIR ?= $(project)
 APP_NAME ?= $(project)
+RUN_ARGS ?=
 TOPDIR = ..
 
 default: $(runner)
@@ -28,6 +29,17 @@ include $(TOPDIR)/make/common/QuarkusDev.gmk
 $(runner): $(greeting_resource_java)
 > cd $(APP_DIR)
 > $(mvnw_cmd) verify -Dnative-with-agent $(native_build_args)
+
+run: $(greeting_resource_java)
+> cd $(APP_DIR)
+> $(mvnw_cmd) package quarkus:run -Drun-with-agent $(RUN_ARGS)
+.PHONY: run
+
+help:
+> cd $(APP_DIR)
+> $(mvnw_cmd) quarkus:help -Ddetail -Dgoal=test
+> $(mvnw_cmd) quarkus:help -Ddetail -Dgoal=run
+.PHONY: help
 
 no-agent: $(greeting_resource_java)
 > cd $(APP_DIR)
@@ -53,7 +65,7 @@ $(greeting_resource_java): $(project_pom)
 > mkdir -p $(project)/src/test/java
 > cp -r src-test/* $(project)/src/test/java
 
-$(project_pom): $(quarkus_core_jar)
+$(project_pom): $(quarkus_core_jar) $(quarkus_devtools_jar) $(quarkus_tools_jar)
 > rm -drf $(project)
 > $(mvn_cmd) io.quarkus:quarkus-maven-plugin:999-SNAPSHOT:create \
 >   -DprojectGroupId=org.acme \
@@ -66,3 +78,12 @@ $(project_pom): $(quarkus_core_jar)
 clean-project:
 > rm -drf $(project)
 .PHONY: clean-project
+
+# Manually add -Dorg.gradle.debug=true in the gradle invocation
+# to debug Quarkus build process with IDE,
+# then connect with IDE on port 5005.
+test-quarkus:
+> cd $(QUARKUS_HOME)
+> GRADLE_JAVA_HOME=$(HOME)/opt/graalvm-community-openjdk-17.0.9+9.1/Contents/Home $(mvnw_cmd) verify -f integration-tests/gradle -Dtest=NativeAgentIntegrationTestIT#runGeneratesNativeImageConfig
+#> $(mvnw_cmd) clean verify -f integration-tests/maven -Dit.test=NativeAgentIT -Dnative
+.PHONY: test-quarkus
