@@ -1,0 +1,15 @@
+wrk2 = $(wrk2_home)/wrk2
+wrk2_home = $(opt)/wrk2
+wrk2_makefile = $(wrk2_home)/Makefile
+
+run-wrk2: $(wrk2)
+> $< $(WRK2_PARAMS)
+.PHONY: run-wrk2
+
+$(wrk2): $(wrk2_makefile)
+> cd $(wrk2_home)
+> make
+
+$(wrk2_makefile):
+> cd $(opt)
+> git clone https://github.com/giltene/wrk2
