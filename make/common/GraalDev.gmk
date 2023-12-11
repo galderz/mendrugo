@@ -91,3 +91,7 @@ eclipse:
 mx-update:
 > $(mx) update
 .PHONY: mx-update
+
+mx-jdk:
+> $(mx) fetch-jdk
+.PHONY: mx-jdk
