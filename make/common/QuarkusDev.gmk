@@ -13,6 +13,12 @@ $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name 'po
 > cd $(QUARKUS_HOME)
 > GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvnw_cmd) -DskipTests -f devtools install
 
+quarkus_jackson_jar = $(QUARKUS_HOME)/extensions/jackson/deployment/target/quarkus-jackson-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_jackson_jar): $(shell find $(QUARKUS_HOME)/extensions/jackson -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_jackson_jar): $(shell find $(QUARKUS_HOME)/extensions/jackson -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(mvnw_cmd) -DskipTests -f extensions/jackson install
+
 quarkus_tools_jar = $(QUARKUS_HOME)/independent-projects/tools/analytics-common/target/quarkus-analytics-common-$(QUARKUS_VERSION).jar
 $(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.xml' | sed 's: :\\ :g')

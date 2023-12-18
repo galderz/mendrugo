@@ -8,8 +8,8 @@ BOOT_JDK := $(opt)/java-21
 JDK_REPO := jdk21u
 GRAALVM_VERSION ?= 23.1
 
-#JAVA_HOME = $(HOME)/.mx/jdks/labsjdk-ce-latest-22+26-jvmci-b01/Contents/Home
-JAVA_HOME = $(HOME)/.mx/jdks/labsjdk-ce-21-jvmci-23.1-b22/Contents/Home
+JAVA_HOME = $(HOME)/.mx/jdks/labsjdk-ce-latest-22+26-jvmci-b01/Contents/Home
+#JAVA_HOME = $(HOME)/.mx/jdks/labsjdk-ce-21-jvmci-23.1-b22/Contents/Home
 
 TOPDIR = ..
 
@@ -30,7 +30,7 @@ include $(TOPDIR)/make/common/Colima.gmk
 
 GRAALVM_RELEASE_HOME = $(opt)/graalvm-community-openjdk-$(GRAALVM_MAJOR)+$(GRAALVM_BUILD)/Contents/Home
 
-test: $(native_image)
+test: $(native_image) $(quarkus_jackson_jar)
 > cd $(QUARKUS_HOME)
 > $(mvnw_cmd) -f integration-tests -pl jpa-postgresql -Dnative -Dtest-containers -Dstart-containers -Dnative.surefire.skip -Dnet.bytebuddy.experimental $(native_build_args) clean install
 .PHONY: test
