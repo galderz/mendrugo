@@ -65,6 +65,7 @@
                                 <argument>-classpath</argument>
                                 <classpath/>
                                 <argument>${mainClass}</argument>
+                                <argument>bob</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -88,6 +89,7 @@
                                 <argument>-classpath</argument>
                                 <classpath/>
                                 <argument>${mainClass}</argument>
+                                <argument>bob</argument>
                             </arguments>
                         </configuration>
                     </execution>

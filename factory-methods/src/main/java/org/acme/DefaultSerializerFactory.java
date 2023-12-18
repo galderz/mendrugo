@@ -10,11 +10,11 @@ public class DefaultSerializerFactory
 
     public Serializer findSerializer(String name)
     {
-        if ("Alice".equals(name)) {
+        if ("alice".equals(name)) {
             return instantiate(ALICE_SERIALIZER);
         }
 
-        if ("Bob".equals(name)) {
+        if ("bob".equals(name)) {
             return instantiate(BOB_SERIALIZER);
         }
 

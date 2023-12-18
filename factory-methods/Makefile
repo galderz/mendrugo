@@ -1,3 +1,11 @@
+APP_DIR := .
+
+GRAALVM_FLAVOUR ?= jdk
+GRAALVM_MAJOR ?= 21
+GRAALVM_MINOR ?= 0
+GRAALVM_MICRO ?= 0
+GRAALVM_BUILD ?= 35.1
+
 BOOT_JDK := $(opt)/java-21
 JDK_REPO := jdk21u
 GRAALVM_VERSION ?= 23.1
@@ -12,6 +20,8 @@ default: run
 include $(TOPDIR)/make/common/MakeBase.gmk
 include $(TOPDIR)/make/common/GraalDev.gmk
 include $(TOPDIR)/make/common/Maven.gmk
+
+GRAALVM_RELEASE_HOME = $(opt)/graalvm-community-openjdk-$(GRAALVM_MAJOR)+$(GRAALVM_BUILD)/Contents/Home
 
 runner = target/factory-methods
 
@@ -35,3 +45,6 @@ run-with-agent:
 native-image-agent: $(native_image)
 > $< -g --macro:native-image-agent-library
 .PHONY: native-image-agent
+
+release-run:
+> JAVA_HOME=$(GRAALVM_RELEASE_HOME) $(mvn) clean install
