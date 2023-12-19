@@ -1,36 +1,39 @@
 QUARKUS_HOME ?= $(HOME)/1/quarkus-quarkus
 QUARKUS_VERSION ?= 999-SNAPSHOT
 
+q_mvnw_cmd += JAVA_HOME=$(GRAALVM_HOME)
+q_mvnw_cmd += ./mvnw
+
 quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> $(mvnw_cmd) -DskipTests -f core install
+> $(q_mvnw_cmd) -DskipTests -f core install
 
 quarkus_devtools_jar = $(QUARKUS_HOME)/devtools/cli/target/quarkus-cli-$(QUARKUS_VERSION).jar
 $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
-$(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name 'pom.xml' | sed 's: :\\ :g')
+$(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvnw_cmd) -DskipTests -f devtools install
+> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(q_mvnw_cmd) -DskipTests -f devtools install
 
 quarkus_jackson_jar = $(QUARKUS_HOME)/extensions/jackson/deployment/target/quarkus-jackson-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_jackson_jar): $(shell find $(QUARKUS_HOME)/extensions/jackson -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_jackson_jar): $(shell find $(QUARKUS_HOME)/extensions/jackson -type f -name 'pom.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> $(mvnw_cmd) -DskipTests -f extensions/jackson install
+> $(q_mvnw_cmd) -DskipTests -f extensions/jackson install
 
 quarkus_tools_jar = $(QUARKUS_HOME)/independent-projects/tools/analytics-common/target/quarkus-analytics-common-$(QUARKUS_VERSION).jar
 $(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvnw_cmd) -DskipTests -f independent-projects/tools install
+> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(q_mvnw_cmd) -DskipTests -f independent-projects/tools install
 
 build-quarkus:
 > cd $(QUARKUS_HOME)
-> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(mvnw_cmd) -Dquickly
+> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(q_mvnw_cmd) -Dquickly
 .PHONY: build-quarkus
 
 clean-quarkus:
 > cd $(QUARKUS_HOME)
-> $(mvnw_cmd) clean
+> $(q_mvnw_cmd) clean
 .PHONY: clean-quarkus
