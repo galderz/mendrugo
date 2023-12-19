@@ -4,9 +4,17 @@ GRAALVM_MINOR ?= 0
 GRAALVM_MICRO ?= 0
 GRAALVM_BUILD ?= 35.1
 
+#GRAALVM_FLAVOUR ?= vm
+#GRAALVM_MAJOR ?= 22
+##GRAALVM_MINOR ?= 3
+#GRAALVM_MINOR ?= 2
+#GRAALVM_MICRO ?= 0
+#GRAALVM_JAVA_MAJOR ?= 17
+
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
 QUICKSTART_BRANCH ?= 3.5.0
+#QUICKSTART_BRANCH ?= development
 TOPDIR = ..
 
 default: run

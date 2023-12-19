@@ -20,8 +20,8 @@ ifeq ($(GRAALVM_FLAVOUR),jdk)
   tar_path_suffix = $(GRAALVM_FLAVOUR)-$(graalvm_version)
 endif
 ifeq ($(GRAALVM_FLAVOUR),vm)
-  java_home_root = $(opt)/graalvm-ce-java$(JAVA_MAJOR)-$(graalvm_version)
-  tar_name = graalvm-ce-java$(JAVA_MAJOR)-$(os_vm)-$(arch_vm)-$(graalvm_version).tar.gz
+  java_home_root = $(opt)/graalvm-ce-java$(GRAALVM_JAVA_MAJOR)-$(graalvm_version)
+  tar_name = graalvm-ce-java$(GRAALVM_JAVA_MAJOR)-$(os_vm)-$(arch_vm)-$(graalvm_version).tar.gz
   tar_path_suffix = vm-$(graalvm_version)
 endif
 
