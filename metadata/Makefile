@@ -28,7 +28,7 @@ include $(TOPDIR)/make/common/QuarkusDev.gmk
 
 $(runner): $(greeting_resource_java)
 > cd $(APP_DIR)
-> $(mvnw_cmd) verify -Dnative-with-agent $(native_build_args)
+> $(mvnw_cmd) verify -Dnative-with-agent -Dquarkus.native.agent-configuration-apply $(native_build_args)
 
 run: $(greeting_resource_java)
 > cd $(APP_DIR)
