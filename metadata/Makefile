@@ -79,11 +79,15 @@ clean-project:
 > rm -drf $(project)
 .PHONY: clean-project
 
+test-quarkus-maven:
+> cd $(QUARKUS_HOME)
+> $(mvnw_cmd) clean verify -f integration-tests/maven -Dit.test=NativeAgentIT -Dnative
+.PHONY: test-quarkus-maven
+
 # Manually add -Dorg.gradle.debug=true in the gradle invocation
 # to debug Quarkus build process with IDE,
 # then connect with IDE on port 5005.
-test-quarkus:
+test-quarkus-gradle:
 > cd $(QUARKUS_HOME)
 > GRADLE_JAVA_HOME=$(HOME)/opt/graalvm-community-openjdk-17.0.9+9.1/Contents/Home $(mvnw_cmd) verify -f integration-tests/gradle -Dtest=NativeAgentIntegrationTestIT#runGeneratesNativeImageConfig
-#> $(mvnw_cmd) clean verify -f integration-tests/maven -Dit.test=NativeAgentIT -Dnative
-.PHONY: test-quarkus
+.PHONY: test-quarkus-gradle
