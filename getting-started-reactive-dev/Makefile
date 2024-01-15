@@ -17,4 +17,5 @@ include $(TOPDIR)/make/common/GraalDev.gmk
 include $(TOPDIR)/make/common/Maven.gmk
 include $(TOPDIR)/make/common/QuarkusApp.gmk
 include $(TOPDIR)/make/common/Numa.gmk
+include $(TOPDIR)/make/common/Pidstat.gmk
 include $(TOPDIR)/make/common/Wrk.gmk
