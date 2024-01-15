@@ -3,13 +3,13 @@ TOPDIR = ..
 include $(TOPDIR)/make/common/MakeBase.gmk
 
 BOOT_JDK := $(opt)/java-21
-JDK_REPO := jdk21u
-GRAALVM_VERSION ?= 23.1
+JDK_REPO := jdk21u-dev
+GRAALVM_VERSION ?= 24.0
 
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
 #QUICKSTART_BRANCH ?= development
-QUICKSTART_BRANCH ?= 3.5.0
+QUICKSTART_BRANCH ?= 3.6.5
 
 default: run
 
