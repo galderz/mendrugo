@@ -16,3 +16,4 @@ default: run
 include $(TOPDIR)/make/common/GraalDev.gmk
 include $(TOPDIR)/make/common/Maven.gmk
 include $(TOPDIR)/make/common/QuarkusApp.gmk
+include $(TOPDIR)/make/common/Numa.gmk
