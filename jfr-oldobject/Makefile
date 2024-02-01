@@ -61,24 +61,24 @@ endif
 #> DEBUG_RECORDING=true $(mx) native-unittest --run-args -XX:FlightRecorderLogging=jfr=debug,jfr+dcmd=debug --verbose --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal --preserve-image com.oracle.svm.test.jfr.oldobject
 #> DEBUG_RECORDING=true $(mx) native-unittest --preserve-image --build-args --enable-monitoring=heapdump -H:+DumpThreadStacksOnSignal com.oracle.svm.test.jfr.oldobject
 test: $(native_image)
-> cd $(svm_home)
+> cd $(graal_svm_home)
 > DEBUG_RECORDING=true $(mx) native-unittest --preserve-image $(native_test_pattern) --build-args --enable-monitoring=heapdump,jvmstat -H:+UnlockExperimentalVMOptions -H:+DumpThreadStacksOnSignal -g
 .PHONY: test
 
-svm_test_jar = $(svm_home)/mxbuild/jdk17/dists/jdk17/svm-tests.jar
-$(svm_test_jar): $(shell find $(svm_home)/src/com.oracle.svm.test -type f -name '*.java')
-> cd $(svm_home)
+svm_test_jar = $(graal_svm_home)/mxbuild/jdk17/dists/jdk17/svm-tests.jar
+$(svm_test_jar): $(shell find $(graal_svm_home)/src/com.oracle.svm.test -type f -name '*.java')
+> cd $(graal_svm_home)
 > $(mx) build --only com.oracle.svm.test
 > $(mx) archive @SVM_TESTS
 
-svm_core_jar = $(svm_home)/mxbuild/jdk17/dists/jdk17/svm.jar
-$(svm_core_jar): $(shell find $(svm_home)/src/com.oracle.svm.core -type f -name '*.java')
-> cd $(svm_home)
+svm_core_jar = $(graal_svm_home)/mxbuild/jdk17/dists/jdk17/svm.jar
+$(svm_core_jar): $(shell find $(graal_svm_home)/src/com.oracle.svm.core -type f -name '*.java')
+> cd $(graal_svm_home)
 > $(mx) build --only com.oracle.svm.core
 > $(mx) archive @SVM
 
 unittest: $(svm_core_jar) $(svm_test_jar)
-> cd $(svm_home)
+> cd $(graal_svm_home)
 > $(mx_unittest) com.oracle.svm.test.jfr.oldobject.TestOldObjectProfiler
 .PHONY: unittest
 
