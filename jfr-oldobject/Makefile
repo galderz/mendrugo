@@ -6,7 +6,7 @@ BOOT_JDK := $(opt)/java-21
 GRAALVM_VERSION := 23.2.0
 # Override to use a functioning base JDK
 # https://github.com/oracle/graal/issues/7651
-JAVA_HOME ?= $(HOME)/opt/labsjdk-ce-21.0.1-jvmci-23.1-b22/Contents/Home
+JAVA_HOME ?= $(HOME)/.mx/jdks/labsjdk-ce-21-jvmci-23.1-b26/Contents/Home
 JDK_REPO := jdk21u
 JFC_FILE ?= jfc/base.jfc
 JFR_FILE ?= target/native.jfr
