@@ -39,6 +39,7 @@ help:
 > cd $(APP_DIR)
 > $(mvnw_cmd) quarkus:help -Ddetail -Dgoal=test
 > $(mvnw_cmd) quarkus:help -Ddetail -Dgoal=run
+> $(mvnw_cmd) help:describe -Dcmd=test
 .PHONY: help
 
 no-agent: $(greeting_resource_java)
