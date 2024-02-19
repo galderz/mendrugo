@@ -1,4 +1,5 @@
 APP := .
+JDK_REPO := jdk21u
 NAME := heapdump-oome
 MAIN_CLASS ?= Main
 TOPDIR = ..
@@ -8,6 +9,7 @@ default: run
 include $(TOPDIR)/make/common/MakeBase.gmk
 include $(TOPDIR)/make/common/GraalDev.gmk
 include $(TOPDIR)/make/common/Maven.gmk
+include $(TOPDIR)/make/common/JOL.gmk
 
 run_args += -XX:+HeapDumpOnOutOfMemoryError
 run_args += -XX:HeapDumpPath=target

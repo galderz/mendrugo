@@ -1,18 +1,21 @@
-JOL_VERSION=0.17
-
 HEAPDUMP ?=
 
-JAVA_HOME = $(opt)/java-21
+# Locally built java with graalbuilder seems to hang
+JOL_JAVA_HOME ?= $(HOME)/opt/boot-java-21
 
-jol_dir = $(opt)/jol-$(JOL_VERSION)
-jol_jar = $(jol_dir)/jol-cli-$(JOL_VERSION)-full.jar
-jol_url = https://repo.maven.apache.org/maven2/org/openjdk/jol/jol-cli/$(JOL_VERSION)/jol-cli-$(JOL_VERSION)-full.jar
+jol_home_dir = $(HOME)/1/jol
+jol_pom_xml = $(jol_home_dir)/pom.xml
+jol_cli_jar = $(jol_home_dir)/jol-cli/target/jol-cli.jar
 
-heapdumpstats: $(jol_jar)
-> $(JAVA_HOME)/bin/java -Xmx256m -jar $< heapdumpstats $(HEAPDUMP)
-.PHONY: heapdumpstats
+heapdump-stats: $(jol_cli_jar)
+> $(JOL_JAVA_HOME)/bin/java -Xmx256m -jar $< heapdump-stats $(HEAPDUMP)
+.PHONY: heapdump-stats
 
-$(jol_jar):
-> mkdir -p $(jol_dir)
-> cd $(jol_dir)
-> wget $(jol_url)
+$(jol_cli_jar): $(shell find $(jol_home_dir)/src -type f -name '*.java')
+$(jol_cli_jar): $(jol_pom_xml)
+> cd $(jol_home_dir)
+> $(mvn_cmd) -DskipTests install
+
+$(jol_pom_xml):
+> cd $(HOME)/1
+> git clone https://github.com/openjdk/jol
