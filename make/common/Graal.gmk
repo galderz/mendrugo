@@ -15,7 +15,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 ifeq ($(GRAALVM_FLAVOUR),jdk)
-  java_home_root = $(opt)/graalvm-community-openjdk-$(GRAALVM_MAJOR)+$(GRAALVM_BUILD)
+  java_home_root = $(opt)/graalvm-community-openjdk-$(GRAALVM_MAJOR).$(GRAALVM_MINOR).$(GRAALVM_MICRO)+$(GRAALVM_BUILD)
   tar_name = graalvm-community-$(GRAALVM_FLAVOUR)-$(graalvm_version)_$(os_jdk)-$(arch_jdk)_bin.tar.gz
   tar_path_suffix = $(GRAALVM_FLAVOUR)-$(graalvm_version)
 endif
