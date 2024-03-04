@@ -80,6 +80,12 @@ clean-project:
 > rm -drf $(project)
 .PHONY: clean-project
 
+test:
+> cd $(QUARKUS_HOME)
+> $(mvnw_cmd) clean verify -f integration-tests/maven -Dit.test=CreateProjectMojoIT
+> $(mvnw_cmd) clean verify -f independent-projects/tools/devtools-testing
+.PHONY: test
+
 test-quarkus-maven:
 > cd $(QUARKUS_HOME)
 > $(mvnw_cmd) clean verify -f integration-tests/maven -Dit.test=NativeAgentIT -Dnative
