@@ -44,7 +44,7 @@ quarkus_junit5_jar = $(QUARKUS_HOME)/test-framework/junit5/target/quarkus-junit5
 $(quarkus_junit5_jar): $(shell find $(QUARKUS_HOME)/test-framework/junit5 -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_junit5_jar): $(shell find $(QUARKUS_HOME)/test-framework/junit5 -type f -name '*.xml' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_junit5_jar): $(quarkus_test_common_jar)
-> cd $(QUARKUS_HOME)> cd $(QUARKUS_HOME)
+> cd $(QUARKUS_HOME)
 > $(q_mvnw_cmd) -DskipTests -f test-framework/junit5 install
 > touch $@
 
