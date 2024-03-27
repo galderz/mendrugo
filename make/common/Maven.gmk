@@ -17,23 +17,30 @@ ifneq ("$(wildcard $(APP_DIR)/src)","")
 endif
 
 mvnw_cmd += JAVA_HOME=$(GRAALVM_HOME)
-ifdef MAVEN_DEBUG
+ifeq ($(MAVEN_DEBUG),process)
   mvnw_cmd += MAVEN_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 endif
 mvnw_cmd += ./mvnw
 
-ifdef VERBOSE
-  mvnw_cmd += -X
-endif
-
 mvn_cmd += JAVA_HOME=$(GRAALVM_HOME)
-ifdef MAVEN_DEBUG
+ifeq ($(MAVEN_DEBUG),process)
   mvn_cmd += MAVEN_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 endif
 mvn_cmd += $(mvn)
 
-ifdef VERBOSE
+ifeq ($(MAVEN_DEBUG),failsafe)
+  mvn_cmd += -Dmaven.failsafe.debug
+  mvnw_cmd += -Dmaven.failsafe.debug
+endif
+
+ifdef MAVEN_VERBOSE
   mvn_cmd += -X
+  mvnw_cmd += -X
+endif
+
+ifdef MAVEN_ARGS
+  mvn_cmd += $(foreach arg,$(MAVEN_ARGS),$(arg))
+  mvnw_cmd += $(foreach arg,$(MAVEN_ARGS),$(arg))
 endif
 
 $(jar): $(pom) $(sources) $(java) $(mvnw)

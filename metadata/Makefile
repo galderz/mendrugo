@@ -26,9 +26,30 @@ include $(TOPDIR)/make/common/Graal.gmk
 include $(TOPDIR)/make/common/Maven.gmk
 include $(TOPDIR)/make/common/QuarkusDev.gmk
 
+ifdef MAVEN_VERBOSE
+  mvnw_cmd += -Dquarkus.log.min-level=TRACE
+  mvnw_cmd += -Dquarkus.log.category.\"org.jboss.resteasy.reactive.client.logging\".level=TRACE
+  mvnw_cmd += -Dquarkus.log.category.\"org.apache.http\".level=TRACE
+  mvnw_cmd += -Dquarkus.log.category.\"io.restassured\".level=TRACE
+endif
+
 $(runner): $(greeting_resource_java)
 > cd $(APP_DIR)
-> $(mvnw_cmd) verify -Dnative-with-agent -Dquarkus.native.agent-configuration-apply $(native_build_args)
+> $(mvnw_cmd) verify -DskipITs=false -Dquarkus.test.integration-test-profile=test-with-native-agent
+#> $(mvnw_cmd) verify -Dnative -Dquarkus.native.agent-configuration-apply $(native_build_args)
+
+trace-output: $(greeting_resource_java)
+> cd $(APP_DIR)
+> JAVA_HOME=$(opt)/java-21 ./mvnw -X verify -DskipITs=false -Dquarkus.test.integration-test-profile=test-with-native-agent \
+>  -Dquarkus.test.native.agent.output.property.name=trace-output \
+>  -Dquarkus.test.native.agent.output.property.value=native-image-agent-trace-file.json
+.PHONY: trace-output
+
+origins: $(greeting_resource_java)
+> cd $(APP_DIR)
+> JAVA_HOME=$(opt)/java-21 ./mvnw -X verify -DskipITs=false -Dquarkus.test.integration-test-profile=test-with-native-agent \
+>  -Dquarkus.test.native.agent.additional.args=experimental-configuration-with-origins
+.PHONY: origins
 
 run: $(greeting_resource_java)
 > cd $(APP_DIR)
@@ -66,7 +87,7 @@ $(greeting_resource_java): $(project_pom)
 > mkdir -p $(project)/src/test/java
 > cp -r src-test/* $(project)/src/test/java
 
-$(project_pom): $(quarkus_core_jar) $(quarkus_devtools_jar) $(quarkus_tools_jar)
+$(project_pom): $(quarkus_core_jar) $(quarkus_devtools_jar) $(quarkus_tools_jar) $(quarkus_junit5_jar)
 > rm -drf $(project)
 > $(mvn_cmd) io.quarkus:quarkus-maven-plugin:999-SNAPSHOT:create \
 >   -DprojectGroupId=org.acme \
