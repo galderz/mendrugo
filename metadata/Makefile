@@ -33,10 +33,11 @@ ifdef MAVEN_VERBOSE
   mvnw_cmd += -Dquarkus.log.category.\"io.restassured\".level=TRACE
 endif
 
+# Add -Dquarkus.native.container-runtime=podman if necessary
 $(runner): $(greeting_resource_java)
 > cd $(APP_DIR)
 > $(mvnw_cmd) verify -DskipITs=false -Dquarkus.test.integration-test-profile=test-with-native-agent
-#> $(mvnw_cmd) verify -Dnative -Dquarkus.native.agent-configuration-apply $(native_build_args)
+> $(mvnw_cmd) verify -Dnative -Dquarkus.native.agent-configuration-apply $(native_build_args)
 
 trace-output: $(greeting_resource_java)
 > cd $(APP_DIR)
