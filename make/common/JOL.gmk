@@ -3,12 +3,14 @@ HEAPDUMP ?=
 # Locally built java with graalbuilder seems to hang
 JOL_JAVA_HOME ?= $(HOME)/opt/boot-java-21
 
+PRINT_FIRST ?= 30
+
 jol_home_dir = $(HOME)/1/jol
 jol_pom_xml = $(jol_home_dir)/pom.xml
 jol_cli_jar = $(jol_home_dir)/jol-cli/target/jol-cli.jar
 
 heapdump-stats: $(jol_cli_jar)
-> $(JOL_JAVA_HOME)/bin/java -Xmx256m -jar $< heapdump-stats $(HEAPDUMP)
+> $(JOL_JAVA_HOME)/bin/java -Xmx256m -DprintFirst=$(PRINT_FIRST) -jar $< heapdump-stats $(HEAPDUMP)
 .PHONY: heapdump-stats
 
 $(jol_cli_jar): $(shell find $(jol_home_dir)/src -type f -name '*.java')
