@@ -40,6 +40,13 @@ $(quarkus_test_common_jar): $(shell find $(QUARKUS_HOME)/test-framework/common -
 > $(q_mvnw_cmd) -DskipTests -f test-framework/common install
 > touch $@
 
+quarkus_test_maven_jar = $(QUARKUS_HOME)/test-framework/maven/target/quarkus-test-maven-$(QUARKUS_VERSION).jar
+$(quarkus_test_maven_jar): $(shell find $(QUARKUS_HOME)/test-framework/maven -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_test_maven_jar): $(shell find $(QUARKUS_HOME)/test-framework/maven -type f -name '*.xml' | grep -v '/target/' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(q_mvnw_cmd) -DskipTests -f test-framework/maven install
+> touch $@
+
 quarkus_junit5_jar = $(QUARKUS_HOME)/test-framework/junit5/target/quarkus-junit5-$(QUARKUS_VERSION).jar
 $(quarkus_junit5_jar): $(shell find $(QUARKUS_HOME)/test-framework/junit5 -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_junit5_jar): $(shell find $(QUARKUS_HOME)/test-framework/junit5 -type f -name '*.xml' | grep -v '/target/' | sed 's: :\\ :g')

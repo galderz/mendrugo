@@ -88,7 +88,7 @@ $(greeting_resource_java): $(project_pom)
 > mkdir -p $(project)/src/test/java
 > cp -r src-test/* $(project)/src/test/java
 
-$(project_pom): $(quarkus_core_jar) $(quarkus_devtools_jar) $(quarkus_tools_jar) $(quarkus_junit5_jar)
+$(project_pom): $(quarkus_core_jar) $(quarkus_devtools_jar) $(quarkus_tools_jar) $(quarkus_junit5_jar) $(quarkus_test_maven_jar)
 > rm -drf $(project)
 > $(mvn_cmd) io.quarkus:quarkus-maven-plugin:999-SNAPSHOT:create \
 >   -DprojectGroupId=org.acme \
