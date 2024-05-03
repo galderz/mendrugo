@@ -16,13 +16,13 @@ ifneq ("$(wildcard $(APP_DIR)/src)","")
   sources += $(shell find $(APP_DIR)/src -type f -name '*.properties' | sed 's: :\\ :g')
 endif
 
-mvnw_cmd += JAVA_HOME=$(GRAALVM_HOME)
+mvnw_cmd += JAVA_HOME=$(JAVA_HOME)
 ifeq ($(MAVEN_DEBUG),process)
   mvnw_cmd += MAVEN_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 endif
 mvnw_cmd += ./mvnw
 
-mvn_cmd += JAVA_HOME=$(GRAALVM_HOME)
+mvn_cmd += JAVA_HOME=$(JAVA_HOME)
 ifeq ($(MAVEN_DEBUG),process)
   mvn_cmd += MAVEN_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 endif

@@ -1,76 +1,56 @@
-JDK_HOME ?= $(HOME)/1/$(JDK_REPO)
-JAVA_HOME ?= $(JDK_HOME)/build/graalbuilder/images/graal-builder-jdk
-GRAALVM_HOME ?= $(gdk_home)/sdk/latest_graalvm_home
+JAVA_HOME = $(graalvm_home)
 
-java = $(JAVA_HOME)/bin/java
-jdk_makefile = $(JDK_HOME)/Makefile
-jfr = $(JAVA_HOME)/bin/jfr
-gdk_home := $(HOME)/1/mandrel-mandrel
-libnative-image-agent = $(GRAALVM_HOME)/lib/libnative-image-agent.so
-mx += JAVA_HOME=$(JAVA_HOME)
+graalvm_home = $(GDK_HOME)/sdk/latest_graalvm_home
+gdk_svm_home = $(GDK_HOME)/substratevm
+gdk_compiler_home = $(GDK_HOME)/compiler
+libnative-image-agent = $(graalvm_home)/lib/libnative-image-agent.so
+mx += JAVA_HOME=$(BOOT_GDK_HOME)
 mx += $(mx_bin)
 mx_bin = $(mx_path)/mx
-mx_path = $(opt)/mx
-native_image += $(GRAALVM_HOME)/bin/native-image
-graal_svm_home := $(gdk_home)/substratevm
-graal_compiler_home := $(gdk_home)/compiler
+mx_home = $(opt)/mx
 
 ifdef DEBUG_IMAGES
   mx += --debug-images
 endif
 
-$(native_image): $(shell find $(graal_compiler_home)/src -type f -name '*.java')
-$(native_image): $(shell find $(graal_svm_home)/src -type f -name '*.java')
-$(native_image): $(shell find $(graal_svm_home)/src -type f -name '*.properties')
+native_image = $(graalvm_home)/bin/native-image
+
+$(native_image): $(shell find $(gdk_compiler_home)/src -type f -name '*.java')
+$(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.java')
+$(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.properties')
 $(native_image): $(java) $(mx_bin)
-> cd $(graal_svm_home)
+> cd $(gdk_svm_home)
 > $(mx) build
 
-$(libnative-image-agent): $(shell find $(graal_svm_home)/src/com.oracle.svm.agent/src -type f -name '*.java')
-$(libnative-image-agent): $(shell find $(graal_svm_home)/src/com.oracle.svm.agent/src -type f -name '*.properties')
+$(libnative-image-agent): $(shell find $(gdk_svm_home)/src/com.oracle.svm.agent/src -type f -name '*.java')
+$(libnative-image-agent): $(shell find $(gdk_svm_home)/src/com.oracle.svm.agent/src -type f -name '*.properties')
 $(libnative-image-agent): $(native_image)
-> cd $(graal_svm_home)
+> cd $(gdk_svm_home)
 > $< -g --macro:native-image-agent-library
 
-$(java): $(jdk_makefile)
-$(java): $(shell find $(JDK_HOME)/src -type f -name '*.java')
-$(java): $(shell find $(JDK_HOME)/test -type f -name '*.java')
-$(java):
-> cd $(JDK_HOME)
-> bash configure \
->   --disable-warnings-as-errors \
->   --with-boot-jdk=$(BOOT_JDK) \
->   --with-conf-name=graalbuilder \
->   --with-extra-cflags=-fcommon \
->   --with-jvm-variants=server \
->   --with-version-opt=jvmci-$(GRAALVM_VERSION)-dev
-> make CONF=graalbuilder graal-builder-image
-> touch $@
-
 $(mx_bin):
-> git clone --depth 1 https://github.com/graalvm/mx $(mx_path)
+> git clone --depth 1 https://github.com/graalvm/mx $(mx_home)
 
-$(jdk_makefile):
-> cd $(HOME)/1
-> git clone https://github.com/openjdk/$(JDK_REPO)
+mx-update:
+> $(mx) update
+.PHONY: mx-update
+
+mx-fetch-jdk:
+> $(mx) fetch-jdk
+.PHONY: mx-fetch-jdk
 
 clean-graal: $(java)
-> cd $(graal_svm_home)
+> cd $(gdk_svm_home)
 > $(mx) clean
 .PHONY: clean-graal
 
-clean-jdk: clean-graal
-> cd $(JDK_HOME)
-> make CONF=graalbuilder clean
-.PHONY: clean-jdk
-
 idea: $(java)
-> cd $(graal_svm_home)
+> cd $(gdk_svm_home)
 > $(mx) intellijinit
 .PHONY: idea
 
 gate:
-> $(call gate,JAVA_HOME=$(HOME)/opt/labsjdk-ce-21.0.1-jvmci-23.1-b22/Contents/Home $(HOME)/opt/mx/mx)
+> $(call gate,JAVA_HOME=$(BOOT_GDK_HOME) $(mx_home)/mx)
 .PHONY: gate
 
 define gate
@@ -87,11 +67,3 @@ eclipse:
 > cd $(gdk_home)
 > $(mx) --primary-suite-path substratevm eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
 .PHONY: eclipse
-
-mx-update:
-> $(mx) update
-.PHONY: mx-update
-
-mx-jdk:
-> $(mx) fetch-jdk
-.PHONY: mx-jdk

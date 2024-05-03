@@ -2,16 +2,13 @@ TOPDIR = ..
 
 include $(TOPDIR)/make/common/MakeBase.gmk
 
-BOOT_JDK := $(opt)/java-21
-JDK_REPO := jdk21u
-GRAALVM_VERSION ?= 24.0
-
-JAVA_HOME = $(HOME)/.mx/jdks/labsjdk-ce-latest-22+26-jvmci-b01/Contents/Home
+BOOT_GDK_HOME ?= $(HOME)/opt/labs-23
+GDK_HOME ?= $(HOME)/1/mandrel-mandrel
 
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
 #QUICKSTART_BRANCH ?= development
-QUICKSTART_BRANCH ?= 3.6.5
+QUICKSTART_BRANCH ?= 3.9.5
 
 default: run
 
