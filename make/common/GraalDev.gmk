@@ -6,7 +6,7 @@ gdk_compiler_home = $(GDK_HOME)/compiler
 libnative-image-agent = $(graalvm_home)/lib/libnative-image-agent.so
 mx += JAVA_HOME=$(BOOT_GDK_HOME)
 mx += $(mx_bin)
-mx_bin = $(mx_path)/mx
+mx_bin = $(mx_home)/mx
 mx_home = $(opt)/mx
 
 ifdef DEBUG_IMAGES
