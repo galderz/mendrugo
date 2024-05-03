@@ -36,7 +36,7 @@ mx-update:
 .PHONY: mx-update
 
 mx-fetch-jdk:
-> $(mx) fetch-jdk
+> JAVA_HOME=$(opt)/java-21 $(mx_bin) fetch-jdk
 .PHONY: mx-fetch-jdk
 
 clean-graal: $(java)
