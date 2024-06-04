@@ -2,8 +2,9 @@ QUARKUS_HOME ?= $(HOME)/1/quarkus-quarkus
 QUARKUS_VERSION ?= 999-SNAPSHOT
 
 q_mvnw_cmd += JAVA_HOME=$(GRAALVM_HOME)
-
 q_mvnw_cmd += ./mvnw
+
+gradle_java_home = GRADLE_JAVA_HOME=$(opt)/java-17
 
 quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
@@ -16,7 +17,7 @@ quarkus_devtools_jar = $(QUARKUS_HOME)/devtools/cli/target/quarkus-cli-$(QUARKUS
 $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(q_mvnw_cmd) -DskipTests -f devtools install
+> $(gradle_java_home) $(q_mvnw_cmd) -DskipTests -f devtools install
 > touch $@
 
 quarkus_jackson_jar = $(QUARKUS_HOME)/extensions/jackson/deployment/target/quarkus-jackson-deployment-$(QUARKUS_VERSION).jar
@@ -30,7 +31,7 @@ quarkus_tools_jar = $(QUARKUS_HOME)/independent-projects/tools/analytics-common/
 $(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.xml' | grep -v '/target/' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(q_mvnw_cmd) -DskipTests -f independent-projects/tools install
+> $(gradle_java_home) $(q_mvnw_cmd) -DskipTests -f independent-projects/tools install
 > touch $@
 
 quarkus_test_common_jar = $(QUARKUS_HOME)/test-framework/common/target/quarkus-test-common-$(QUARKUS_VERSION).jar
@@ -57,7 +58,7 @@ $(quarkus_junit5_jar): $(quarkus_test_common_jar)
 
 build-quarkus:
 > cd $(QUARKUS_HOME)
-> GRADLE_JAVA_HOME=$(HOME)/opt/java-17u-dev $(q_mvnw_cmd) -Dquickly
+> $(gradle_java_home) $(q_mvnw_cmd) -Dquickly
 .PHONY: build-quarkus
 
 clean-quarkus:
