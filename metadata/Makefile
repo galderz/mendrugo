@@ -1,10 +1,10 @@
 GRAALVM_FLAVOUR ?= jdk
 GRAALVM_MAJOR ?= 21
 GRAALVM_MINOR ?= 0
-GRAALVM_MICRO ?= 0
-GRAALVM_BUILD ?= 35.1
+GRAALVM_MICRO ?= 2
+GRAALVM_BUILD ?= 13.1
 
-JAVA_HOME ?= $(HOME)/opt/graal-21
+JAVA_HOME = $(GRAALVM_HOME)
 
 greeting_resource_java = $(project)/src/main/java/org/acme/GreetingResource.java
 native_build_args =
