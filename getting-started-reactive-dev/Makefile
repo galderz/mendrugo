@@ -8,7 +8,7 @@ GDK_HOME ?= $(HOME)/1/mandrel-mandrel
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
 #QUICKSTART_BRANCH ?= development
-QUICKSTART_BRANCH ?= 3.9.5
+QUICKSTART_BRANCH ?= 3.12.1
 
 default: run
 
