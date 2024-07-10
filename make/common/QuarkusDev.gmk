@@ -6,6 +6,16 @@ q_mvnw_cmd += ./mvnw
 
 gradle_java_home = GRADLE_JAVA_HOME=$(opt)/java-17
 
+quarkus_arc_jar = $(QUARKUS_HOME)/independent-projects/arc/runtime/target/arc-$(QUARKUS_VERSION).jar
+$(quarkus_arc_jar): $(shell find $(QUARKUS_HOME)/independent-projects/arc -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_arc_jar): $(shell find $(QUARKUS_HOME)/independent-projects/arc -type f -name '*.xml' | grep -v '/target/' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(gradle_java_home) $(q_mvnw_cmd) -DskipTests -f independent-projects/arc install
+> touch $@
+
+build-quarkus-arc: $(quarkus_arc_jar)
+.PHONY: build-quarkus-arc
+
 quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
