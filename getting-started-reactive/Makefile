@@ -22,6 +22,9 @@ default: run
 include $(TOPDIR)/make/common/MakeBase.gmk
 include $(TOPDIR)/make/common/Graal.gmk
 include $(TOPDIR)/make/common/Maven.gmk
+
+JAVA_HOME=$(GRAALVM_HOME)
+
 include $(TOPDIR)/make/common/QuarkusApp.gmk
 include $(TOPDIR)/make/common/QuarkusDev.gmk
 include $(TOPDIR)/make/common/Hyperfoil.gmk
