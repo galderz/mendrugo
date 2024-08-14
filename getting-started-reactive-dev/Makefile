@@ -15,7 +15,7 @@ default: run
 include $(TOPDIR)/make/common/GraalDev.gmk
 include $(TOPDIR)/make/common/Maven.gmk
 
-JAVA_HOME=$(GRAALVM_HOME)
+GRAALVM_HOME=$(JAVA_HOME)
 
 include $(TOPDIR)/make/common/QuarkusApp.gmk
 include $(TOPDIR)/make/common/QuarkusDev.gmk
