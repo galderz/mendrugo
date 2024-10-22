@@ -17,8 +17,16 @@ run-ap-threads: $(jar) $(ap_agent)
 .PHONY: run-ap-threads
 
 ap-cpu: $(ap_agent)
-> $(ap_profiler) -e cpu -d 3 -f $(target)/cpu-profile.html $$($(jps) | grep "quarkus-run.jar" | awk '{print $$1}')
+> $(ap_profiler) -e cpu -d 10 -f $(target)/cpu-profile.html $$($(jps) | grep "quarkus-run.jar" | awk '{print $$1}')
 .PHONY: ap-cpu
+
+ap-cpu-clock: $(ap_agent)
+> $(ap_profiler) -e cpu-clock -d 10 -f $(target)/cpu-profile.html $$($(jps) | grep "quarkus-run.jar" | awk '{print $$1}')
+.PHONY: ap-cpu-clock
+
+ap-cycles: $(ap_agent)
+> $(ap_profiler) -e cycles -d 10 -f $(target)/cpu-profile.html $$($(jps) | grep "quarkus-run.jar" | awk '{print $$1}')
+.PHONY: ap-cycles
 
 $(ap_agent): $(ap_tar_path)
 > cd $(opt)
