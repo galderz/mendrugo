@@ -1,4 +1,4 @@
-AP_VERSION ?= 2.9
+AP_VERSION ?= 3.0
 
 ap_agent = $(ap_home)/lib/libasyncProfiler.so
 ap_home = $(opt)/async-profiler-$(AP_VERSION)-linux-x64
