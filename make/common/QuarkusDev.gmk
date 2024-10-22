@@ -66,12 +66,12 @@ $(quarkus_junit5_jar): $(quarkus_test_common_jar)
 > $(q_mvnw_cmd) -DskipTests -f test-framework/junit5 install
 > touch $@
 
-build-quarkus:
+build-quarkus: $(java)
 > cd $(QUARKUS_HOME)
 > $(gradle_java_home) $(q_mvnw_cmd) -Dquickly
 .PHONY: build-quarkus
 
-clean-quarkus:
+clean-quarkus: $(java)
 > cd $(QUARKUS_HOME)
 > $(q_mvnw_cmd) clean
 .PHONY: clean-quarkus
