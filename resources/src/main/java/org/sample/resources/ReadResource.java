@@ -26,6 +26,7 @@ public class ReadResource
         int urlCount = 0;
         while (urls.hasMoreElements())
         {
+            urlCount++;
             final URL url = urls.nextElement();
             try (final BufferedReader in = new BufferedReader(
                 new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)
