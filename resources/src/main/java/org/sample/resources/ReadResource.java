@@ -23,10 +23,10 @@ public class ReadResource
                     : resource
             );
 
+        int urlCount = 0;
         while (urls.hasMoreElements())
         {
             final URL url = urls.nextElement();
-            System.out.println("[resource-reader] Trying resource url: " + url);
             try (final BufferedReader in = new BufferedReader(
                 new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)
             ))
@@ -36,5 +36,6 @@ public class ReadResource
                     System.out.println(inputLine);
             }
         }
+        System.out.printf("Found %d urls with %s resource%n", urlCount, resource);
     }
 }
