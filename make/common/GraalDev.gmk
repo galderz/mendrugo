@@ -15,6 +15,9 @@ endif
 
 native_image = $(graalvm_home)/bin/native-image
 
+build-graal: $(native_image)
+.PHONY: build-graal
+
 $(native_image): $(shell find $(gdk_compiler_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.properties')
