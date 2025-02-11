@@ -2,13 +2,12 @@ TOPDIR = ..
 
 include $(TOPDIR)/make/common/MakeBase.gmk
 
-BOOT_GDK_HOME ?= $(HOME)/opt/labs-24
+BOOT_GDK_HOME ?= $(HOME)/opt/labs-latest
 GDK_HOME ?= $(HOME)/1/mandrel-mandrel
 
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
 QUICKSTART_BRANCH ?= development
-#QUICKSTART_BRANCH ?= 3.13.2
 
 default: run
 
