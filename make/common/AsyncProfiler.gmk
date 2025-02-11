@@ -2,7 +2,7 @@ AP_VERSION ?= 3.0
 
 ap_agent = $(ap_home)/lib/libasyncProfiler.so
 ap_home = $(opt)/async-profiler-$(AP_VERSION)-linux-x64
-ap_profiler = $(ap_home)/profiler.sh
+ap_profiler = $(ap_home)/bin/asprof
 ap_tar_name = async-profiler-$(AP_VERSION)-linux-x64.tar.gz
 ap_tar_path = $(opt)/$(ap_tar_name)
 ap_tar_path_prefix = https://github.com/async-profiler/async-profiler/releases/download/v$(AP_VERSION)
