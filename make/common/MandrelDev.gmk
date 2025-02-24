@@ -12,7 +12,7 @@ JAVA_HOME = $(MANDREL_HOME)/$(java_home_suffix)
 ifdef BOOT_GDK_HOME
   boot_gdk_home = $(BOOT_GDK_HOME)
 else
-  boot_gdk_home = $(opt)/boot-graal-$(BOOT_GDK_VERSION)
+  boot_gdk_home = $(opt)/boot-graal-$(BOOT_GDK_VERSION)-$(BOOT_GDK_BUILD)
 endif
 boot_gdk_java = $(boot_gdk_home)/bin/java
 
