@@ -1,10 +1,17 @@
 JAVA_HOME = $(graalvm_home)
 
+ifdef BOOT_GDK_HOME
+  boot_gdk_home = $(BOOT_GDK_HOME)
+else
+  boot_gdk_home = $(opt)/boot-graal-$(BOOT_GDK_VERSION)
+endif
+boot_gdk_java = $(boot_gdk_home)/bin/java
+
 graalvm_home = $(GDK_HOME)/sdk/latest_graalvm_home
 gdk_svm_home = $(GDK_HOME)/substratevm
 gdk_compiler_home = $(GDK_HOME)/compiler
 libnative-image-agent = $(graalvm_home)/lib/libnative-image-agent.so
-mx += JAVA_HOME=$(BOOT_GDK_HOME)
+mx += JAVA_HOME=$(boot_gdk_home)
 mx += $(mx_bin)
 mx_bin = $(mx_home)/mx
 mx_home = $(opt)/mx
@@ -21,7 +28,7 @@ build-graal: $(native_image)
 $(native_image): $(shell find $(gdk_compiler_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.properties')
-$(native_image): $(java) $(mx_bin)
+$(native_image): $(mx_bin) $(boot_gdk_java)
 > cd $(gdk_svm_home)
 > $(mx) build
 
@@ -52,8 +59,8 @@ idea: $(java)
 > $(mx) intellijinit
 .PHONY: idea
 
-gate:
-> $(call gate,JAVA_HOME=$(BOOT_GDK_HOME) $(mx_home)/mx)
+gate: $(boot_gdk_java)
+> $(call gate,JAVA_HOME=$(boot_gdk_home) $(mx_home)/mx)
 .PHONY: gate
 
 define gate
@@ -70,3 +77,11 @@ eclipse:
 > cd $(gdk_home)
 > $(mx) --primary-suite-path substratevm eclipseformat -e /Applications/Eclipse.app/Contents/MacOS/eclipse --primary
 .PHONY: eclipse
+
+$(boot_gdk_java):
+> mkdir -p $(opt)
+> $(TOPDIR)/make/common/download-jdk.sh $(BOOT_GDK_VERSION) $(BOOT_GDK_BUILD) $(opt)
+> touch $@
+
+download-boot-graal: $(boot_gdk_java)
+.PHONY: download-boot-graal

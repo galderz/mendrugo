@@ -2,7 +2,10 @@ TOPDIR = ..
 
 include $(TOPDIR)/make/common/MakeBase.gmk
 
-BOOT_GDK_HOME ?= $(HOME)/opt/labs-latest
+BOOT_GDK_VERSION ?= 25
+BOOT_GDK_BUILD ?= 9
+#BOOT_GDK_HOME ?= $(HOME)/opt/boot-graal-dev
+#BOOT_GDK_HOME ?= $(HOME)/opt/labs-latest
 GDK_HOME ?= $(HOME)/1/mandrel-mandrel
 
 APP_DIR ?= quickstart
@@ -11,7 +14,8 @@ QUICKSTART_BRANCH ?= development
 
 default: run
 
-include $(TOPDIR)/make/common/GraalDev.gmk
+#include $(TOPDIR)/make/common/GraalDev.gmk
+include $(TOPDIR)/make/common/MandrelDev.gmk
 include $(TOPDIR)/make/common/Maven.gmk
 
 GRAALVM_HOME=$(JAVA_HOME)
