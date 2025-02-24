@@ -35,9 +35,9 @@ download_jdk()
     popd
 
     if [ "$(uname)" = "Darwin" ]; then
-      ln -s ${DIR}/Contents/Home boot-graal-${VERSION}
+      ln -s ${DIR}/Contents/Home boot-graal-${VERSION}-${BUILD}
     else
-      ln -s ${DIR} boot-graal-${VERSION}
+      ln -s ${DIR} boot-graal-${VERSION}-${BUILD}
     fi
 }
 
