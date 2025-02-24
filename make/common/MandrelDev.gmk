@@ -48,8 +48,12 @@ build-graal: $(native_image)
 $(native_image): $(shell find $(gdk_compiler_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.properties')
-$(native_image): $(mx_bin) $(boot_gdk_java)
+$(native_image): $(mx_bin) $(boot_gdk_java) $(packaging_build)
 > JAVA_HOME=$(boot_gdk_home) $(boot_gdk_java) $(packaging_args) --skip-native-agents
+
+$(packaging_build):
+> cd $(HOME)/1
+> git clone https://github.com/graalvm/mandrel-packaging
 
 #> cd $(gdk_svm_home)
 #> $(mx) $(mx_build_args)
@@ -110,3 +114,4 @@ $(boot_gdk_java):
 
 download-boot-graal: $(boot_gdk_java)
 .PHONY: download-boot-graal
+
