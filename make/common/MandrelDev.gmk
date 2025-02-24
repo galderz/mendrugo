@@ -7,7 +7,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 MANDREL_HOME = $(opt)/$(ID)
-JAVA_HOME = $(MANDREL_HOME)/$(java_home_suffix)
+JAVA_HOME = $(MANDREL_HOME)$(java_home_suffix)
 
 ifdef BOOT_GDK_HOME
   boot_gdk_home = $(BOOT_GDK_HOME)
