@@ -36,6 +36,10 @@ packaging_args += --skip-clean
 packaging_home = $(HOME)/1/mandrel-packaging
 packaging_build = $(packaging_home)/build.java
 
+ifdef VERBOSE
+  packaging_args += --verbose
+endif
+
 ifdef DEBUG_IMAGES
   mx += --debug-images
 endif
