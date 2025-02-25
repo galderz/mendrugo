@@ -143,7 +143,7 @@ add-app-property:
 > echo $(APP_PROPERTY) > $(application_properties)
 .PHONY: add-application-property
 
-ni-profile:
+ni-profile: $(runner)
 > cd $(target)/*-native-image-source-jar
 > $(TOPDIR)/make/common/ni-profile.sh $(ID) $(NIP_EVENT) $(NIP_FORMAT)
 .PHONE: ni-profile
