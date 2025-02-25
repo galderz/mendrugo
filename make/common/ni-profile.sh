@@ -16,6 +16,10 @@ JAVA_BIN="${OPT}/${ID}/bin"
 JAVA="${JAVA_BIN}/java"
 NATIVE_IMAGE="${JAVA_BIN}/native-image"
 
+echo "# Clean any previous run data"
+rm -f *.html
+rm -f *.jfr
+
 echo "# Profile with perf stat"
 perf stat ${NATIVE_IMAGE} ${ARGS}
 
