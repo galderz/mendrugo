@@ -119,3 +119,6 @@ $(boot_gdk_java):
 download-boot-graal: $(boot_gdk_java)
 .PHONY: download-boot-graal
 
+ni-profile:
+> $(TOPDIR)/make/common/download-jdk.sh $(ID) $(NIP_EVENT) $(NIP_FORMAT)
+.PHONE: ni-profile
