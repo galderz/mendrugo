@@ -20,12 +20,12 @@ echo "# Clean any previous run data"
 rm -f *.html
 rm -f *.jfr
 
-echo "# Profile with perf stat"
-perf stat ${NATIVE_IMAGE} ${ARGS}
-
 echo "# Profile with async profiler"
 ${NATIVE_IMAGE} -J-agentpath:${AP_LIB}/libasyncProfiler.so=start,event=${EVENT},file=${EVENT}-${ID}.${FORMAT} ${ARGS}
 
 if [ "${FORMAT}" = "jfr" ]; then
   ${JAVA} -jar ${AP_LIB}/converter.jar jfr2flame --lines ${EVENT}-${ID}.${FORMAT} ${EVENT}-${ID}.html
 fi
+
+echo "# Profile with perf stat"
+perf stat ${NATIVE_IMAGE} ${ARGS}
