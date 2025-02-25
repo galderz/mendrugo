@@ -145,5 +145,5 @@ add-app-property:
 
 ni-profile: $(runner)
 > cd $(target)/*-native-image-source-jar
-> $(TOPDIR)/make/common/ni-profile.sh $(ID) $(NIP_EVENT) $(NIP_FORMAT)
+> ../../../$(TOPDIR)/make/common/ni-profile.sh $(ID) $(NIP_EVENT) $(NIP_FORMAT)
 .PHONE: ni-profile
