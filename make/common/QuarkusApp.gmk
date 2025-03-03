@@ -3,6 +3,9 @@ VERBOSE_GC ?=
 QUICKSTART_BRANCH ?= main
 
 application_properties = $(APP_DIR)/src/main/resources/application.properties
+container_args += -Dquarkus.native.container-build=true
+container_args += -Dquarkus.native.container-runtime=podman
+container_args += -Dquarkus.container-image.build=true
 debuginfo = $(runner).debug
 debuginfo_args := -H:-DeleteLocalSymbols,-H:-OmitInlinedMethodDebugLineInfo
 graalvm_version_cmd = strings $(runner) | grep GraalVM
@@ -67,6 +70,12 @@ ifdef NO_OPT
   debuginfo_args := $(debuginfo_args),-O0,-H:+SourceLevelDebug
 endif
 
+ifeq ($(UBI),8)
+  container_args += quarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21
+else
+  container_args += quarkus.native.builder-image=quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:jdk-21
+endif
+
 run: $(runner) print-graalvm-version
 > $< $(run_args)
 .PHONY: run
@@ -96,8 +105,17 @@ run-gdb: $(debuginfo)
 > gdb --args $(runner) $(run_args)
 .PHONY: run-debug
 
+run-container:
+> podman -i --rm -p 8080:8080 test/debugging-native:1.0.0-SNAPSHOT
+.PHONY: run-container
+
 build: $(runner)
 .PHONY: build
+
+build-container: $(pom) $(java) $(mvnw)
+> cd $(APP_DIR)
+> $(mvnw_package) $(container_args) -Dnative -Dquarkus.native.additional-build-args=$(native_build_args)
+.PHONY: build-container
 
 verify: $(pom) $(native_image)
 > $(mvnw_cmd) verify -Dnative
