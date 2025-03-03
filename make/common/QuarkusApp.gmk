@@ -114,6 +114,7 @@ build: $(runner)
 
 build-container: $(pom) $(java) $(mvnw)
 > cd $(APP_DIR)
+> $(mvnw_cmd) quarkus:add-extension -Dextensions='container-image-podman'
 > $(mvnw_package) $(container_args) -Dnative -Dquarkus.native.additional-build-args=$(native_build_args)
 .PHONY: build-container
 
