@@ -1,0 +1,13 @@
+FROM registry.access.redhat.com/ubi8/ubi-minimal:9.5
+
+ARG RHSM_USERNAME
+ARG RHSM_PASSWORD
+
+RUN microdnf install -y subscription-manager \
+  && subscription-manager register \
+    --username="${RHSM_USERNAME}" \
+    --password="${RHSM_PASSWORD}" \
+    --auto-attach \
+  && subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-source-rpms \
+  && microdnf install -y perf \
+  && microdnf clean all
