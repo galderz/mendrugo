@@ -134,7 +134,7 @@ build-container: $(pom) $(java) $(mvnw)
 .PHONY: build-container
 
 build-image:
-> podman build -f $(DOCKERFILE) -t $(USER)/$(APP_DIR):1.0 $(APP_DIR)
+> podman build -f $(DOCKERFILE) -t $(USER)/$(IMAGE_NAME):1.0 $(APP_DIR)
 .PHONY: build-image
 
 verify: $(pom) $(native_image)
