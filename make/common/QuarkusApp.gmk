@@ -76,6 +76,13 @@ else
   container_args += -Dquarkus.native.builder-image=quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:jdk-21
 endif
 
+ifdef APP_DIR
+  image_name = $(APP_DIR)
+  container_args += -Dquarkus.container-image.name=$(image_name)
+else
+  image_name = $(APP_NAME)
+endif
+
 run: $(runner) print-graalvm-version
 > $< $(run_args)
 .PHONY: run
@@ -106,8 +113,12 @@ run-gdb: $(debuginfo)
 .PHONY: run-debug
 
 run-container:
-> podman run -i --rm -p 8080:8080 localhost/$(USER)/$(APP_NAME):1.0.0-SNAPSHOT
+> podman run -i --rm -p 8080:8080 localhost/$(USER)/$(image_name):1.0.0-SNAPSHOT
 .PHONY: run-container
+
+bash-container:
+> podman run -ti --rm --entrypoint /bin/bash -p 8080:8080 localhost/$(USER)/$(image_name):1.0.0-SNAPSHOT
+.PHONY: bash-container
 
 build: $(runner)
 .PHONY: build
