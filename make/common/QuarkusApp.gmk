@@ -71,9 +71,9 @@ ifdef NO_OPT
 endif
 
 ifeq ($(UBI),8)
-  container_args += quarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21
+  container_args += -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21
 else
-  container_args += quarkus.native.builder-image=quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:jdk-21
+  container_args += -Dquarkus.native.builder-image=quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:jdk-21
 endif
 
 run: $(runner) print-graalvm-version
