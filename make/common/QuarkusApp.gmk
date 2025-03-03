@@ -1,6 +1,6 @@
 MAVEN_ARGS ?=
 VERBOSE_GC ?=
-QUICKSTART_BRANCH ?= main
+QB ?= main
 
 application_properties = $(APP_DIR)/src/main/resources/application.properties
 container_args += -Dquarkus.native.container-build=true
@@ -145,7 +145,7 @@ $(pom):
 > rm -drf quarkus-quickstarts || true
 > git clone https://github.com/quarkusio/quarkus-quickstarts
 > cd quarkus-quickstarts
-> git checkout $(QUICKSTART_BRANCH)
+> git checkout $(QB)
 > popd
 > cp -r $(tmp_dir)/quarkus-quickstarts/$(APP_NAME) .
 > mv $(APP_NAME) $(APP_DIR)

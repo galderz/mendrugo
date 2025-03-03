@@ -6,7 +6,7 @@ GRAALVM_BUILD ?= 7.1
 
 APP_DIR ?= quickstart
 APP_NAME ?= hibernate-orm-quickstart
-QUICKSTART_BRANCH ?= 3.3.1
+QB ?= 3.3.1
 TOPDIR = ..
 
 default: run

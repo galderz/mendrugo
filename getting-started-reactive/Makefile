@@ -13,8 +13,8 @@ GRAALVM_BUILD ?= 13.1
 
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
-#QUICKSTART_BRANCH ?= a.b.c
-QUICKSTART_BRANCH ?= development
+#QB ?= a.b.c
+QB ?= development
 TOPDIR = ..
 
 default: run

@@ -11,7 +11,7 @@ GDK_HOME ?= $(HOME)/1/$(ID)
 
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started-reactive
-QUICKSTART_BRANCH ?= development
+QB ?= development
 
 default: run
 
