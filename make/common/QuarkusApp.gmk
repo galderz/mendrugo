@@ -133,6 +133,10 @@ build-container: $(pom) $(java) $(mvnw)
 > $(mvnw_package) $(container_args) -Dnative -Dquarkus.native.additional-build-args=$(native_build_args)
 .PHONY: build-container
 
+build-image:
+> podman build -f $(DOCKERFILE) -t $(USER)/$(APP_DIR):1.0 $(APP_DIR)
+.PHONY: build-image
+
 verify: $(pom) $(native_image)
 > $(mvnw_cmd) verify -Dnative
 .PHONY: verify
