@@ -134,7 +134,12 @@ build-container: $(pom) $(java) $(mvnw)
 .PHONY: build-container
 
 build-image:
-> podman build -f $(TOPDIR)/make/common/$(DOCKERFILE) -t $(USER)/$(IMAGE_NAME):1.0 $(APP_DIR)
+> podman build \
+>  --build-arg RHSM_USERNAME="${RHSM_USERNAME}" \
+>  --build-arg RHSM_PASSWORD="${RHSM_PASSWORD}" \
+>   -f $(TOPDIR)/make/common/$(DOCKERFILE) \
+>   -t $(USER)/$(IMAGE_NAME):1.0 \
+>   $(APP_DIR)
 .PHONY: build-image
 
 verify: $(pom) $(native_image)
