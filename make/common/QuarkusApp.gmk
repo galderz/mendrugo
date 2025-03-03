@@ -83,6 +83,10 @@ else
   image_name = $(APP_NAME)
 endif
 
+ifdef BUILDER_IMAGE
+  container_args += -Dquarkus.native.builder-image=$(BUILDER_IMAGE)
+endif
+
 run: $(runner) print-graalvm-version
 > $< $(run_args)
 .PHONY: run
