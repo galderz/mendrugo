@@ -191,6 +191,7 @@ ni-profile: $(runner)
 > ../../../$(TOPDIR)/make/common/ni-profile.sh $(ID) $(NIP_EVENT) $(NIP_FORMAT)
 .PHONE: ni-profile
 
+# See https://github.com/torvalds/linux/commit/9b07e27f88b9cd785cdb23f9a2231c12521dda94 for details
 ni-record: $(runner)
 > cd $(target)/*-native-image-source-jar
 > ../../../$(TOPDIR)/make/common/ni-record.sh $(ID) $(NIR_EVENT)
