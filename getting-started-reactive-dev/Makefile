@@ -3,7 +3,7 @@ TOPDIR = ..
 include $(TOPDIR)/make/common/MakeBase.gmk
 
 BOOT_GDK_VERSION ?= 25
-BOOT_GDK_BUILD ?= 11
+BOOT_GDK_BUILD ?= 13
 ID ?= mandrel-mandrel
 #BOOT_GDK_HOME ?= $(HOME)/opt/boot-graal-dev
 #BOOT_GDK_HOME ?= $(HOME)/opt/labs-latest
