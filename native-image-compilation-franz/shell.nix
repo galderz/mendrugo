@@ -28,8 +28,20 @@ pkgs.mkShell {
   buildInputs = [ mxPkg ];
 
   shellHook = ''
-    export PATH="$PATH:${mxPkg}/bin"
+    # Temporary directory to make mx writable
+    export MX_DIR="/tmp/mx-writable"
+
+    chmod -R u+w $MX_DIR
+    rm -rf $MX_DIR
+    mkdir -p $MX_DIR
+
+    cp -r ${mxPkg}/mx/* $MX_DIR
+    chmod -R u+w $MX_DIR
+
+    export PATH="$MX_DIR:$PATH"
     export MX_PYTHON="${pkgs.python3}/bin/python3"
+
     echo "MX_PYTHON set to $MX_PYTHON"
+    echo "MX is now running from $MX_DIR"
   '';
 }
