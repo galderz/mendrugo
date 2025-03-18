@@ -17,7 +17,7 @@ echo "# Clean any previous run data"
 rm -f perf.data*
 
 echo "# Profile with perf"
-perf record -e ${EVENT} -k mono -- ${NATIVE_IMAGE} -J-agentpath:$(locate libperf-jvmti) ${ARGS}
+perf record -e ${EVENT} -k mono -- ${NATIVE_IMAGE} -J-agentpath:$(locate libperf-jvmti | tail -n 1) ${ARGS}
 
 echo "# Process jit data"
 perf inject --jit -i perf.data -o perf.data.jitted
