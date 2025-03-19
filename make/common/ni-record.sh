@@ -21,6 +21,3 @@ perf record -e ${EVENT} -k mono -- ${NATIVE_IMAGE} -J-agentpath:$(locate libperf
 
 echo "# Process jit data"
 perf inject --jit -i perf.data -o perf.data.jitted
-
-echo "# Run perf report"
-perf report -i perf.data.jitted

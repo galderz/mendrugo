@@ -189,15 +189,20 @@ add-app-property:
 ni-profile: $(runner)
 > cd $(target)/*-native-image-source-jar
 > ../../../$(TOPDIR)/make/common/ni-profile.sh $(ID) $(NIP_EVENT) $(NIP_FORMAT)
-.PHONE: ni-profile
+.PHONY: ni-profile
 
 # See https://github.com/torvalds/linux/commit/9b07e27f88b9cd785cdb23f9a2231c12521dda94 for details
 ni-record: $(runner)
 > cd $(target)/*-native-image-source-jar
 > ../../../$(TOPDIR)/make/common/ni-record.sh $(ID) $(NIR_EVENT)
-.PHONE: ni-record
+.PHONY: ni-record
 
 ni-stat: $(runner)
 > cd $(target)/*-native-image-source-jar
 > ../../../$(TOPDIR)/make/common/ni-stat.sh $(ID) $(NIR_EVENT)
-.PHONE: ni-stat
+.PHONY: ni-stat
+
+ni-report:
+> cd $(target)/*-native-image-source-jar
+> perf report -i perf.data.jitted
+.PHONY: ni-report
