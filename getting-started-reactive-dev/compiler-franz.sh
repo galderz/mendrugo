@@ -2,12 +2,12 @@
 
 set -eux
 
-ID=mandrel make clean
-ID=mandrel make
-NIR_EVENT=branch-misses:pp ID=mandrel make ni-stat
-NIR_EVENT=branch-misses:pp ID=mandrel make ni-record
+ID=mandrel QB=3.19.3 make clean-graal clean-app
+ID=mandrel QB=3.19.3 make
+NIR_EVENT=branch-misses:pp ID=mandrel QB=3.19.3 make ni-stat
+NIR_EVENT=branch-misses:pp ID=mandrel QB=3.19.3 make ni-record
 
-ID=mandrel-base make clean
-ID=mandrel-base make
-NIR_EVENT=branch-misses:pp ID=mandrel-base make ni-stat
-NIR_EVENT=branch-misses:pp ID=mandrel-base make ni-record
+ID=mandrel-base QB=3.19.3 make clean-graal clean-app
+ID=mandrel-base QB=3.19.3 make
+NIR_EVENT=branch-misses:pp ID=mandrel-base QB=3.19.3 make ni-stat
+NIR_EVENT=branch-misses:pp ID=mandrel-base QB=3.19.3 make ni-record
