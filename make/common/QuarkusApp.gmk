@@ -196,3 +196,8 @@ ni-record: $(runner)
 > cd $(target)/*-native-image-source-jar
 > ../../../$(TOPDIR)/make/common/ni-record.sh $(ID) $(NIR_EVENT)
 .PHONE: ni-record
+
+ni-stat: $(runner)
+> cd $(target)/*-native-image-source-jar
+> ../../../$(TOPDIR)/make/common/ni-stat.sh $(ID) $(NIR_EVENT)
+.PHONE: ni-stat
