@@ -53,7 +53,7 @@ $(native_image): $(shell find $(gdk_compiler_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.java')
 $(native_image): $(shell find $(gdk_svm_home)/src -type f -name '*.properties')
 $(native_image): $(mx_bin) $(boot_gdk_java) $(packaging_build)
-> JAVA_HOME=$(boot_gdk_home) $(boot_gdk_java) $(packaging_args) --skip-native-agents
+> MX_PYTHON=python3 JAVA_HOME=$(boot_gdk_home) $(boot_gdk_java) $(packaging_args) --skip-native-agents
 
 $(packaging_build):
 > cd $(HOME)/1
