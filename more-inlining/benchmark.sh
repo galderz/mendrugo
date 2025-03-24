@@ -9,7 +9,7 @@ bench()
     local native_build_args=$1
 
     make clean
-    NATIVE_BUILD_ARGS="" make build
+    NATIVE_BUILD_ARGS="$native_build_args" make build
     pushd $APP_DIR
     ./benchmarks.sh -n
     popd
