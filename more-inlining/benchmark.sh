@@ -10,7 +10,7 @@ bench()
 
     make clean
     NATIVE_BUILD_ARGS="$native_build_args" make build
-    pushd $APP_DIR
+    pushd $APP_DIR/scripts
     ./benchmarks.sh -n
     popd
 }
