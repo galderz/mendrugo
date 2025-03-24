@@ -25,6 +25,7 @@ include $(TOPDIR)/make/common/QuarkusApp.gmk
 include $(TOPDIR)/make/common/QuarkusDev.gmk
 include $(TOPDIR)/make/common/Hyperfoil.gmk
 include $(TOPDIR)/make/common/Numa.gmk
+include $(TOPDIR)/make/common/Taskset.gmk
 include $(TOPDIR)/make/common/Pidstat.gmk
 include $(TOPDIR)/make/common/Wrk.gmk
 include $(TOPDIR)/make/common/JOL.gmk

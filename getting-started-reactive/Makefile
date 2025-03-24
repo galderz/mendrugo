@@ -30,6 +30,7 @@ include $(TOPDIR)/make/common/QuarkusDev.gmk
 include $(TOPDIR)/make/common/Hyperfoil.gmk
 include $(TOPDIR)/make/common/AsyncProfiler.gmk
 include $(TOPDIR)/make/common/Numa.gmk
+include $(TOPDIR)/make/common/Taskset.gmk
 include $(TOPDIR)/make/common/Perf.gmk
 include $(TOPDIR)/make/common/Pidstat.gmk
 include $(TOPDIR)/make/common/Export.gmk

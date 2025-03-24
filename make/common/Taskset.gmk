@@ -1,0 +1,14 @@
+taskset += taskset
+taskset += --cpu-list $(TS_CORES)
+
+run-ts: $(runner) print-graalvm-version
+> $(taskset) $< $(run_args)
+.PHONY: run-ts
+
+run-debug-ts: $(debuginfo) print-graalvm-version
+> $(taskset) $(runner) $(run_args)
+.PHONY: run-debug-ts
+
+run-jvm-ts: $(jar)
+> $(taskset) $(java) $(run_jvm_opts) -jar $<
+.PHONY: run-jvm-ts
