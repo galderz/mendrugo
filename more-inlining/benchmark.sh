@@ -15,10 +15,22 @@ bench()
     popd
 }
 
-bench "-H:MaxNodesInTrivialMethod=40"
-bench "-H:MaxNodesInTrivialMethod=80"
-bench "-H:MaxInvokesInTrivialMethod=2"
-bench "-H:MaxInvokesInTrivialMethod=4"
-bench "-H:MaxNodesInTrivialLeafMethod=80"
-bench "-H:MaxNodesInTrivialLeafMethod=160"
+# Round 2
 bench ""
+bench "-H:MaxNodesInTrivialMethod=80"
+bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=80"
+bench "-H:MaxNodesInTrivialMethod=160"
+bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=160"
+bench "-H:MaxNodesInTrivialMethod=320"
+bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=320"
+bench "-H:MaxNodesInTrivialMethod=640"
+bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=640"
+
+# Round 1
+# bench "-H:MaxNodesInTrivialMethod=40"
+# bench "-H:MaxNodesInTrivialMethod=80"
+# bench "-H:MaxInvokesInTrivialMethod=2"
+# bench "-H:MaxInvokesInTrivialMethod=4"
+# bench "-H:MaxNodesInTrivialLeafMethod=80"
+# bench "-H:MaxNodesInTrivialLeafMethod=160"
+# bench ""
