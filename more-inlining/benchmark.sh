@@ -11,7 +11,7 @@ bench()
     make clean
     NATIVE_BUILD_ARGS="$native_build_args" make build
     pushd $APP_DIR/scripts
-    ./benchmark.sh -n
+    JAVA_HOME=$HOME/opt/boot-java-21 ./benchmark.sh -n
     popd
 }
 
