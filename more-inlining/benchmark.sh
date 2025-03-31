@@ -15,16 +15,34 @@ bench()
     popd
 }
 
-# Round 2
+# Round 3
 bench ""
-bench "-H:MaxNodesInTrivialMethod=80"
-bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=80"
 bench "-H:MaxNodesInTrivialMethod=160"
 bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=160"
+bench "-H:MaxInvokesInTrivialMethod=4,-H:MaxNodesInTrivialMethod=160"
+bench "-H:MaxInvokesInTrivialMethod=8,-H:MaxNodesInTrivialMethod=160"
+bench "-H:MaxInvokesInTrivialMethod=16,-H:MaxNodesInTrivialMethod=160"
 bench "-H:MaxNodesInTrivialMethod=320"
 bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=320"
+bench "-H:MaxInvokesInTrivialMethod=4,-H:MaxNodesInTrivialMethod=320"
+bench "-H:MaxInvokesInTrivialMethod=8,-H:MaxNodesInTrivialMethod=320"
+bench "-H:MaxInvokesInTrivialMethod=16,-H:MaxNodesInTrivialMethod=320"
 bench "-H:MaxNodesInTrivialMethod=640"
 bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=640"
+bench "-H:MaxInvokesInTrivialMethod=4,-H:MaxNodesInTrivialMethod=640"
+bench "-H:MaxInvokesInTrivialMethod=8,-H:MaxNodesInTrivialMethod=640"
+bench "-H:MaxInvokesInTrivialMethod=16,-H:MaxNodesInTrivialMethod=640"
+
+# Round 2
+# bench ""
+# bench "-H:MaxNodesInTrivialMethod=80"
+# bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=80"
+# bench "-H:MaxNodesInTrivialMethod=160"
+# bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=160"
+# bench "-H:MaxNodesInTrivialMethod=320"
+# bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=320"
+# bench "-H:MaxNodesInTrivialMethod=640"
+# bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=640"
 
 # Round 1
 # bench "-H:MaxNodesInTrivialMethod=40"
