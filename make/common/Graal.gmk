@@ -25,7 +25,7 @@ ifeq ($(GRAALVM_FLAVOUR),vm)
   tar_path_suffix = vm-$(graalvm_version)
 endif
 
-GRAALVM_HOME = $(java_home_root)/$(java_home_suffix)
+GRAALVM_HOME ?= $(java_home_root)/$(java_home_suffix)
 
 graalvm_version = $(GRAALVM_MAJOR).$(GRAALVM_MINOR).$(GRAALVM_MICRO)
 gu = $(GRAALVM_HOME)/bin/gu
