@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eux
+set -ex
 
 APP_DIR=quarkus-reactive-beer
 
@@ -9,14 +9,21 @@ bench()
     local native_build_args=$1
 
     make clean
-    NATIVE_BUILD_ARGS="$native_build_args" make build
+    if [ ! -z $2 ]
+    then
+        GRAALVM_HOME=$2 NATIVE_BUILD_ARGS="$native_build_args" make build
+    else
+        NATIVE_BUILD_ARGS="$native_build_args" make build
+    fi
+
     pushd $APP_DIR/scripts
-    JAVA_HOME=$HOME/opt/boot-java-21 PATH=$JAVA_HOME/bin:$PATH ./benchmark.sh -n
+    JAVA_HOME=$HOME/opt/boot-java-21 PATH=$JAVA_HOME/bin:$PATH ./benchmark.sh -n -p
     popd
 }
 
 # Round 6
 bench ""
+bench "" "$HOME/opt/ee-graal-21"
 bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=320"
 bench "-H:MaxInvokesInTrivialMethod=4,-H:MaxNodesInTrivialMethod=160" # best
 
