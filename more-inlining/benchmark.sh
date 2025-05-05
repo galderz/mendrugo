@@ -21,7 +21,24 @@ bench()
     popd
 }
 
+pgo()
+{
+    local native_build_args=$1
+
+    make clean
+    GRAALVM_HOME=$2 NATIVE_BUILD_ARGS="$native_build_args,--pgo-instrument" make build
+
+    pushd $APP_DIR/scripts
+    JAVA_HOME=$HOME/opt/boot-java-21 PATH=$JAVA_HOME/bin:$PATH ./benchmark.sh -n -p
+    popd
+
+    # Touch file to force a rebuild
+    touch $APP_DIR/pom.xml
+    GRAALVM_HOME=$2 NATIVE_BUILD_ARGS="$native_build_args,--pgo=../../scripts/default.iprof" make build
+}
+
 # Round 6
+pgo "" "$HOME/opt/ee-graal-21"
 bench ""
 bench "" "$HOME/opt/ee-graal-21"
 bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=320"
