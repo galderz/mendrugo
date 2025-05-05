@@ -35,6 +35,10 @@ pgo()
     # Touch file to force a rebuild
     touch $APP_DIR/pom.xml
     GRAALVM_HOME=$2 NATIVE_BUILD_ARGS="$native_build_args,--pgo=../../scripts/default.iprof" make build
+
+    pushd $APP_DIR/scripts
+    JAVA_HOME=$HOME/opt/boot-java-21 PATH=$JAVA_HOME/bin:$PATH ./benchmark.sh -n -p
+    popd
 }
 
 # Round 6
