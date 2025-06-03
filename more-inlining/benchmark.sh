@@ -3,18 +3,16 @@
 set -ex
 
 APP_DIR=quarkus-reactive-beer
+CE_HOME=$HOME/opt/graal-24
+EE_HOME=$HOME/opt/ee-graal-24
 
 bench()
 {
     local native_build_args=$1
+    local graalvm_home=$2
 
     make clean
-    if [ ! -z $2 ]
-    then
-        GRAALVM_HOME=$2 NATIVE_BUILD_ARGS="$native_build_args" make build
-    else
-        NATIVE_BUILD_ARGS="$native_build_args" make build
-    fi
+    GRAALVM_HOME=${graalvm_home} NATIVE_BUILD_ARGS="${native_build_args}" make build
 
     pushd $APP_DIR/scripts
     JAVA_HOME=$HOME/opt/boot-java-21 PATH=$JAVA_HOME/bin:$PATH ./benchmark.sh -n -p
@@ -24,9 +22,10 @@ bench()
 pgo()
 {
     local native_build_args=$1
+    local graalvm_home=$2
 
     make clean
-    GRAALVM_HOME=$2 NATIVE_BUILD_ARGS="$native_build_args,--pgo-instrument" make build
+    GRAALVM_HOME=${graalvm_home} NATIVE_BUILD_ARGS="$native_build_args,--pgo-instrument" make build
 
     pushd $APP_DIR/scripts
     JAVA_HOME=$HOME/opt/boot-java-21 PATH=$JAVA_HOME/bin:$PATH ./benchmark.sh -n -p
@@ -41,12 +40,20 @@ pgo()
     popd
 }
 
+# Round 7
+bench "-H:+TraceInlining" ${EE_HOME}
+bench "-H:+TraceInlining,-H:-ClampMLInferredProfiles,-H:-MLProfileInference,-H:-MLProfileInferenceGuards" ${EE_HOME}
+pgo "" ${EE_HOME}
+bench "-H:+TraceInlining" ${CE_HOME}
+bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=320" ${CE_HOME}
+bench "-H:MaxInvokesInTrivialMethod=4,-H:MaxNodesInTrivialMethod=160" ${CE_HOME} # best
+
 # Round 6
-pgo "" "$HOME/opt/ee-graal-21"
-bench ""
-bench "" "$HOME/opt/ee-graal-21"
-bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=320"
-bench "-H:MaxInvokesInTrivialMethod=4,-H:MaxNodesInTrivialMethod=160" # best
+# pgo "" "$HOME/opt/ee-graal-21"
+# bench ""
+# bench "" "$HOME/opt/ee-graal-21"
+# bench "-H:MaxInvokesInTrivialMethod=2,-H:MaxNodesInTrivialMethod=320"
+# bench "-H:MaxInvokesInTrivialMethod=4,-H:MaxNodesInTrivialMethod=160" # best
 
 # Round 5
 # bench "-H:MaxInvokesInTrivialMethod=16,-H:MaxNodesInTrivialMethod=40"
