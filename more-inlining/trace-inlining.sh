@@ -11,7 +11,7 @@ build()
     local extra_args=$1
     local graalvm_home=$2
     local log_id=$3
-    local common_args="-H:+TraceInlining,-H:NumberOfThreads=1"
+    local common_args="-H:+TraceInlining,-H:NumberOfThreads=1,-H:DeadlockWatchdogInterval=0"
 
     make clean
     GRAALVM_HOME=${graalvm_home} NATIVE_BUILD_ARGS="${common_args},${extra_args}" make build 2>&1 | tee ${log_id}
