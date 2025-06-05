@@ -15,6 +15,7 @@ build()
 
     make clean
     GRAALVM_HOME=${graalvm_home} NATIVE_BUILD_ARGS="${common_args},${extra_args}" make build
+    mv $APP_DIR/target/quarkus-reactive-beer-1.0.0-SNAPSHOT-native-image-source-jar/${log_id}.log $APP_DIR
 }
 
 # Round 7
