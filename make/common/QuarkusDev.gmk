@@ -1,16 +1,14 @@
-QUARKUS_HOME ?= $(HOME)/1/quarkus-quarkus
+QUARKUS_HOME ?= $(HOME)/src/quarkus
 QUARKUS_VERSION ?= 999-SNAPSHOT
 
-q_mvnw_cmd += JAVA_HOME=$(GRAALVM_HOME)
+q_mvnw_cmd += JAVA_HOME=$(opt)/java-17
 q_mvnw_cmd += ./mvnw
-
-gradle_java_home = GRADLE_JAVA_HOME=$(opt)/java-17
 
 quarkus_arc_jar = $(QUARKUS_HOME)/independent-projects/arc/runtime/target/arc-$(QUARKUS_VERSION).jar
 $(quarkus_arc_jar): $(shell find $(QUARKUS_HOME)/independent-projects/arc -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_arc_jar): $(shell find $(QUARKUS_HOME)/independent-projects/arc -type f -name '*.xml' | grep -v '/target/' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> $(gradle_java_home) $(q_mvnw_cmd) -DskipTests -f independent-projects/arc install
+> $(q_mvnw_cmd) -DskipTests -f independent-projects/arc install
 > touch $@
 
 build-quarkus-arc: $(quarkus_arc_jar)
@@ -27,7 +25,7 @@ quarkus_devtools_jar = $(QUARKUS_HOME)/devtools/cli/target/quarkus-cli-$(QUARKUS
 $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> $(gradle_java_home) $(q_mvnw_cmd) -DskipTests -f devtools install
+> $(q_mvnw_cmd) -DskipTests -f devtools install
 > touch $@
 
 quarkus_jackson_jar = $(QUARKUS_HOME)/extensions/jackson/deployment/target/quarkus-jackson-deployment-$(QUARKUS_VERSION).jar
@@ -41,7 +39,7 @@ quarkus_tools_jar = $(QUARKUS_HOME)/independent-projects/tools/analytics-common/
 $(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_tools_jar): $(shell find $(QUARKUS_HOME)/independent-projects/tools -type f -name '*.xml' | grep -v '/target/' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
-> $(gradle_java_home) $(q_mvnw_cmd) -DskipTests -f independent-projects/tools install
+> $(q_mvnw_cmd) -DskipTests -f independent-projects/tools install
 > touch $@
 
 quarkus_test_common_jar = $(QUARKUS_HOME)/test-framework/common/target/quarkus-test-common-$(QUARKUS_VERSION).jar
@@ -68,7 +66,7 @@ $(quarkus_junit5_jar): $(quarkus_test_common_jar)
 
 build-quarkus: $(java)
 > cd $(QUARKUS_HOME)
-> $(gradle_java_home) $(q_mvnw_cmd) -Dquickly
+> $(q_mvnw_cmd) -Dquickly
 .PHONY: build-quarkus
 
 clean-quarkus: $(java)
