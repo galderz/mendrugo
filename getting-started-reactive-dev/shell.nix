@@ -24,5 +24,8 @@ pkgs.mkShell {
     # Does not work:
     # echo "Set cc patch to dev kit"
     # export PATH=${devkit}/Xcode/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:$PATH
+
+    export NATIVE_IMAGE_OPTIONS="-H:-CheckToolchain"
+    echo "Setting NATIVE_IMAGE_OPTIONS to $NATIVE_IMAGE_OPTIONS"
   '' ;
 }
