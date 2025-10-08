@@ -33,7 +33,7 @@ packaging_args += $(GDK_HOME)
 packaging_args += --mandrel-home
 packaging_args += $(MANDREL_HOME)
 packaging_args += --skip-clean
-packaging_home = $(HOME)/1/mandrel-packaging
+packaging_home = $(HOME)/src/mandrel-packaging
 packaging_build = $(packaging_home)/build.java
 
 ifdef VERBOSE
@@ -79,7 +79,7 @@ mx-update:
 .PHONY: mx-update
 
 mx-fetch-jdk:
-> JAVA_HOME=$(opt)/java-21 $(mx_bin) fetch-jdk
+> JAVA_HOME=$(opt)/boot-java-24 $(mx_bin) fetch-jdk
 .PHONY: mx-fetch-jdk
 
 clean-graal: $(java)

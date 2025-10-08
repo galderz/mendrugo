@@ -40,7 +40,8 @@ tar_path_prefix = https://github.com/graalvm/graalvm-ce-builds/releases/download
 $(native_image): $(java)
 > touch $@
 
-$(java): $(tar_path)
+#$(java): $(tar_path)
+$(java):
 > cd $(opt)
 > tar -xzvpf $<
 > touch $@

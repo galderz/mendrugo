@@ -28,11 +28,32 @@ $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.
 > $(q_mvnw_cmd) -DskipTests -f devtools install
 > touch $@
 
+quarkus_netty_jar = $(QUARKUS_HOME)/extensions/netty/deployment/target/quarkus-netty-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_netty_jar): $(shell find $(QUARKUS_HOME)/extensions/netty -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_netty_jar): $(shell find $(QUARKUS_HOME)/extensions/netty -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(q_mvnw_cmd) -DskipTests -f extensions/netty install
+> touch $@
+
 quarkus_jackson_jar = $(QUARKUS_HOME)/extensions/jackson/deployment/target/quarkus-jackson-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_jackson_jar): $(shell find $(QUARKUS_HOME)/extensions/jackson -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_jackson_jar): $(shell find $(QUARKUS_HOME)/extensions/jackson -type f -name 'pom.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
 > $(q_mvnw_cmd) -DskipTests -f extensions/jackson install
+> touch $@
+
+quarkus_resteasy_reactive_jar = $(QUARKUS_HOME)/extensions/resteasy-reactive/rest/deployment/target/quarkus-rest-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_resteasy_reactive_jar): $(shell find $(QUARKUS_HOME)/extensions/resteasy-reactive -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_resteasy_reactive_jar): $(shell find $(QUARKUS_HOME)/extensions/resteasy-reactive -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(q_mvnw_cmd) -DskipTests -f extensions/resteasy-reactive install
+> touch $@
+
+quarkus_undertow_jar = $(QUARKUS_HOME)/extensions/undertow/deployment/target/quarkus-undertow-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_undertow_jar): $(shell find $(QUARKUS_HOME)/extensions/undertow -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_undertow_jar): $(shell find $(QUARKUS_HOME)/extensions/undertow -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(q_mvnw_cmd) -DskipTests -f extensions/undertow install
 > touch $@
 
 quarkus_tools_jar = $(QUARKUS_HOME)/independent-projects/tools/analytics-common/target/quarkus-analytics-common-$(QUARKUS_VERSION).jar

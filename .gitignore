@@ -36,6 +36,6 @@ out
 # nohup output file
 nohup.out
 # ignore downloded quickstarts
-quickstart
+quickstart*
 # ignore sym links to source repositories
 mandrel

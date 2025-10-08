@@ -42,11 +42,11 @@ $(mx_bin):
 > git clone --depth 1 https://github.com/graalvm/mx $(mx_home)
 
 mx-update:
-> $(mx) update
+> JAVA_HOME=$(opt)/boot-java $(mx_bin) update
 .PHONY: mx-update
 
 mx-fetch-jdk:
-> JAVA_HOME=$(opt)/java-21 $(mx_bin) fetch-jdk
+> JAVA_HOME=$(opt)/boot-java $(mx_bin) fetch-jdk
 .PHONY: mx-fetch-jdk
 
 clean-graal: $(java)
