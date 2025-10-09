@@ -1,5 +1,6 @@
 QUARKUS_HOME ?= $(HOME)/src/quarkus
 QUARKUS_VERSION ?= 999-SNAPSHOT
+TEST_MODULE ?= main
 
 q_mvnw_cmd += JAVA_HOME=$(opt)/java-17
 q_mvnw_cmd += ./mvnw
@@ -42,11 +43,32 @@ $(quarkus_jackson_jar): $(shell find $(QUARKUS_HOME)/extensions/jackson -type f 
 > $(q_mvnw_cmd) -DskipTests -f extensions/jackson install
 > touch $@
 
+quarkus_kafka_client_jar = $(QUARKUS_HOME)/extensions/kafka-client/deployment/target/quarkus-kafka-client-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_kafka_client_jar): $(shell find $(QUARKUS_HOME)/extensions/kafka-client -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_kafka_client_jar): $(shell find $(QUARKUS_HOME)/extensions/kafka-client -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(q_mvnw_cmd) -DskipTests -f extensions/kafka-client install
+> touch $@
+
 quarkus_resteasy_reactive_jar = $(QUARKUS_HOME)/extensions/resteasy-reactive/rest/deployment/target/quarkus-rest-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_resteasy_reactive_jar): $(shell find $(QUARKUS_HOME)/extensions/resteasy-reactive -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_resteasy_reactive_jar): $(shell find $(QUARKUS_HOME)/extensions/resteasy-reactive -type f -name 'pom.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
 > $(q_mvnw_cmd) -DskipTests -f extensions/resteasy-reactive install
+> touch $@
+
+quarkus_security_jar = $(QUARKUS_HOME)/extensions/security/deployment/target/quarkus-security-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_security_jar): $(shell find $(QUARKUS_HOME)/extensions/security -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_security_jar): $(shell find $(QUARKUS_HOME)/extensions/security -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(q_mvnw_cmd) -DskipTests -f extensions/security install
+> touch $@
+
+quarkus_spring_data_jpa_jar = $(QUARKUS_HOME)/extensions/kafka-client/deployment/target/quarkus-spring-data-jpa-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_spring_data_jpa_jar): $(shell find $(QUARKUS_HOME)/extensions/spring-data-jpa -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_spring_data_jpa_jar): $(shell find $(QUARKUS_HOME)/extensions/spring-data-jpa -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(q_mvnw_cmd) -DskipTests -f extensions/spring-data-jpa install
 > touch $@
 
 quarkus_undertow_jar = $(QUARKUS_HOME)/extensions/undertow/deployment/target/quarkus-undertow-deployment-$(QUARKUS_VERSION).jar
@@ -94,3 +116,26 @@ clean-quarkus: $(java)
 > cd $(QUARKUS_HOME)
 > $(q_mvnw_cmd) clean
 .PHONY: clean-quarkus
+
+#test_args += $(HOME)/opt/maven/bin/mvnDebug
+test_args += ./mvnw
+test_args += -Dnative
+test_args += -Dnative.surefire.skip
+test_args += -Dformat.skip
+test_args += -Dno-descriptor-tests
+test_args += -DskipDocs
+test_args += --fail-at-end
+test_args += -Dquarkus.native.container-build=false
+#test_args += -Dquarkus.native.additional-build-args=-H:+PrintClassInitialization
+#test_args += -Dquarkus.native.additional-build-args=--debug-attach=*:8000
+#test_args += -Dquarkus.native.additional-build-args=--trace-object-instantiation=jdk.nio.zipfs.ZipFileSystemProvider
+test_args += -f
+test_args += integration-tests/$(TEST_MODULE)
+
+test-quarkus: $(java)
+test-quarkus: $(quarkus_core_jar)
+test-quarkus: $(quarkus_security_jar)
+test-quarkus: $(quarkus_spring_data_jpa_jar)
+> cd $(QUARKUS_HOME)
+> JAVA_HOME=$(GRAALVM_HOME) $(test_args) install
+.PHONY: test-quarkus
