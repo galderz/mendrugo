@@ -4,7 +4,7 @@ include $(TOPDIR)/make/common/MakeBase.gmk
 APP_DIR ?= quickstart
 APP_NAME ?= getting-started
 GRAALVM_HOME ?= $(JAVA_HOME)
-JAVA_HOME ?= $(opt)/graalvm-ce-25
+JAVA_HOME ?= $(opt)/graalvm-25
 RUN_ARGS ?=
 QUARKUS_HOME ?= $(HOME)/src/quarkus-future-defaults
 QUICKSTARTS_BRANCH ?= development
