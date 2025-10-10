@@ -1,4 +1,5 @@
 QUARKUS_HOME ?= $(HOME)/src/quarkus
+MANDREL_IT_HOME ?= $(HOME)/src/mandrel-integration-tests
 QUARKUS_VERSION ?= 999-SNAPSHOT
 TEST_MODULE ?= main
 
@@ -124,20 +125,20 @@ clean-quarkus: $(java)
 > $(q_mvnw_cmd) clean
 .PHONY: clean-quarkus
 
-#test_args += $(HOME)/opt/maven/bin/mvnDebug
-test_args += ./mvnw
-test_args += -Dnative
-test_args += -Dnative.surefire.skip
-test_args += -Dformat.skip
-test_args += -Dno-descriptor-tests
-test_args += -DskipDocs
-test_args += --fail-at-end
-test_args += -Dquarkus.native.container-build=false
-#test_args += -Dquarkus.native.additional-build-args=-H:+PrintClassInitialization
-#test_args += -Dquarkus.native.additional-build-args=--debug-attach=*:8000
-#test_args += -Dquarkus.native.additional-build-args=--trace-object-instantiation=jdk.nio.zipfs.ZipFileSystemProvider
-test_args += -f
-test_args += integration-tests/$(TEST_MODULE)
+#test_quarkus_args += $(HOME)/opt/maven/bin/mvnDebug
+test_quarkus_args += ./mvnw
+test_quarkus_args += -Dnative
+test_quarkus_args += -Dnative.surefire.skip
+test_quarkus_args += -Dformat.skip
+test_quarkus_args += -Dno-descriptor-tests
+test_quarkus_args += -DskipDocs
+test_quarkus_args += --fail-at-end
+test_quarkus_args += -Dquarkus.native.container-build=false
+#test_quarkus_args += -Dquarkus.native.additional-build-args=-H:+PrintClassInitialization
+#test_quarkus_args += -Dquarkus.native.additional-build-args=--debug-attach=*:8000
+#test_quarkus_args += -Dquarkus.native.additional-build-args=--trace-object-instantiation=jdk.nio.zipfs.ZipFileSystemProvider
+test_quarkus_args += -f
+test_quarkus_args += integration-tests/$(TEST_MODULE)
 
 test-quarkus: $(java)
 test-quarkus: $(quarkus_awt_jar)
@@ -145,5 +146,22 @@ test-quarkus: $(quarkus_core_jar)
 test-quarkus: $(quarkus_security_jar)
 test-quarkus: $(quarkus_spring_data_jpa_jar)
 > cd $(QUARKUS_HOME)
-> JAVA_HOME=$(GRAALVM_HOME) $(test_args) install
+> JAVA_HOME=$(GRAALVM_HOME) $(test_quarkus_args) install
 .PHONY: test-quarkus
+
+#test_mandrel_args += $(HOME)/opt/maven/bin/mvnDebug
+test_mandrel_args += $(HOME)/opt/maven/bin/mvn
+#test_mandrel_args += -Dquarkus.native.additional-build-args=-H:+PrintClassInitialization
+#test_mandrel_args += -Dquarkus.native.additional-build-args=--debug-attach=*:8000
+#test_mandrel_args += -Dquarkus.native.additional-build-args=--trace-object-instantiation=jdk.nio.zipfs.ZipFileSystemProvider
+test_mandrel_args += -Dquarkus.version=999-SNAPSHOT
+test_mandrel_args += -Ptestsuite
+
+test-mandrel: $(java)
+test-mandrel: $(quarkus_awt_jar)
+test-mandrel: $(quarkus_core_jar)
+test-mandrel: $(quarkus_security_jar)
+test-mandrel: $(quarkus_spring_data_jpa_jar)
+> cd $(MANDREL_IT_HOME)
+> JAVA_HOME=$(GRAALVM_HOME) $(test_mandrel_args) install
+.PHONY: test-mandrel
