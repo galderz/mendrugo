@@ -29,7 +29,7 @@ $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.
 > $(q_mvnw_cmd) -DskipTests -f devtools install
 > touch $@
 
-quarkus_awt_jar = $(QUARKUS_HOME)/extensions/awt/deployment/target/quarkus-netty-deployment-$(QUARKUS_VERSION).jar
+quarkus_awt_jar = $(QUARKUS_HOME)/extensions/awt/deployment/target/quarkus-awt-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_awt_jar): $(shell find $(QUARKUS_HOME)/extensions/awt -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_awt_jar): $(shell find $(QUARKUS_HOME)/extensions/awt -type f -name 'pom.xml' | sed 's: :\\ :g')
 > cd $(QUARKUS_HOME)
