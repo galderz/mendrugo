@@ -56,17 +56,17 @@ peakperf()
     # JAVA_HOME=${java_home} PATH=${java_home}/bin:${PATH} numactl --localalloc --cpunodebind=1-6 ${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
     wrk_pid=$!
 
-    echo "----- Waiting $WARMUP seconds before collecting pid stats"
-    sleep $WARMUP
-
-    echo "----- Showing stats for $WARMUP seconds"
-
-    pidstat -p $quarkus_pid -u -r 1 &
-    pidstat_pid=$!
-    sleep $WARMUP
-    kill -SIGTERM $pidstat_pid
-
-    echo "----- Stopped stats, waiting load to complete"
+    # echo "----- Waiting $WARMUP seconds before collecting pid stats"
+    # sleep $WARMUP
+    #
+    # echo "----- Showing stats for $WARMUP seconds"
+    #
+    # pidstat -p $quarkus_pid -u -r 1 &
+    # pidstat_pid=$!
+    # sleep $WARMUP
+    # kill -SIGTERM $pidstat_pid
+    #
+    # echo "----- Stopped stats, waiting load to complete"
 
     wait $wrk_pid
 
