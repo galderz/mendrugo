@@ -34,13 +34,12 @@ build()
     fi
 
     QUARKUS_HOME=${quarkus_home} make build-quarkus
-    QUARKUS_HOME=${quarkus_home} NATIVE_BUILD_ARGS=${native_build_args} make build
+    QUARKUS_HOME=${quarkus_home} APP_NAME=security-jpa-reactive-quickstart NATIVE_BUILD_ARGS=${native_build_args} make build
 }
 
 peakperf()
 {
     local binary=quickstart/target/getting-started-1.0.0-SNAPSHOT-runner
-    local java_home=${HOME}/opt/java-25
 
     echo "----- Benchmarking endpoint ${FULL_URL}"
     trap 'echo "cleaning up quarkus process";kill ${quarkus_pid}' SIGINT SIGTERM SIGKILL
@@ -49,8 +48,12 @@ peakperf()
     quarkus_pid=$!
     echo "----- Quarkus running at pid $quarkus_pid using ${THREADS} I/O threads"
 
+    echo "----- Add admin:admin user"
+    curl -i -X POST -u admin:admin -d user http://localhost:8080/api/users
+
     echo "----- Start all-out test and profiling"
-    JAVA_HOME=${java_home} PATH=${java_home}/bin:${PATH} numactl --localalloc --cpunodebind=1-6 ${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
+    numactl --localalloc --cpunodebind=1-6 oha -c ${CONNECTIONS} -z ${DURATION}s -a admin:admin ${FULL_URL} &
+    # JAVA_HOME=${java_home} PATH=${java_home}/bin:${PATH} numactl --localalloc --cpunodebind=1-6 ${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
     wrk_pid=$!
 
     echo "----- Waiting $WARMUP seconds before collecting pid stats"
