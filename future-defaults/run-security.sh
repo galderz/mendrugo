@@ -52,7 +52,7 @@ peakperf()
     curl -i -X POST -u admin:admin -d user http://localhost:8080/api/users
 
     echo "----- Start all-out test and profiling"
-    numactl --localalloc --cpunodebind=1-6 oha -c ${CONNECTIONS} -z ${DURATION}s -a admin:admin ${FULL_URL} &
+    numactl --localalloc --cpunodebind=1-6 ${HOME}/.cargo/bin/oha -c ${CONNECTIONS} -z ${DURATION}s -a admin:admin ${FULL_URL} &
     # JAVA_HOME=${java_home} PATH=${java_home}/bin:${PATH} numactl --localalloc --cpunodebind=1-6 ${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
     wrk_pid=$!
 
