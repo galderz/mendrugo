@@ -39,6 +39,7 @@ build()
 peakperf()
 {
     local binary=quickstart/target/getting-started-1.0.0-SNAPSHOT-runner
+    local java_home=${HOME}/opt/java-25
 
     echo "----- Benchmarking endpoint ${FULL_URL}"
     trap 'echo "cleaning up quarkus process";kill ${quarkus_pid}' SIGINT SIGTERM SIGKILL
@@ -48,7 +49,7 @@ peakperf()
     echo "----- Quarkus running at pid $quarkus_pid using ${THREADS} I/O threads"
 
     echo "----- Start all-out test and profiling"
-    JAVA_HOME=${HOME}/opt/java-25 numactl --localalloc --cpunodebind=1-6 ${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
+    JAVA_HOME=${java_home} PATH=${java_home}/bin:${PATH} numactl --localalloc --cpunodebind=1-6 ${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
     wrk_pid=$!
 
     echo "----- Waiting $WARMUP seconds before collecting pid stats"
