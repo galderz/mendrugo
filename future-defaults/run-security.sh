@@ -46,6 +46,7 @@ peakperf()
 
     numactl --localalloc --physcpubind=29,30 ${binary} -Dquarkus.vertx.event-loops-pool-size=${THREADS} &
     quarkus_pid=$!
+    sleep 2
     echo "----- Quarkus running at pid $quarkus_pid using ${THREADS} I/O threads"
 
     echo "----- Add admin:admin user"
