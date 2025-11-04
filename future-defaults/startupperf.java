@@ -24,7 +24,7 @@ public class startup {
 
     enum App {
         HELLO("getting-started"),
-        SECURITY;
+        SECURITY("?");
 
         final String name;
 
@@ -121,12 +121,7 @@ public class startup {
             String l;
             while ((l = processOutputReader.readLine()) != null) {
                 if (NUM_PATTERN.matcher(l).matches()) {
-                    if (IS_THIS_WINDOWS) {
-                        // Qualifiers: DisplayName ("Working Set Size"), Units ("bytes")
-                        return Long.parseLong(l.trim()) / 1024L;
-                    } else {
-                        return Long.parseLong(l.trim());
-                    }
+                    return Long.parseLong(l.trim());
                 }
             }
             p.waitFor();
