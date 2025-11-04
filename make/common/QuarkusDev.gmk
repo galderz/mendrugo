@@ -30,6 +30,13 @@ $(quarkus_devtools_jar): $(shell find $(QUARKUS_HOME)/devtools -type f -name '*.
 > $(q_mvnw_cmd) -DskipTests -f devtools install
 > touch $@
 
+quarkus_arc_jar = $(QUARKUS_HOME)/extensions/arc/deployment/target/quarkus-arc-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_arc_jar): $(shell find $(QUARKUS_HOME)/extensions/arc -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_arc_jar): $(shell find $(QUARKUS_HOME)/extensions/arc -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> $(q_mvnw_cmd) -DskipTests -f extensions/arc install
+> touch $@
+
 quarkus_awt_jar = $(QUARKUS_HOME)/extensions/awt/deployment/target/quarkus-awt-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_awt_jar): $(shell find $(QUARKUS_HOME)/extensions/awt -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_awt_jar): $(shell find $(QUARKUS_HOME)/extensions/awt -type f -name 'pom.xml' | sed 's: :\\ :g')
@@ -134,6 +141,7 @@ clean-quarkus: $(java)
 
 #test_quarkus_args += $(HOME)/opt/maven/bin/mvnDebug
 test_quarkus_args += ./mvnw
+#test_quarkus_args += -X
 test_quarkus_args += -Dnative
 test_quarkus_args += -Dnative.surefire.skip
 test_quarkus_args += -Dformat.skip
@@ -150,6 +158,7 @@ test_quarkus_args += -f
 test_quarkus_args += integration-tests/$(TEST_MODULE)
 
 test-quarkus: $(java)
+test-quarkus: $(quarkus_arc_jar)
 test-quarkus: $(quarkus_awt_jar)
 test-quarkus: $(quarkus_core_jar)
 test-quarkus: $(quarkus_security_jar)
