@@ -34,7 +34,7 @@ public class startup {
     }
 
     public static void main(String... args) throws Exception {
-        finl App app = args.length > 0 ? App.valueOf(args[0]) : App.HELLO;
+        final App app = args.length > 0 ? App.valueOf(args[0]) : App.HELLO;
         final TreeMap<String, List<String>> cmds = new TreeMap<>();
         cmds.put(app.toString(), List.of("./quickstart/target/" + app.name + "-1.0.0-SNAPSHOT-runner"));
         cmds.forEach((k, v) -> {
