@@ -34,6 +34,8 @@ build()
     fi
 
     QUARKUS_HOME=${quarkus_home} make build-quarkus
+    QUARKUS_HOME=${quarkus_home} APP_NAME=security-jpa-reactive-quickstart make quickstart
+    cp Startup.java quickstart/src/main/java/org/acme/elytron/security/jpa/reactive
     QUARKUS_HOME=${quarkus_home} APP_NAME=security-jpa-reactive-quickstart NATIVE_BUILD_ARGS=${native_build_args} make build
 }
 
@@ -49,8 +51,8 @@ peakperf()
     sleep 2
     echo "----- Quarkus running at pid $quarkus_pid using ${THREADS} I/O threads"
 
-    echo "----- Add admin:admin user"
-    curl -i -X POST -u admin:admin -d user http://localhost:8080/api/users
+    #echo "----- Add admin:admin user"
+    #curl -i -X POST -u admin:admin -d user http://localhost:8080/api/users
 
     echo "----- Start all-out test and profiling"
     numactl --localalloc --cpunodebind=1-6 ${HOME}/.cargo/bin/oha -c ${CONNECTIONS} -z ${DURATION}s -a admin:admin ${FULL_URL} &

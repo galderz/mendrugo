@@ -53,6 +53,9 @@ $(runner): $(quarkus_undertow_jar)
 > cd $(APP_DIR)
 > $(mvnw_package) -Dnative $(native_build_args)
 
+quickstart: $(project_pom)
+.PHONY: quickstart
+
 $(project_pom):
 > pushd $(tmp_dir)
 > rm -drf quarkus-quickstarts || true
