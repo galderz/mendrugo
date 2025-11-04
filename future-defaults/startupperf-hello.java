@@ -22,21 +22,9 @@ public class startup {
 
     private static final long TIMEOUT_NS = Duration.ofSeconds(3).toNanos();
 
-    enum App {
-        HELLO("getting-started"),
-        SECURITY("?");
-
-        final String name;
-
-        App(String name) {
-            this.name = name;
-        }
-    }
-
     public static void main(String... args) throws Exception {
-        final App app = args.length > 0 ? App.valueOf(args[0]) : App.HELLO;
         final TreeMap<String, List<String>> cmds = new TreeMap<>();
-        cmds.put(app.toString(), List.of("./quickstart/target/" + app.name + "-1.0.0-SNAPSHOT-runner"));
+        cmds.put("hello", List.of("./quickstart/target/getting-started-1.0.0-SNAPSHOT-runner"));
         cmds.forEach((k, v) -> {
             System.out.println("===========================\n" + k + "\n" + v);
             try {
