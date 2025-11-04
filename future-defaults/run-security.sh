@@ -51,8 +51,8 @@ peakperf()
     sleep 2
     echo "----- Quarkus running at pid $quarkus_pid using ${THREADS} I/O threads"
 
-    #echo "----- Add admin:admin user"
-    #curl -i -X POST -u admin:admin -d user http://localhost:8080/api/users
+    echo "----- Add admin:admin user"
+    curl -i -X POST -u admin:admin -d user http://localhost:8080/api/users
 
     echo "----- Start all-out test and profiling"
     numactl --localalloc --cpunodebind=1-6 ${HOME}/.cargo/bin/oha -c ${CONNECTIONS} -z ${DURATION}s -a admin:admin ${FULL_URL} &
