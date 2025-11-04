@@ -54,7 +54,7 @@ public class startup {
         String authHeader = "Basic " + encodedAuth;
 
         final HttpRequest request = HttpRequest.newBuilder()
-            .uri(new URI("http://localhost:8080/hello"))
+            .uri(new URI("http://localhost:8080/api/admin"))
             .header("Authorization", authHeader)
             .GET()
             .build();
