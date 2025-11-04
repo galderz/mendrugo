@@ -71,6 +71,13 @@ peakperf()
 
     wait $wrk_pid
 
+    echo "----- Show stats after load completed"
+
+    pidstat -p $quarkus_pid -u -r 1 &
+    pidstat_pid=$!
+    sleep 5
+    kill -SIGTERM $pidstat_pid
+
     echo "----- Profiling and workload completed: killing server"
 
     kill -SIGTERM $quarkus_pid
