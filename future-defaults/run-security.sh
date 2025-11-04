@@ -7,7 +7,7 @@ CLEAN="false"
 CONNECTIONS=10
 DURATION=40
 RATE=0
-URL=hello
+URL=api/admin
 THREADS=2
 
 FULL_URL=http://localhost:8080/${URL}
@@ -39,7 +39,7 @@ build()
 
 peakperf()
 {
-    local binary=quickstart/target/getting-started-1.0.0-SNAPSHOT-runner
+    local binary=quickstart/target/security-jpa-reactive-quickstart-1.0.0-SNAPSHOT-runner
 
     echo "----- Benchmarking endpoint ${FULL_URL}"
     trap 'echo "cleaning up quarkus process";kill ${quarkus_pid}' SIGINT SIGTERM SIGKILL
