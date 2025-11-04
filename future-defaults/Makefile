@@ -42,6 +42,9 @@ run-jvm: $(run_jar)
 > $(GRAALVM_HOME)/bin/java -jar $<
 .PHONY: run-jvm
 
+build: $(runner)
+.PHONY: build
+
 $(runner): $(project_pom)
 $(runner): $(quarkus_core_jar)
 $(runner): $(quarkus_netty_jar)
