@@ -28,12 +28,13 @@ fi
 build()
 {
     local quarkus_home=$1
+    local native_build_args=$2
     if [[ $CLEAN == "true" ]]; then
         QUARKUS_HOME=${quarkus_home} make clean-app clean-quarkus
     fi
 
     QUARKUS_HOME=${quarkus_home} make build-quarkus
-    QUARKUS_HOME=${quarkus_home} make build
+    QUARKUS_HOME=${quarkus_home} NATIVE_BUILD_ARGS=${native_build_args} make build
 }
 
 peakperf()
@@ -74,5 +75,8 @@ peakperf()
     ls -lha ${binary}
 }
 
-#build
+#build "${HOME}/src/quarkus-future-defaults.base" ""
 peakperf
+
+#build "${HOME}/src/quarkus-future-defaults" "--future-defaults=all"
+#peakperf
