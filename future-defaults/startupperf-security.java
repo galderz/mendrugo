@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,7 +25,7 @@ public class startup {
 
     public static void main(String... args) throws Exception {
         final TreeMap<String, List<String>> cmds = new TreeMap<>();
-        cmds.put("hello", List.of("./quickstart/target/getting-started-1.0.0-SNAPSHOT-runner"));
+        cmds.put("hello", List.of("./quickstart/target/security-jpa-reactive-quickstart-1.0.0-SNAPSHOT-runner"));
         cmds.forEach((k, v) -> {
             System.out.println("===========================\n" + k + "\n" + v);
             try {
@@ -43,8 +44,18 @@ public class startup {
         final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofMillis(25)) // eh, sketchy
             .build();
+
+        String username = "admin";
+        String password = "admin";
+
+        String auth = username + ":" + password;
+        // Base64 encode the "username:password" string
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+        String authHeader = "Basic " + encodedAuth;
+
         final HttpRequest request = HttpRequest.newBuilder()
             .uri(new URI("http://localhost:8080/hello"))
+            .header("Authorization", authHeader)
             .GET()
             .build();
         final Path logFile = Files.createTempFile("quarkus-run-", ".log");
