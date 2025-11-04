@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 CLEAN="false"
 
@@ -48,8 +48,9 @@ peakperf()
     echo "----- Quarkus running at pid $quarkus_pid using ${THREADS} I/O threads"
 
     echo "----- Start all-out test and profiling"
-    numactl --localalloc --cpunodebind=1-6 ${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
+    JAVA_HOME=${HOME}/opt/java-25 numactl --localalloc --cpunodebind=1-6 ${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
     wrk_pid=$!
+
     echo "----- Waiting $WARMUP seconds before collecting pid stats"
     sleep $WARMUP
 
