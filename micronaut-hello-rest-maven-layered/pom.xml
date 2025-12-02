@@ -131,6 +131,31 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>base-layer</id>
+      <build>
+        <directory>${project.basedir}/base-layer-target</directory>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>0.10.3</version>
+            <configuration>
+              <imageName>libmicronautbaselayer</imageName>
+              <mainClass>.</mainClass>
+              <buildArgs>
+                <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                <buildArg>-H:LayerCreate=base-layer.nil,module=java.base,package=io.micronaut.*,package=io.netty.*,package=jakarta.*,package=com.fasterxml.jackson.*,package=org.slf4j.*,package=reactor.*,package=org.reactivestreams.*</buildArg>
+                <buildArg>-H:ApplicationLayerOnlySingletons=io.micronaut.core.io.service.ServiceScanner$StaticServiceDefinitions</buildArg>
+                <buildArg>-H:ApplicationLayerInitializedClasses=io.micronaut.inject.annotation.AnnotationMetadataSupport</buildArg>
+                <buildArg>-H:ApplicationLayerInitializedClasses=io.micronaut.core.io.service.MicronautMetaServiceLoaderUtils</buildArg>
+                <buildArg>-H:-UnlockExperimentalVMOptions</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 </project>
