@@ -156,6 +156,29 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>app-layer</id>
+      <build>
+        <directory>${project.basedir}/app-layer-target</directory>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>0.10.3</version>
+            <configuration>
+              <imageName>layered-app</imageName>
+              <mainClass>example.micronaut.Application</mainClass>
+              <buildArgs>
+                <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                <buildArg>-H:LayerUse=base-layer-target/base-layer.nil</buildArg>
+                <buildArg>-H:LinkerRPath=$ORIGIN</buildArg>
+                <buildArg>-H:-UnlockExperimentalVMOptions</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 </project>
