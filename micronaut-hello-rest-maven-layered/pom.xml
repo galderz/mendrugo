@@ -173,6 +173,7 @@
                 <buildArg>-H:LayerUse=base-layer-target/base-layer.nil</buildArg>
                 <buildArg>-H:LinkerRPath=$ORIGIN</buildArg>
                 <buildArg>-H:-UnlockExperimentalVMOptions</buildArg>
+                <buildArg>-H:-LayerOptionVerification</buildArg>
               </buildArgs>
             </configuration>
           </plugin>
