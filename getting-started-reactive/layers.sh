@@ -1,9 +1,78 @@
 #!/usr/bin/env bash
 
-set -ex
+set -euox pipefail
+
+extract_classpath()
+{
+  local jar=$1
+
+  JAR_DIR=$(cd "$(dirname "$jar")" && pwd)
+  JAR_ABS="$JAR_DIR/$(basename "$jar")"
+
+  # Create and clean up a temporary directory
+  TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/jarcp.XXXXXX")
+  cleanup() {
+    rm -rf "$TMPDIR"
+  }
+  trap cleanup EXIT
+
+  # 1. Unzip the jar into the temp dir
+  unzip -q "$jar" -d "$TMPDIR"
+
+  MANIFEST="$TMPDIR/META-INF/MANIFEST.MF"
+
+  # 2. Extract and de-wrap the Class-Path value from the manifest
+  #    Handle continuation lines that start with a single space.
+  CLASSPATH_VALUE=$(
+      tr -d '\r' < "$MANIFEST" | \
+          awk '
+    /^Class-Path:/ {
+      # Start of Class-Path; strip the leading field name
+      sub(/^Class-Path:[ ]*/, "", $0)
+      cp = $0
+      in_cp = 1
+      next
+    }
+    in_cp && /^[ ]/ {
+      # Continuation line: append (minus leading space)
+      sub(/^ /, "", $0)
+      cp = cp " " $0
+      next
+    }
+    in_cp {
+      # End of Class-Path block
+      print cp
+      exit
+    }
+  '
+                 )
+
+  # Start building the java -cp string with the original jar itself
+  CP_STRING="$JAR_ABS"
+
+  if [ -n "${CLASSPATH_VALUE:-}" ]; then
+      # Split the Class-Path value on spaces (manifest paths are space-separated)
+      # Each entry is relative to the jar; after unzip they exist under $TMPDIR
+      IFS=' ' read -r -a ENTRIES <<< "$CLASSPATH_VALUE"
+
+      for entry in "${ENTRIES[@]}"; do
+          [ -z "$entry" ] && continue
+          # Absolute path to the jar inside the temp dir
+          CP_STRING="$CP_STRING:$TMPDIR/$entry"
+      done
+  fi
+
+  # Output the full classpath string
+  echo "$CP_STRING"
+}
+
+#extract_classpath getting-started-reactive-1.0.0-SNAPSHOT-runner.jar
+#  --debug-attach=*:8000 \
 
 # Base layer:
+mkdir -p base-layer
 native-image \
+  -jar getting-started-reactive-1.0.0-SNAPSHOT-runner.jar \
   -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
   -J-Dsun.nio.ch.maxUpdateArraySize=100 \
   -J-Dlogging.initial-configurator.min-level=500 \
@@ -49,8 +118,11 @@ native-image \
   -J--add-exports=org.graalvm.nativeimage/org.graalvm.nativeimage.impl=ALL-UNNAMED \
   --exclude-config io\.netty\.netty-codec /META-INF/native-image/io\.netty/netty-codec/generated/handlers/reflect-config\.json \
   --exclude-config io\.netty\.netty-handler /META-INF/native-image/io\.netty/netty-handler/generated/handlers/reflect-config\.json \
-  getting-started-reactive-1.0.0-SNAPSHOT-runner \
-  -jar getting-started-reactive-1.0.0-SNAPSHOT-runner.jar
+  -H:+UnlockExperimentalVMOptions \
+  -H:LayerCreate=base-layer.nil,module=java.base,package=io.quarkus.*,package=io.netty.* \
+  -H:-UnlockExperimentalVMOptions \
+  -o base-layer/libquarkusbaselayer
+#  -cp "$CP_STRING"
 
 # Micronaut base layer:
 # native-image \
