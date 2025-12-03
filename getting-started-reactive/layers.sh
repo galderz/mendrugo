@@ -120,7 +120,11 @@ native-image \
   --exclude-config io\.netty\.netty-handler /META-INF/native-image/io\.netty/netty-handler/generated/handlers/reflect-config\.json \
   -H:+UnlockExperimentalVMOptions \
   -H:LayerCreate=base-layer.nil,module=java.base,package=io.quarkus.*,package=io.netty.* \
+  -H:-LayerOptionVerification \
   -H:-UnlockExperimentalVMOptions \
+  --initialize-at-run-time=io.netty.channel.unix.Errors \
+  --initialize-at-run-time=io.netty.channel.unix.IovArray \
+  --initialize-at-run-time=io.netty.channel.unix.Limits \
   -o base-layer/libquarkusbaselayer
 #  -cp "$CP_STRING"
 
