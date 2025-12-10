@@ -1,4 +1,0 @@
-* Commands
-MAVEN_ARGS=-Dquarkus.native.build-time-init=false NATIVE_BUILD_ARGS=--future-defaults=all,--debug-attach=\*:8000 m
-MAVEN_ARGS=-Dquarkus.native.build-time-init=false NATIVE_BUILD_ARGS=--future-defaults=all m
-MAVEN_ARGS="-Dquarkus.native.build-time-init=false -Dquarkus.log.min-level=TRACE" NATIVE_BUILD_ARGS=--future-defaults=all RUN_ARGS=-Dquarkus.log.level=TRACE m
