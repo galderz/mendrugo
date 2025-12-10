@@ -11,6 +11,13 @@ test_quarkus_args += -Dnative
 test_quarkus_args += -Dnative.surefire.skip
 test_quarkus_args += -Dquarkus.native.container-build=false
 
+quarkus_core_jar = $(QUARKUS_HOME)/core/deployment/target/quarkus-core-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> ./mvnw -DskipTests -f core install
+> touch $@
+
 test-quarkus: $(quarkus_core_jar)
 > cd $(QUARKUS_HOME)
 > ./mvnw $(test_quarkus_args) clean install -f integration-tests/$(TEST_MODULE)
