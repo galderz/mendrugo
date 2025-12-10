@@ -1,0 +1,17 @@
+QUARKUS_HOME ?= $(HOME)/src/quarkus-$(ID)
+QUARKUS_VERSION ?= 999-SNAPSHOT
+TEST_MODULE ?= main
+
+build-quarkus:
+> cd $(QUARKUS_HOME)
+> ./mvnw -Dquickly
+.PHONY: build-quarkus
+
+test_quarkus_args += -Dnative
+test_quarkus_args += -Dnative.surefire.skip
+test_quarkus_args += -Dquarkus.native.container-build=false
+
+test-quarkus: $(quarkus_core_jar)
+> cd $(QUARKUS_HOME)
+> ./mvnw $(test_quarkus_args) clean install -f integration-tests/$(TEST_MODULE)
+.PHONY: test-quarkus
