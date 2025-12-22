@@ -7,4 +7,6 @@ pushd dummy-module
 make
 popd
 
-native-image -H:LayerCreate=base-layer.nil,module=java.base,module=dummy.module --module-path dummy-module/target/dummy.module.jar -o target/libjavabase
+native-image \
+    -H:+PrintClassInitialization \
+    -H:LayerCreate=base-layer.nil,module=java.base,module=dummy.module --module-path dummy-module/target/dummy.module.jar -o target/libjavabase
