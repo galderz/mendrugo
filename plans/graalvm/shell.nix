@@ -37,9 +37,10 @@ pkgs.mkShell {
     # Note: XCODE_DIR and SDKROOT are NOT needed - Nix clang wrapper handles SDK paths automatically
 
     # Setup mx in a writable location (mx modifies its own directory during execution)
-    export MX_HOME="$PWD/.mx-cache"
+    # Use ~/Library/Caches for macOS standard cache location (won't be cleaned during runtime)
+    export MX_HOME="$HOME/Library/Caches/graalvm-mx"
     if [ ! -d "$MX_HOME" ]; then
-      echo "Setting up mx build tool..."
+      echo "Setting up mx build tool in $MX_HOME..."
       mkdir -p "$MX_HOME"
       cp -r ${mxSrc}/* "$MX_HOME/"
       chmod -R u+w "$MX_HOME"
