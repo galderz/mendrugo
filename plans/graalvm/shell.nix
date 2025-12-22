@@ -1,5 +1,14 @@
 { pkgs ? import <nixpkgs> {} }:
 
+let
+  # Fetch mx build tool from GitHub
+  mxSrc = pkgs.fetchFromGitHub {
+    owner = "graalvm";
+    repo = "mx";
+    rev = "master";
+    hash = "sha256-UFyPzv3vXi6B+R6Nm2oAn46K/RQbpBq9VEE8LBh7eL4=";
+  };
+in
 pkgs.mkShell {
   buildInputs = with pkgs; [
     python3
@@ -9,6 +18,7 @@ pkgs.mkShell {
     ninja
     zlib
     zlib.static
+    libcxx
   ];
 
   shellHook = ''
@@ -25,6 +35,19 @@ pkgs.mkShell {
     export JVMCI_VERSION_CHECK=warn
 
     # Note: XCODE_DIR and SDKROOT are NOT needed - Nix clang wrapper handles SDK paths automatically
+
+    # Setup mx in a writable location (mx modifies its own directory during execution)
+    export MX_HOME="$PWD/.mx-cache"
+    if [ ! -d "$MX_HOME" ]; then
+      echo "Setting up mx build tool..."
+      mkdir -p "$MX_HOME"
+      cp -r ${mxSrc}/* "$MX_HOME/"
+      chmod -R u+w "$MX_HOME"
+
+      # Patch mx_util.py to add write permissions when creating directories from Nix store
+      echo "Applying mx_util.py patch for Nix compatibility..."
+      sed -i.bak 's/os.makedirs(path, mode=mode)/os.makedirs(path, mode=mode | 0o200)/' "$MX_HOME/src/mx/_impl/mx_util.py"
+    fi
 
     # Create wrappers that redirect to clang
     mkdir -p /tmp/graalvm-wrappers
@@ -50,13 +73,8 @@ exec clang++ "$@"
 GXXEOF
     chmod +x /tmp/graalvm-wrappers/g++
 
-    # Add wrappers to PATH first (to override system tools)
-    export PATH="/tmp/graalvm-wrappers:$PATH"
-
-    # Add mx to PATH if it exists in current directory
-    if [ -d "$PWD/mx" ]; then
-      export PATH="$PWD/mx:$PATH"
-    fi
+    # Add wrappers and mx to PATH
+    export PATH="/tmp/graalvm-wrappers:$MX_HOME:$PATH"
 
     # Add JAVA_HOME/bin to PATH
     export PATH="$JAVA_HOME/bin:$PATH"
@@ -69,15 +87,18 @@ GXXEOF
     export NIX_LDFLAGS="-L${pkgs.zlib}/lib $NIX_LDFLAGS"
     export LIBRARY_PATH="${pkgs.zlib}/lib:$LIBRARY_PATH"
 
+    # Add C++ standard library path for LLVM toolchain linking
+    export LIBRARY_PATH="${pkgs.libcxx}/lib:$LIBRARY_PATH"
+
     echo "GraalVM SubstrateVM Build Environment"
     echo "======================================"
     echo "JAVA_HOME: $JAVA_HOME"
     echo "MX_PYTHON: $MX_PYTHON"
+    echo "MX_HOME: $MX_HOME"
     echo ""
     echo "To build SubstrateVM:"
-    echo "1. Clone mx: git clone https://github.com/graalvm/mx.git (if not already done)"
-    echo "2. Clone graal: git clone https://github.com/oracle/graal.git (if not already done)"
-    echo "3. cd graal/substratevm"
-    echo "4. mx build"
+    echo "1. Clone graal: git clone https://github.com/oracle/graal.git (if not already done)"
+    echo "2. cd graal/substratevm"
+    echo "3. mx build"
   '';
 }

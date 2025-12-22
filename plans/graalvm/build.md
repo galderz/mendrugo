@@ -13,23 +13,33 @@ Build SubstrateVM inside a Nix shell on an Apple Mac so that `mx build` executes
 
 ## Initial Setup
 
-### 1. Clone Required Repositories
+### 1. Clone Graal Repository
 
 ```bash
 cd /Users/g/src/mendrugo-project/mendrugo/plans/graalvm
-git clone https://github.com/graalvm/mx.git
 git clone https://github.com/oracle/graal.git
 cd graal
 git checkout fe1e946b4b8528f68d82984ca29d12198c533db1
 ```
 
-### 2. Create Initial Nix Shell Script
+**Note:** The `mx` build tool is automatically fetched from the Nix store - no manual cloning required!
 
-Created `shell.nix` with basic dependencies:
+### 2. Create Nix Shell Script
+
+Created `shell.nix` that fetches mx from GitHub and sets up the build environment:
 
 ```nix
 { pkgs ? import <nixpkgs> {} }:
 
+let
+  # Fetch mx build tool from GitHub
+  mxSrc = pkgs.fetchFromGitHub {
+    owner = "graalvm";
+    repo = "mx";
+    rev = "master";
+    hash = "sha256-UFyPzv3vXi6B+R6Nm2oAn46K/RQbpBq9VEE8LBh7eL4=";
+  };
+in
 pkgs.mkShell {
   buildInputs = with pkgs; [
     python3
@@ -56,6 +66,19 @@ pkgs.mkShell {
 
     # Note: XCODE_DIR and SDKROOT are NOT needed - Nix clang wrapper handles SDK paths automatically
 
+    # Setup mx in a writable location (mx modifies its own directory during execution)
+    export MX_HOME="$PWD/.mx-cache"
+    if [ ! -d "$MX_HOME" ]; then
+      echo "Setting up mx build tool..."
+      mkdir -p "$MX_HOME"
+      cp -r ${mxSrc}/* "$MX_HOME/"
+      chmod -R u+w "$MX_HOME"
+
+      # Patch mx_util.py to add write permissions when creating directories from Nix store
+      echo "Applying mx_util.py patch for Nix compatibility..."
+      sed -i.bak 's/os.makedirs(path, mode=mode)/os.makedirs(path, mode=mode | 0o200)/' "$MX_HOME/src/mx/_impl/mx_util.py"
+    fi
+
     # Create wrappers that redirect to clang
     mkdir -p /tmp/graalvm-wrappers
 
@@ -80,13 +103,8 @@ exec clang++ "$@"
 GXXEOF
     chmod +x /tmp/graalvm-wrappers/g++
 
-    # Add wrappers to PATH first (to override system tools)
-    export PATH="/tmp/graalvm-wrappers:$PATH"
-
-    # Add mx to PATH if it exists in current directory
-    if [ -d "$PWD/mx" ]; then
-      export PATH="$PWD/mx:$PATH"
-    fi
+    # Add wrappers and mx to PATH
+    export PATH="/tmp/graalvm-wrappers:$MX_HOME:$PATH"
 
     # Add JAVA_HOME/bin to PATH
     export PATH="$JAVA_HOME/bin:$PATH"
@@ -103,12 +121,12 @@ GXXEOF
     echo "======================================"
     echo "JAVA_HOME: $JAVA_HOME"
     echo "MX_PYTHON: $MX_PYTHON"
+    echo "MX_HOME: $MX_HOME"
     echo ""
     echo "To build SubstrateVM:"
-    echo "1. Clone mx: git clone https://github.com/graalvm/mx.git (if not already done)"
-    echo "2. Clone graal: git clone https://github.com/oracle/graal.git (if not already done)"
-    echo "3. cd graal/substratevm"
-    echo "4. mx build"
+    echo "1. Clone graal: git clone https://github.com/oracle/graal.git (if not already done)"
+    echo "2. cd graal/substratevm"
+    echo "3. mx build"
   '';
 }
 ```
@@ -151,7 +169,7 @@ cd graal
 git checkout fe1e946b4b8528f68d82984ca29d12198c533db1
 ```
 
-### Issue 3: Nix Store Read-Only Permissions
+### Issue 3: Nix Store Read-Only Permissions & mx Self-Modification
 
 **Error:**
 ```
@@ -159,9 +177,20 @@ PermissionError: [Errno 13] Permission denied:
 '/Users/g/src/mendrugo-project/mendrugo/plans/graalvm/graal/substratevm/mxbuild/darwin-aarch64-jdk25/SVM_STATIC_LIBRARIES_SUPPORT/static/darwin-aarch64'
 ```
 
-**Cause:** mx's `ensure_dir_exists()` function in `mx_util.py` copies read-only permissions from Nix store files when creating directories.
+**Causes:**
+1. mx's `ensure_dir_exists()` function in `mx_util.py` copies read-only permissions from Nix store files when creating directories
+2. mx modifies its own directory during execution, which conflicts with Nix store immutability
 
-**Solution:** Modified `mx/src/mx/_impl/mx_util.py`:
+**Solution:**
+1. Fetch mx from GitHub using `pkgs.fetchFromGitHub`
+2. Copy mx to a writable `.mx-cache` directory in shellHook
+3. Automatically patch `mx_util.py` during setup with sed:
+
+```bash
+sed -i.bak 's/os.makedirs(path, mode=mode)/os.makedirs(path, mode=mode | 0o200)/' "$MX_HOME/src/mx/_impl/mx_util.py"
+```
+
+The patch modifies `mx/src/mx/_impl/mx_util.py`:
 
 ```python
 def ensure_dir_exists(path, mode=None):
@@ -381,6 +410,7 @@ ls -lh helloworld
 - `ninja` - build system
 - `zlib` - compression library
 - `zlib.static` - static zlib for native-image
+- `libcxx` - C++ standard library for LLVM toolchain
 
 ### Critical Patches
 
@@ -414,9 +444,8 @@ native-image -H:-CheckToolchain YourClass
 ## Reproducible Build Steps
 
 ```bash
-# 1. Clone repositories
+# 1. Clone Graal repository
 cd /Users/g/src/mendrugo-project/mendrugo/plans/graalvm
-git clone https://github.com/graalvm/mx.git
 git clone https://github.com/oracle/graal.git
 
 # 2. Checkout compatible Graal version
@@ -424,23 +453,28 @@ cd graal
 git checkout fe1e946b4b8528f68d82984ca29d12198c533db1
 cd ..
 
-# 3. Patch mx_util.py
-# Apply the permission fix to mx/src/mx/_impl/mx_util.py as shown in Issue 3
-
-# 4. Enter Nix shell
+# 3. Enter Nix shell (mx is automatically fetched and set up)
 nix-shell shell.nix
 
-# 5. Build SubstrateVM
+# 4. Build SubstrateVM
 cd graal/substratevm
-../../mx/mx build
+mx build
 
-# 6. Copy zlib for native-image
+# 5. Copy zlib for native-image
 cp /nix/store/02c7parlh1jmb6v9kilzp5zz359m1ph8-zlib-1.3.1-static/lib/libz.a \
   ../sdk/latest_graalvm_home/lib/static/darwin-aarch64/
 
-# 7. Verify native-image works
+# 6. Verify native-image works
 ../sdk/latest_graalvm_home/bin/native-image --version
 ```
+
+**Note:** The mx build tool is automatically:
+- Fetched from GitHub into the Nix store
+- Copied to `.mx-cache` (writable location)
+- Patched for Nix compatibility
+- Added to PATH
+
+No manual cloning or patching required!
 
 ## Performance Metrics
 
