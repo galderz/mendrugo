@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eux
 
+# --debug-attach=*:8000 \
+
 native-image \
     -H:LayerUse=../../../target/base-layer.nil \
     -H:-LayerOptionVerification \
