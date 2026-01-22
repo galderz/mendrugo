@@ -26,7 +26,7 @@ pkgs.mkShell {
     umask 0022
 
     # Set JAVA_HOME to the labsjdk path
-    export JAVA_HOME=/nix/store/b7wai98rz8iimr0qkbjwxv2y5zhjq2nc-labsjdk-ce-latest-jvmci-25.1-b10_aarch64/Contents/Home
+    export JAVA_HOME=/nix/store/idw58k6a6jw8jlgad5463rf9apwzamn4-labsjdk-ce-latest-jvmci-25.1-b14_aarch64/Contents/Home
 
     # Set MX_PYTHON to python3 binary
     export MX_PYTHON=${pkgs.python3}/bin/python3
