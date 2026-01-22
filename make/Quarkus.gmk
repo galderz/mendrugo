@@ -18,6 +18,8 @@ $(quarkus_core_jar): $(shell find $(QUARKUS_HOME)/core -type f -name 'pom.xml' |
 > ./mvnw -DskipTests -f core install
 > touch $@
 
+quarkus: $(quarkus_core_jar)
+
 test-quarkus: $(quarkus_core_jar)
 > cd $(QUARKUS_HOME)
 > ./mvnw $(test_quarkus_args) clean install -f integration-tests/$(TEST_MODULE)
