@@ -53,5 +53,6 @@ mkdir -p target
 
 native-image \
     -H:+PrintClassInitialization \
+    --initialize-at-run-time=java.util.logging.ConsoleHandler \
     -H:LayerCreate=libjavabaselayer.nil,module=java.base -o libjavabaselayer -H:Path=./target
 
