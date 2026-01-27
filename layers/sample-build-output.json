@@ -1,0 +1,70 @@
+{
+   "resource_usage": {
+      "memory": {
+         "system_total": 135018459136,
+         "peak_rss_bytes": 3148120064
+      },
+      "garbage_collection": {
+         "count": 130,
+         "total_secs": 1.926,
+         "max_heap": 28631367680
+      },
+      "cpu": {
+         "load": 16.225396327107205,
+         "parallelism": 32,
+         "total_cores": 32
+      },
+      "total_secs": 31.166276859
+   },
+   "image_details": {
+      "code_area": {
+         "bytes": 19935968,
+         "compilation_units": 36982
+      },
+      "total_bytes": 49042168,
+      "image_heap": {
+         "bytes": 25296896,
+         "objects": {
+            "count": 290231
+         },
+         "resources": {
+            "bytes": 0,
+            "count": 9
+         }
+      }
+   },
+   "general_info": {
+      "c_compiler": "gcc (redhat, x86_64, 15.2.1)",
+      "name": "getting-started-1.0.0-SNAPSHOT-runner",
+      "java_version": "25.0.1+8",
+      "garbage_collector": "Serial GC",
+      "graal_compiler": {
+         "march": "x86-64-v3",
+         "optimization_level": "2"
+      },
+      "vendor_version": "GraalVM CE 25.1.0-dev+8.1",
+      "graalvm_version": "GraalVM CE 25.1.0-dev+8.1"
+   },
+   "analysis_results": {
+      "types": {
+         "total": 13596,
+         "reflection": 4232,
+         "jni": 63,
+         "reachable": 11401
+      },
+      "methods": {
+         "foreign_upcalls": 0,
+         "foreign_downcalls": 0,
+         "total": 105002,
+         "reflection": 8625,
+         "jni": 55,
+         "reachable": 55463
+      },
+      "fields": {
+         "total": 32109,
+         "reflection": 2126,
+         "jni": 69,
+         "reachable": 15399
+      }
+   }
+}
