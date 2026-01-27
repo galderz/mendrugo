@@ -53,7 +53,7 @@ mkdir -p target
 #    --initialize-at-build-time=jdk.internal.jimage.ImageReader\$SharedImageReader \
 #    -H:LayerCreate=libjavabaselayer.nil,module=java.base -o libjavabaselayer -H:Path=./target
 
-${native-image} \
+${native_image} \
     -H:+PrintClassInitialization \
     --initialize-at-run-time=java.util.logging.ConsoleHandler \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \

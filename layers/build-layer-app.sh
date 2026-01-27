@@ -9,7 +9,7 @@ native_image=$HOME/src/mandrel/sdk/latest_graalvm_home/bin/native-image
 #        --initialize-at-run-time=sun.java2d \
 #        --initialize-at-run-time=com.sun.tools.javac \
 
-${native-image} \
+${native_image} \
     --initialize-at-run-time=com.sun.imageio \
     --initialize-at-run-time=com.sun.jmx.remote.security \
     --initialize-at-run-time=com.sun.media \
