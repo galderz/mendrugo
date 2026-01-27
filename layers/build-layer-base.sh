@@ -54,6 +54,6 @@ mkdir -p target
 native-image \
     -H:+PrintClassInitialization \
     --initialize-at-run-time=java.util.logging.ConsoleHandler \
-    -H:BuildOutputJSONFile=target/build-output-base.json \
+    -H:BuildOutputJSONFile=target/build-output-layer-base.json \
     -H:LayerCreate=libjavabaselayer.nil,module=java.base,package=sun.management.spi,package=sun.util.resources.cldr.ext,package=sun.text.resources.cldr.ext -o libjavabaselayer -H:Path=./target
 
