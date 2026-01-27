@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -eux
 
+native_image=$HOME/src/mandrel/sdk/latest_graalvm_home/bin/native-image
+
 # --debug-attach=*:8000 \
 #    --initialize-at-run-time=jdk.jpackage.internal \
 #        --initialize-at-run-time=sun.awt \
 #        --initialize-at-run-time=sun.java2d \
 #        --initialize-at-run-time=com.sun.tools.javac \
 
-native-image \
+${native-image} \
     --initialize-at-run-time=com.sun.imageio \
     --initialize-at-run-time=com.sun.jmx.remote.security \
     --initialize-at-run-time=com.sun.media \

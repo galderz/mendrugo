@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eux
 
+native_image=$HOME/src/mandrel/sdk/latest_graalvm_home/bin/native-image
+
 mkdir -p target
 
 #pushd dummy-module
@@ -51,7 +53,7 @@ mkdir -p target
 #    --initialize-at-build-time=jdk.internal.jimage.ImageReader\$SharedImageReader \
 #    -H:LayerCreate=libjavabaselayer.nil,module=java.base -o libjavabaselayer -H:Path=./target
 
-native-image \
+${native-image} \
     -H:+PrintClassInitialization \
     --initialize-at-run-time=java.util.logging.ConsoleHandler \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
