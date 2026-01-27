@@ -10,8 +10,9 @@ app_dir = getting-started
 app_pom = $(app_dir)/pom.xml
 base_nil = target/libjavabaselayer.nil
 base_so = target/libjavabaselayer.so
-build_app = build-app.sh
-build_base = build-base.sh
+build_layer_app = build-layer-app.sh
+build_layer_base = build-layer-base.sh
+build_non_layered = build-non-layered.sh
 java_home = $(HOME)/src/mandrel/sdk/latest_graalvm_home
 runner_base_so = $(runner_dir)/libjavabaselayer.so
 runner_dir = $(app_dir)/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar
@@ -29,14 +30,14 @@ $(runner): $(runner_jar)
 $(runner): $(base_nil)
 $(runner): $(build_app)
 > cd $(runner_dir)
-> ../../../$(build_app)
+> ../../../$(build_layer_app)
 
 $(runner_base_so): $(base_so)
 > cp $< $@
 
 $(base_nil): $(build_base)
-> ./build-base.sh
+> ./$(build_layer_base)
 
 $(runner_jar): $(app_pom)
 > cd $(app_dir)
-> JAVA_HOME=$(java_home) ./mvnw package -Dnative -DskipTests
+> ../$(build_non_layered)
