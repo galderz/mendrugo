@@ -1,5 +1,5 @@
 ID ?= layers
-TOPDIR = ..
+TOPDIR = ../..
 
 default: run
 
