@@ -35,7 +35,7 @@ $(runner): $(build_app)
 $(runner_base_so): $(base_so)
 > cp $< $@
 
-$(base_nil): $(build_base)
+$(base_nil): $(build_layer_base)
 > ./$(build_layer_base)
 
 $(runner_jar): $(app_pom)
