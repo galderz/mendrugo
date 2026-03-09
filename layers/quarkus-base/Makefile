@@ -30,3 +30,9 @@ $(extracted_jar): $(runner_jar)
 $(runner_jar): $(app_pom)
 > cd $(app_dir)
 > ../$(build_non_layered)
+
+clean:
+> rm -drf target
+> cd $(app_dir)
+> rm -drf target
+.PHONY: clean
