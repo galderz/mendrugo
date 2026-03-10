@@ -3,7 +3,10 @@ set -eux
 
 # Configuration: Classes to extract (add more as needed)
 CLASSES_TO_EXTRACT=(
+    # Throws CNFE without it
     "io/vertx/core/impl/ContextInternal.class"
+    # Need Netty runtime init configuration
+    "io/quarkus/runner/Feature.class"
     # Add more classes here, e.g.:
     # "io/vertx/core/impl/AnotherClass.class"
 )
