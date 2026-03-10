@@ -11,6 +11,7 @@ ${native_image} \
     --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
     --initialize-at-run-time=io.netty.channel.unix.IovArray \
     --initialize-at-run-time=io.netty.channel.unix.Limits \
+    --initialize-at-run-time=jakarta.el.ELManager \
     -H:+PrintClassInitialization \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
     -H:LayerCreate=libquarkusbaselayer.nil,module=java.base,package=io.quarkus.*,package=io.netty.*,package=jakarta.* \
