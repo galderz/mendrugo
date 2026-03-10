@@ -9,6 +9,9 @@ CLASSES_TO_EXTRACT=(
     "io/quarkus/runner/Feature.class"
     # Need to avoid CNFE
     "io/netty/channel/ChannelHandlerAdapter.class"
+    # More CNFEs
+    "io/netty/channel/DefaultChannelId.class"
+    "io/quarkus/runner/ApplicationImpl.class"
     # Add more classes here, e.g.:
     # "io/vertx/core/impl/AnotherClass.class"
 )
