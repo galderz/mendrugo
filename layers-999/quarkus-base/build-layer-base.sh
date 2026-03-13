@@ -69,6 +69,7 @@ mkdir -p target
 
 # io.netty.channel.unix.* runtime inits as per NettyProcessor.build()
 ${native_image} \
+    --trace-object-instantiation=java.util.Random \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
     --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
     --initialize-at-run-time=io.netty.channel.unix.Limits \
@@ -77,6 +78,8 @@ ${native_image} \
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub \
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime \
     --initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder \
+    --initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT \
+    --initialize-at-run-time=io.vertx.core.buffer.impl.PartialPooledByteBufAllocator \
     --initialize-at-run-time=jakarta.el.ELManager \
     --initialize-at-run-time=java.rmi \
     --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \
@@ -88,7 +91,7 @@ ${native_image} \
     --initialize-at-run-time=sun.rmi \
     -H:+PrintClassInitialization \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
-    -H:LayerCreate=libquarkusbaselayer.nil,module=java.base,package=io.quarkus.*,package=io.netty.*,package=jakarta.* \
+    -H:LayerCreate=libquarkusbaselayer.nil,module=java.base,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jakarta.* \
     --features=io.quarkus.runner.Feature \
     -cp "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/*":getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/extracted-classes.jar \
     -o libquarkusbaselayer -H:Path=./target
