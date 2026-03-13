@@ -58,21 +58,31 @@ mkdir -p target
 #    --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
 #    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
 
+#--initialize-at-run-time=io.netty.channel.unix.Errors \
+#    --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
+#    --initialize-at-run-time=io.netty.channel.unix.IovArray \
+#    --initialize-at-run-time=io.netty.channel.unix.Limits \
+#    --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
+#    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
+
+#     -H:+PrintClassInitialization \
+
 # io.netty.channel.unix.* runtime inits as per NettyProcessor.build()
 ${native_image} \
-    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch \
-    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \
-    --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
     --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
-    --initialize-at-run-time=io.netty.channel.unix.IovArray \
     --initialize-at-run-time=io.netty.channel.unix.Limits \
     --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
     --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
+    --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub \
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime \
+    --initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder \
     --initialize-at-run-time=jakarta.el.ELManager \
     --initialize-at-run-time=java.rmi \
+    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \
+    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch \
     --initialize-at-run-time=jdk.package \
+    --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
     --initialize-at-run-time=org.jboss.threads.JDKSpecific\$ThreadAccess \
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
     --initialize-at-run-time=sun.rmi \
