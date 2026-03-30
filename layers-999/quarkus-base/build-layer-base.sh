@@ -22,6 +22,7 @@ mkdir -p target
 #     --trace-object-instantiation=java.net.Inet4Address \
 #     --trace-object-instantiation=java.security.SecureRandom \
 # --trace-object-instantiation=jdk.internal.module.ServicesCatalog \
+# --trace-object-instantiation=java.util.Random \
 
 # --initialize-at-build-time=jdk.internal.jimage \
 
@@ -67,19 +68,31 @@ mkdir -p target
 
 #     -H:+PrintClassInitialization \
 
+#--trace-object-instantiation=io.netty.buffer.UnpooledByteBufAllocator\$InstrumentedUnpooledUnsafeDirectByteBuf \
+#    --trace-object-instantiation=io.vertx.core.buffer.impl.VertxUnsafeHeapByteBuf \
+#    --trace-object-instantiation=java.net.NetworkInterface \
+
 # io.netty.channel.unix.* runtime inits as per NettyProcessor.build()
 ${native_image} \
-    --trace-object-instantiation=java.util.Random \
+    -J-Dsvm.traceClassInit=true \
+    --trace-object-instantiation=io.netty.buffer.UnpooledByteBufAllocator \
+    --initialize-at-run-time=io.netty.channel.DefaultChannelId \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
     --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
+    --initialize-at-run-time=io.netty.channel.unix.IovArray \
     --initialize-at-run-time=io.netty.channel.unix.Limits \
+    --initialize-at-run-time=io.netty.handler.codec.http.HttpServerExpectContinueHandler \
+    --initialize-at-run-time=io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler \
     --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
     --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
+    --initialize-at-run-time=io.netty.util.NetUtil \
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub \
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime \
     --initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder \
-    --initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT \
     --initialize-at-run-time=io.vertx.core.buffer.impl.PartialPooledByteBufAllocator \
+    --initialize-at-run-time=io.vertx.core.buffer.impl.VertxByteBufAllocator \
+    --initialize-at-run-time=io.vertx.core.eventbus.impl.clustered.ClusteredEventBus \
+    --initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT \
     --initialize-at-run-time=jakarta.el.ELManager \
     --initialize-at-run-time=java.rmi \
     --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \

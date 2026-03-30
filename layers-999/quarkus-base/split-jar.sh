@@ -12,6 +12,8 @@ CLASSES_TO_EXTRACT=(
     # More CNFEs
     "io/netty/channel/DefaultChannelId.class"
     "io/quarkus/runner/ApplicationImpl.class"
+    # Needed by PlatformDependat
+    "io/netty/util/internal/CleanerJava9.class"
     # Add more classes here, e.g.:
     # "io/vertx/core/impl/AnotherClass.class"
 )
