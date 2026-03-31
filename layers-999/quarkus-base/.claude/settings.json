@@ -1,0 +1,9 @@
+{                                                                                                                                                                                                                                                                                     
+  "additionalDirectories": [                                                                                                                                                                                                                                                          
+    "~/src/quarkus-layers",
+    "~/src/mandrel",
+    "~/.mx",
+    "~/opt/mx",
+    "../../mendrugo"
+  ]                                                                                                                                                                                                                                                                                   
+}
