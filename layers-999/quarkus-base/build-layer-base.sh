@@ -73,9 +73,11 @@ mkdir -p target
 #    --trace-object-instantiation=java.net.NetworkInterface \
 
 # io.netty.channel.unix.* runtime inits as per NettyProcessor.build()
+
+
+
 ${native_image} \
     -J-Dsvm.traceClassInit=true \
-    --trace-object-instantiation=io.netty.buffer.UnpooledByteBufAllocator \
     --initialize-at-run-time=io.netty.channel.DefaultChannelId \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
     --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
