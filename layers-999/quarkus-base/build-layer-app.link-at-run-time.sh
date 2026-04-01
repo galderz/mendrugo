@@ -82,6 +82,7 @@ base_layer_args="--initialize-at-run-time=io.netty.channel.DefaultChannelId
 
 ${native_image} \
     ${base_layer_args} \
+    --initialize-at-run-time=io.quarkus.runner.ApplicationImpl \
     --features=io.quarkus.runner.Feature \
     -H:LayerUse=target/libquarkusbaselayer.nil \
     -H:LinkerRPath=. \
