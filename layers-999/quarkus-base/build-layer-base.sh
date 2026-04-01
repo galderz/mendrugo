@@ -78,6 +78,7 @@ mkdir -p target
 
 ${native_image} \
     -J-Dsvm.traceClassInit=true \
+    --trace-object-instantiation=java.util.logging.Level \
     --initialize-at-run-time=io.netty.channel.DefaultChannelId \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
     --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
@@ -109,5 +110,6 @@ ${native_image} \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
     -H:LayerCreate=libquarkusbaselayer.nil,module=java.base,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jakarta.* \
     --features=io.quarkus.runner.Feature \
+    -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
     -cp "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/*":getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/extracted-classes.jar \
     -o libquarkusbaselayer -H:Path=./target
