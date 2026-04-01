@@ -16,36 +16,6 @@ CLASSES_TO_EXTRACT=(
     "io/netty/util/internal/CleanerJava9"
 )
 
-# Configuration: Directories to extract (all files under these paths)
-DIRS_TO_EXTRACT=(
-    # Generated config classes (Config, SharedConfig, StaticInitConfig, CMImpl classes, etc.)
-    "io/quarkus/runtime/generated"
-    # Generated recorder classes (ResteasyReactiveCommonProcessor, VertxProcessor, etc.)
-    "io/quarkus/runner/recorded"
-    # Application classes (referenced by Arc-generated beans)
-    "org/acme"
-    # Arc setup classes
-    "io/quarkus/arc/setup"
-    # ServiceLoader metadata (e.g. ComponentsProvider registration)
-    "META-INF/services"
-)
-
-# Configuration: Glob patterns for classes to extract from any directory
-PATTERNS_TO_EXTRACT=(
-    # SmallRye ConfigMapping implementations
-    '*$$CMImpl.class'
-    # CDI component providers
-    '*_ComponentsProvider*.class'
-    # CDI generated bean classes
-    '*_Bean.class'
-    # CDI generated client proxies
-    '*_ClientProxy.class'
-    # CDI generated annotation literals
-    '*_ArcAnnotationLiteral.class'
-    # CDI generated context instances
-    '*_ContextInstances.class'
-)
-
 # Variables
 JAR_DIR=$(realpath "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar")
 ORIGINAL_JAR="${JAR_DIR}/getting-started-1.0.0-SNAPSHOT-runner.jar"
@@ -63,25 +33,6 @@ for class_file in "${CLASSES_TO_EXTRACT[@]}"; do
     mkdir -p "${EXTRACTED_DIR}/$(dirname "${class_file}")"
     cp "${WORK_DIR}/main/${class_file}.class" "${EXTRACTED_DIR}/${class_file}.class"
     rm "${WORK_DIR}/main/${class_file}.class"
-done
-
-# Step 2b: Copy entire directories to the extracted directory
-for dir in "${DIRS_TO_EXTRACT[@]}"; do
-    if [ -d "${WORK_DIR}/main/${dir}" ]; then
-        mkdir -p "${EXTRACTED_DIR}/${dir}"
-        cp -r "${WORK_DIR}/main/${dir}/." "${EXTRACTED_DIR}/${dir}/"
-        rm -rf "${WORK_DIR}/main/${dir}"
-    fi
-done
-
-# Step 2c: Copy classes matching glob patterns
-for pattern in "${PATTERNS_TO_EXTRACT[@]}"; do
-    while IFS= read -r -d '' file; do
-        rel="${file#${WORK_DIR}/main/}"
-        mkdir -p "${EXTRACTED_DIR}/$(dirname "${rel}")"
-        cp "${file}" "${EXTRACTED_DIR}/${rel}"
-        rm "${file}"
-    done < <(find "${WORK_DIR}/main" -name "${pattern}" -print0)
 done
 
 # Step 3: Create JAR with extracted classes
