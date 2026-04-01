@@ -5,6 +5,13 @@ native_image=$HOME/src/mandrel/sdk/latest_graalvm_home/bin/native-image
 
 mkdir -p target
 
+debug_attach_arg=""
+
+if [ "${ATTACH:-}" == "true" ]
+then
+    debug_attach_arg="--debug-attach=*:8000"
+fi
+
 # Add to enable remote debugging
 # --debug-attach=*:8000 \
 
@@ -77,8 +84,8 @@ mkdir -p target
 
 
 ${native_image} \
+    ${debug_attach_arg} \
     -J-Dsvm.traceClassInit=true \
-    --trace-object-instantiation=java.util.logging.Level \
     --initialize-at-run-time=io.netty.channel.DefaultChannelId \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
     --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
