@@ -49,7 +49,37 @@ source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-imag
 #    --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
 #    --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
 
+base_layer_args="--initialize-at-run-time=io.netty.channel.DefaultChannelId
+    --initialize-at-run-time=io.netty.channel.unix.Errors
+    --initialize-at-run-time=io.netty.channel.unix.FileDescriptor
+    --initialize-at-run-time=io.netty.channel.unix.IovArray
+    --initialize-at-run-time=io.netty.channel.unix.Limits
+    --initialize-at-run-time=io.netty.handler.codec.http.HttpServerExpectContinueHandler
+    --initialize-at-run-time=io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler
+    --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder
+    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils
+    --initialize-at-run-time=io.netty.util.NetUtil
+    --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub
+    --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime
+    --initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder
+    --initialize-at-run-time=io.vertx.core.buffer.impl.PartialPooledByteBufAllocator
+    --initialize-at-run-time=io.vertx.core.buffer.impl.VertxByteBufAllocator
+    --initialize-at-run-time=io.vertx.core.eventbus.impl.clustered.ClusteredEventBus
+    --initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT
+    --initialize-at-run-time=jakarta.el.ELManager
+    --initialize-at-run-time=java.rmi
+    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch
+    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch
+    --initialize-at-run-time=jdk.package
+    --initialize-at-run-time=jdk.tools.jlink.internal.plugins
+    --initialize-at-run-time=org.jboss.threads.JDKSpecific\$ThreadAccess
+    --initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder
+    --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler
+    --initialize-at-run-time=sun.rmi
+"
+
 ${native_image} \
+    ${base_layer_args} \
     --features=io.quarkus.runner.Feature \
     -H:LayerUse=target/libquarkusbaselayer.nil \
     -H:LinkerRPath=. \
