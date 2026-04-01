@@ -25,6 +25,9 @@ $(runner): $(base_nil)
 $(runner): $(build_layer_app)
 > ./$(build_layer_app)
 
+build-base: $(base_nil)
+.PHONY: build-base
+
 $(base_nil): $(extracted_jar)
 $(base_nil): $(build_layer_base)
 > ./$(build_layer_base)
