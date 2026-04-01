@@ -57,7 +57,7 @@ base_layer_args="--initialize-at-run-time=io.netty.channel.DefaultChannelId
     --initialize-at-run-time=io.netty.handler.codec.http.HttpServerExpectContinueHandler
     --initialize-at-run-time=io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler
     --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder
-    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils
+    --initialize-at-run-time=io.netty.handler.ssl
     --initialize-at-run-time=io.netty.util.NetUtil
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime
@@ -77,6 +77,14 @@ base_layer_args="--initialize-at-run-time=io.netty.channel.DefaultChannelId
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler
     --initialize-at-run-time=sun.rmi
     --initialize-at-run-time=io.quarkus.runner.ApplicationImpl
+    --initialize-at-run-time=io.netty.util.internal.logging.Log4J2Logger
+    --initialize-at-run-time=io.vertx.core.logging.Log4j2LogDelegate
+    --initialize-at-run-time=org.jboss.logging.Log4j2Logger
+    --initialize-at-run-time=org.jboss.logging.Log4jLogger
+    --initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger
+    --initialize-at-run-time=io.vertx.core.logging.Log4jLogDelegate
+    --initialize-at-run-time=io.vertx.core.json.jackson.DatabindCodec
+    --initialize-at-run-time=io.quarkus.vertx.runtime.jackson
 "
 
 ${native_image} \

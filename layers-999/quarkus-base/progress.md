@@ -117,4 +117,73 @@ Caused by: java.lang.ClassNotFoundException: com.fasterxml.jackson.databind.Json
 2. Extract the needed Jackson class(es) into `extracted-classes.jar` via `split-jar.sh`
 3. Add the full `lib/*` to the app layer classpath (may cause duplication issues)
 
-**Status:** NOT STARTED — stopped at user request.
+**Investigation:**
+The classes aren't in any reflect-config.json or the Feature class. They come from the base layer's `.nil` file replaying reflection registrations during `initializeBaseLayerType`. The app layer tries to link these types, which requires resolving their supertypes.
+
+Specific culprit classes:
+- `io.quarkus.vertx.runtime.jackson.JsonObjectSerializer` extends `com.fasterxml.jackson.databind.JsonSerializer` (jackson-databind not on classpath)
+- `io.netty.util.internal.logging.Log4J2Logger` references `org.apache.logging.log4j.message.Message` (log4j not on classpath)
+- `io.vertx.core.logging.Log4j2LogDelegate` references `org.apache.logging.log4j.message.Message`
+- `org.jboss.logging.Log4j2Logger` references `org.apache.logging.log4j.message.Message`
+- `io.vertx.core.json.jackson.DatabindCodec` references `com.fasterxml.jackson.databind.ObjectMapper`
+
+These classes are in `quarkus-vertx`, `vertx-core`, `netty-common`, and `jboss-logging` JARs (all in `lib/*`).
+The base layer succeeds because `lib/*` is on its classpath. The app layer fails because its classpath only has the filtered/extracted JARs.
+
+**Potential fix:** Add `lib/*` to the app layer's `-cp` so it can resolve all supertypes needed for linking base layer types.
+
+**Fix applied:** Added `lib/*` to app layer `-cp`. Jackson/log4j errors resolved.
+
+**Status:** RESOLVED
+
+### Error 8: NoClassDefFoundError io/netty/internal/tcnative/SSLPrivateKeyMethod
+
+**Error:**
+```
+NoClassDefFoundError: io/netty/internal/tcnative/SSLPrivateKeyMethod
+```
+
+**Cause:** With `--link-at-build-time`, all classes in `lib/*` are eagerly linked, including `netty-handler` classes that reference optional dependency `netty-tcnative`. The tcnative library isn't on the classpath.
+
+**Workaround attempted:** Removing `--link-at-build-time` — this fixed the tcnative issue but caused cascading failures:
+1. `ApplicationImpl` class init mismatch (base layer had it as Linked, app layer eagerly initialized it) — fixed with `--initialize-at-run-time=io.quarkus.runner.ApplicationImpl`
+2. `Newly seen platform package sun.util.resources.cldr.ext` — JDK locale classes not in base layer become reachable without link-at-build-time
+
+**Conclusion:** Removing `--link-at-build-time` creates too many cascading issues. Better to keep it and handle tcnative specifically.
+
+**Status:** RESOLVED — explored two approaches below.
+
+## Two Approaches to Error 8
+
+### Approach A: Keep `--link-at-build-time` (build-layer-app.link-at-build-time.sh)
+
+With `--link-at-build-time` and `lib/*` on the classpath, all classes get eagerly linked, including those that reference optional dependencies not on the classpath. Each missing optional dep requires `--initialize-at-run-time` on the class that references it, to prevent linking.
+
+**Fixes applied:**
+- `--initialize-at-run-time=io.netty.handler.ssl` (whole package) — prevents linking of classes referencing tcnative, Jetty NPN, Conscrypt
+- `--initialize-at-run-time=io.netty.util.internal.logging.Log4J2Logger` — references log4j2
+- `--initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger` — references log4j1
+- `--initialize-at-run-time=io.vertx.core.logging.Log4j2LogDelegate` — references log4j2
+- `--initialize-at-run-time=io.vertx.core.logging.Log4jLogDelegate` — references log4j1
+- `--initialize-at-run-time=org.jboss.logging.Log4j2Logger` — references log4j2
+- `--initialize-at-run-time=org.jboss.logging.Log4jLogger` — references log4j1
+- `--initialize-at-run-time=io.vertx.core.json.jackson.DatabindCodec` — references jackson-databind
+- `--initialize-at-run-time=io.quarkus.vertx.runtime.jackson` — references jackson-databind
+
+**Remaining errors:** `NoClassDefFoundError: net/jpountz/xxhash/XXHashFactory` (lz4-java optional dep). More classes with missing optional deps likely remain — this is a whack-a-mole pattern.
+
+**Status:** IN PROGRESS — builds fail, more `--initialize-at-run-time` entries needed.
+
+### Approach B: Remove `--link-at-build-time` (build-layer-app.link-at-run-time.sh)
+
+Without `--link-at-build-time`, classes are linked lazily, avoiding the missing optional dep errors entirely.
+
+**Fixes applied:**
+- Removed `--link-at-build-time`
+- Removed `-H:IncludeLocales=en-GB` — this pulled in `jdk.localedata` module which wasn't in the base layer's `LayerCreate` scope (`module=java.base`), causing `Newly seen platform package sun.util.resources.cldr.ext`. The `--initialize-at-run-time` workaround does NOT help for this error since it fires at type reachability, not initialization.
+
+**Build result:** SUCCESS — 27.9s, 8.82MiB executable.
+
+**Runtime result:** Crashes with `NoClassDefFoundError: io.quarkus.runtime.generated.Config` at `ApplicationImpl.<clinit>`. This is likely a split-jar issue — the `Config` class needs to be included in extracted-classes.jar or the filtered JAR.
+
+
