@@ -4,18 +4,26 @@ set -eux
 # Configuration: Classes to extract (add more as needed)
 CLASSES_TO_EXTRACT=(
     # Throws CNFE without it
-    "io/vertx/core/impl/ContextInternal.class"
+    "io/vertx/core/impl/ContextInternal"
     # Need Netty runtime init configuration
-    "io/quarkus/runner/Feature.class"
+    "io/quarkus/runner/Feature"
     # Need to avoid CNFE
-    "io/netty/channel/ChannelHandlerAdapter.class"
+    "io/netty/channel/ChannelHandlerAdapter"
     # More CNFEs
-    "io/netty/channel/DefaultChannelId.class"
-    "io/quarkus/runner/ApplicationImpl.class"
+    "io/netty/channel/DefaultChannelId"
+    "io/quarkus/runner/ApplicationImpl"
+    # Needed by ApplicationImpl
+    "io/quarkus/runtime/generated/BuildTimeRunTimeFixedConfigSourceBuilder"
+    "io/quarkus/runtime/generated/Config"
+    "io/quarkus/runtime/generated/SharedConfig"
+    "io/quarkus/runtime/generated/StaticInitConfig"
+    "io/quarkus/runtime/generated/StaticInitConfigCustomizer"
+    "io/quarkus/resteasy/reactive/common/runtime/ResteasyReactiveConfig\$\$CMImpl"
+    "io.quarkus.resteasy.reactive.common.runtime.ResteasyReactiveConfig\$ExceptionMappingConfig\$\$CMImpl"
     # Needed by PlatformDependat
-    "io/netty/util/internal/CleanerJava9.class"
+    "io/netty/util/internal/CleanerJava9"
     # Add more classes here, e.g.:
-    # "io/vertx/core/impl/AnotherClass.class"
+    # "io/vertx/core/impl/AnotherClass"
 )
 
 # Variables
@@ -35,9 +43,9 @@ for class_file in "${CLASSES_TO_EXTRACT[@]}"; do
     # Create parent directory in extracted
     mkdir -p "${EXTRACTED_DIR}/$(dirname "${class_file}")"
     # Copy the class file
-    cp "${WORK_DIR}/main/${class_file}" "${EXTRACTED_DIR}/${class_file}"
+    cp "${WORK_DIR}/main/${class_file}.class" "${EXTRACTED_DIR}/${class_file}.class"
     # Remove from main
-    rm "${WORK_DIR}/main/${class_file}"
+    rm "${WORK_DIR}/main/${class_file}.class"
 done
 
 # Step 3: Create JAR with extracted classes
