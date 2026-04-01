@@ -102,6 +102,7 @@ ${native_image} \
     --initialize-at-run-time=jdk.package \
     --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
     --initialize-at-run-time=org.jboss.threads.JDKSpecific\$ThreadAccess \
+    --initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder \
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
     --initialize-at-run-time=sun.rmi \
     -H:+PrintClassInitialization \
