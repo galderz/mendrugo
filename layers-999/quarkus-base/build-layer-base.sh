@@ -77,6 +77,7 @@ mkdir -p target
 
 
 ${native_image} \
+    -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
     -J-Dsvm.traceClassInit=true \
     --initialize-at-run-time=io.netty.channel.DefaultChannelId \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
@@ -87,6 +88,7 @@ ${native_image} \
     --initialize-at-run-time=io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler \
     --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
     --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
+    --initialize-at-run-time=io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator \
     --initialize-at-run-time=io.netty.util.NetUtil \
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub \
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime \
@@ -102,6 +104,7 @@ ${native_image} \
     --initialize-at-run-time=jdk.package \
     --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
     --initialize-at-run-time=org.jboss.threads.JDKSpecific\$ThreadAccess \
+    --initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder \
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
     --initialize-at-run-time=sun.rmi \
     -H:+PrintClassInitialization \
