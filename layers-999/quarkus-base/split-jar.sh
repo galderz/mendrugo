@@ -19,7 +19,11 @@ CLASSES_TO_EXTRACT=(
     "io/quarkus/runtime/generated/StaticInitConfig"
     "io/quarkus/runtime/generated/StaticInitConfigCustomizer"
     "io/quarkus/resteasy/reactive/common/runtime/ResteasyReactiveConfig\$\$CMImpl"
-    "io.quarkus.resteasy.reactive.common.runtime.ResteasyReactiveConfig\$ExceptionMappingConfig\$\$CMImpl"
+    "io/quarkus/resteasy/reactive/common/runtime/ResteasyReactiveConfig\$ExceptionMappingConfig\$\$CMImpl"
+    "io/quarkus/vertx/http/runtime/VertxHttpBuildTimeConfig\$\$CMImpl"
+    "io/quarkus/vertx/http/runtime/AuthConfig\$\$CMImpl"
+    "io/quarkus/vertx/http/runtime/HttpStaticDirConfig\$\$CMImpl"
+    "io/quarkus/vertx/http/runtime/management/ManagementInterfaceBuildTimeConfig\$\$CMImpl"
     # Needed by PlatformDependat
     "io/netty/util/internal/CleanerJava9"
     # Add more classes here, e.g.:
