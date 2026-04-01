@@ -49,6 +49,8 @@ source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-imag
 #    --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
 #    --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
 
+#     --initialize-at-run-time=io.quarkus.runner.ApplicationImpl
+
 base_layer_args="--initialize-at-run-time=io.netty.channel.DefaultChannelId
     --initialize-at-run-time=io.netty.channel.unix.Errors
     --initialize-at-run-time=io.netty.channel.unix.FileDescriptor
@@ -76,7 +78,6 @@ base_layer_args="--initialize-at-run-time=io.netty.channel.DefaultChannelId
     --initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler
     --initialize-at-run-time=sun.rmi
-    --initialize-at-run-time=io.quarkus.runner.ApplicationImpl
 "
 
 ${native_image} \
