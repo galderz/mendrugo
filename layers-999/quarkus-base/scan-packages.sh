@@ -20,52 +20,93 @@ if [ -z "$prefixes" ]; then
     exit 1
 fi
 
-# Convert comma-separated prefixes to an array
 IFS=',' read -ra prefix_arr <<< "$prefixes"
 
-# Convert comma-separated excludes to an array
 exclude_arr=()
 if [ -n "$excludes" ]; then
     IFS=',' read -ra exclude_arr <<< "$excludes"
 fi
 
-# Build grep pattern for prefixes: match directories one level below each prefix
-# e.g. prefix "io.netty" matches "io/netty/handler/" but not "io/netty/" or "io/netty/handler/codec/"
-grep_patterns=()
-for prefix in "${prefix_arr[@]}"; do
-    # Convert dot-separated prefix to slash-separated directory path
-    prefix_path="${prefix//./\/}"
-    # Count components in the prefix
-    depth=$(echo "$prefix" | awk -F. '{print NF}')
-    # Match exactly one level deeper: prefix/component/
-    grep_patterns+=("-e" "^${prefix_path}/[^/]\\+/\$")
-done
-
 mkdir -p target
 
-# Scan all jars, extract directory entries matching our prefixes one level deep
+# Collect all directory entries from all jars
+all_dirs=$(mktemp)
+trap "rm -f $all_dirs" EXIT
+
 for jar in "$lib_dir"/*.jar; do
     jar tf "$jar"
-done \
-    | grep "${grep_patterns[@]}" \
-    | sort -u \
-    | while read -r dir; do
-        # Convert directory path back to package name (strip trailing /)
-        pkg="${dir%/}"
-        pkg="${pkg//\//.}"
+done | grep '/$' | sort -u > "$all_dirs"
 
-        # Check exclusions
-        skip=false
-        for excl in "${exclude_arr[@]}"; do
-            if [ "$pkg" = "$excl" ]; then
-                skip=true
-                break
-            fi
+# For each directory entry under a prefix, determine the right output depth.
+#
+# Default depth is prefix_components + 1 (e.g. io.netty -> io.netty.handler).
+# But if an exclusion is deeper (e.g. io.netty.handler.ssl has 4 components),
+# directories under the excluded package's parent (io.netty.handler) must be
+# expanded to that same depth, so we get io.netty.handler.codec, io.netty.handler.flow, etc.
+# minus the excluded io.netty.handler.ssl.
+#
+# Algorithm: for each directory entry, truncate to default depth. If the truncated
+# package is a strict prefix of any exclusion, expand to that exclusion's depth.
+# Repeat until stable. Skip entries that equal an exclusion or fall under one.
+
+truncate_pkg() {
+    local pkg="$1" depth="$2"
+    local count
+    count=$(echo "$pkg" | awk -F. '{print NF}')
+    if [ "$count" -lt "$depth" ]; then
+        return 1
+    fi
+    echo "$pkg" | cut -d. -f1-"${depth}"
+}
+
+{
+    for prefix in "${prefix_arr[@]}"; do
+        prefix_path="${prefix//./\/}"
+        prefix_depth=$(echo "$prefix" | awk -F. '{print NF}')
+        default_depth=$((prefix_depth + 1))
+
+        grep "^${prefix_path}/" "$all_dirs" | while IFS= read -r dir; do
+            # Convert directory to package name
+            pkg="${dir%/}"
+            pkg="${pkg//\//.}"
+
+            # Skip if this package falls under any exclusion
+            skip=false
+            for excl in "${exclude_arr[@]}"; do
+                if [ "$pkg" = "$excl" ] || [[ "$pkg" == "$excl".* ]]; then
+                    skip=true
+                    break
+                fi
+            done
+            $skip && continue
+
+            # Truncate to default depth
+            truncated=$(truncate_pkg "$pkg" "$default_depth") || continue
+
+            # Iteratively expand if truncated is a strict prefix of any exclusion
+            changed=true
+            while $changed; do
+                changed=false
+                for excl in "${exclude_arr[@]}"; do
+                    if [[ "$excl" == "$truncated".* ]]; then
+                        excl_depth=$(echo "$excl" | awk -F. '{print NF}')
+                        truncated=$(truncate_pkg "$pkg" "$excl_depth") || continue 3
+                        changed=true
+                        break
+                    fi
+                done
+            done
+
+            # Final check: skip if result equals an exclusion
+            for excl in "${exclude_arr[@]}"; do
+                if [ "$truncated" = "$excl" ]; then
+                    continue 2
+                fi
+            done
+
+            echo "$truncated"
         done
-
-        if [ "$skip" = false ]; then
-            echo "$pkg"
-        fi
-    done > "$output_file"
+    done
+} | sort -u > "$output_file"
 
 echo "Wrote $(wc -l < "$output_file") packages to $output_file"
