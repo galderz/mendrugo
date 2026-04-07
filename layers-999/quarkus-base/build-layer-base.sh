@@ -5,6 +5,9 @@ native_image=$HOME/src/mandrel/sdk/latest_graalvm_home/bin/native-image
 
 mkdir -p target
 
+# Build package list from scanned packages
+packages=$(while IFS= read -r pkg; do printf ",package=%s.*" "$pkg"; done < target/layer-packages.txt)
+
 # Add to enable remote debugging
 # --debug-attach=*:8000 \
 
@@ -106,7 +109,7 @@ ${native_image} \
     --initialize-at-run-time=sun.rmi \
     -H:+PrintClassInitialization \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
-    -H:LayerCreate=libquarkusbaselayer.nil,module=java.base,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jakarta.* \
+    -H:LayerCreate=libquarkusbaselayer.nil,module=java.base${packages} \
     --features=io.quarkus.runner.Feature \
     -cp "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/*":getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/extracted-classes.jar \
     -o libquarkusbaselayer -H:Path=./target
