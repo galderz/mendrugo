@@ -27,13 +27,13 @@ $(runner): $(base_nil)
 $(runner): $(build_layer_app)
 > ./$(build_layer_app)
 
-$(base_nil): $(extracted_jar) $(layer_packages)
+$(base_nil): $(layer_packages)
 $(base_nil): $(build_layer_base)
 > ./$(build_layer_base)
 
-$(layer_packages): $(extracted_jar)
+$(layer_packages): $(runner_jar)
 $(layer_packages): $(scan_packages)
-> ./$(scan_packages) -p io.netty,io.vertx,io.quarkus,jakarta
+> ./$(scan_packages) -p io.netty,io.vertx,io.quarkus,jakarta -e io.netty.handler.ssl
 
 $(extracted_jar): $(split_jar)
 $(extracted_jar): $(runner_jar)
