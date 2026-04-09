@@ -4,16 +4,16 @@ set -eux
 # Configuration: Classes to extract (add more as needed)
 CLASSES_TO_EXTRACT=(
     # Throws CNFE without it
-    "io/vertx/core/impl/ContextInternal.class"
+    # "io/vertx/core/impl/ContextInternal.class"
     # Need Netty runtime init configuration
-    "io/quarkus/runner/Feature.class"
+    # "io/quarkus/runner/Feature.class"
     # Need to avoid CNFE
-    "io/netty/channel/ChannelHandlerAdapter.class"
+    # "io/netty/channel/ChannelHandlerAdapter.class"
     # More CNFEs
-    "io/netty/channel/DefaultChannelId.class"
-    "io/quarkus/runner/ApplicationImpl.class"
+    # "io/netty/channel/DefaultChannelId.class"
+    # "io/quarkus/runner/ApplicationImpl.class"
     # Needed by PlatformDependat
-    "io/netty/util/internal/CleanerJava9.class"
+    # "io/netty/util/internal/CleanerJava9.class"
     # Add more classes here, e.g.:
     # "io/vertx/core/impl/AnotherClass.class"
 )
