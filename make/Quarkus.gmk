@@ -62,6 +62,13 @@ $(quarkus_extensions_micrometer_jar): $(shell find $(QUARKUS_HOME)/extensions/mi
 > ./mvnw -DskipTests -f extensions/micrometer install
 > touch $@
 
+quarkus_extensions_netty_jar = $(QUARKUS_HOME)/extensions/netty/deployment/target/quarkus-netty-deployment-$(QUARKUS_VERSION).jar
+$(quarkus_extensions_netty_jar): $(shell find $(QUARKUS_HOME)/extensions/netty -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_extensions_netty_jar): $(shell find $(QUARKUS_HOME)/extensions/netty -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> ./mvnw -DskipTests -f extensions/netty install
+> touch $@
+
 quarkus_extensions_rest_client_jar = $(QUARKUS_HOME)/extensions/resteasy-reactive/rest-client/deployment/target/quarkus-rest-client-deployment-$(QUARKUS_VERSION).jar
 $(quarkus_extensions_rest_client_jar): $(shell find $(QUARKUS_HOME)/extensions/resteasy-reactive/rest-client -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
 $(quarkus_extensions_rest_client_jar): $(shell find $(QUARKUS_HOME)/extensions/resteasy-reactive/rest-client -type f -name 'pom.xml' | sed 's: :\\ :g')
@@ -109,6 +116,7 @@ quarkus: $(quarkus_extensions_amazon_lambda_jar)
 quarkus: $(quarkus_extensions_grpc_jar)
 quarkus: $(quarkus_extensions_hibernate_orm_jar)
 quarkus: $(quarkus_extensions_micrometer_jar)
+quarkus: $(quarkus_extensions_netty_jar)
 quarkus: $(quarkus_extensions_rest_client_jar)
 quarkus: $(quarkus_extensions_rest_client_jaxrs_jar)
 quarkus: $(quarkus_extensions_scheduler_jar)
