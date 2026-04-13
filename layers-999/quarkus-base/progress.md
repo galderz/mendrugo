@@ -118,6 +118,25 @@ Added Mandrel logging to `ClassInitializationSupport.computeInitKindAndMaybeInit
 **Workaround:** Added `--initialize-at-run-time=io.netty.util.internal.PlatformDependent` to
 `build-layer-base.sh` to prevent the cascading build-time initialization failure.
 
+### `ProcessHandleImpl` object in image heap
+
+Build failed with `ProcessHandleImpl` found in image heap, reached via static field
+`io.smallrye.common.os.Process.current`. Used `--trace-object-instantiation=java.lang.ProcessHandleImpl`
+(required building the diagnostics agent first with
+`mx native-image -g --macro:native-image-diagnostics-agent-library`).
+The trace confirmed `io.smallrye.common.os.Process` as the culprit class — it holds both
+`ProcessHandleImpl` (field `current`) and `ProcessHandleImpl$Info` (field `currentInfo`).
+
+**Workaround:** Added `--initialize-at-run-time=io.smallrye.common.os.Process` to
+`build-layer-base.sh`.
+
+### Base layer build succeeds
+
+With all workarounds in place, `build-layer-base.sh` completes successfully:
+- `target/libquarkusbaselayer.so` (164.63MiB)
+- `target/libquarkusbaselayer.nil` (1.15GiB)
+- Build time: 1m 23s
+
 ### Mandrel logging changes
 
 Protected the diagnostic logging added earlier behind flags:

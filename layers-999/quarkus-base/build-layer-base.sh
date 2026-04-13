@@ -112,6 +112,7 @@ ${native_image} \
     --initialize-at-run-time=org.jboss.threads.JDKSpecific\$ThreadAccess \
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
     --initialize-at-run-time=sun.rmi \
+    --initialize-at-run-time=io.smallrye.common.os.Process \
     --initialize-at-build-time="" \
     -H:+PrintClassInitialization \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
