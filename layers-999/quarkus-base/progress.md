@@ -137,8 +137,43 @@ With all workarounds in place, `build-layer-base.sh` completes successfully:
 - `target/libquarkusbaselayer.nil` (1.15GiB)
 - Build time: 1m 23s
 
+### App layer build fails: `guarantee failed` in `SVMImageLayerLoader`
+
+Running `build-layer-app.sh` fails with:
+
+```
+com.oracle.svm.shared.util.VMError$HostedError: guarantee failed
+  at SVMImageLayerLoader.initializeBaseLayerTypeBeforePublishing(SVMImageLayerLoader.java:709)
+```
+
+**Analysis:**
+
+Added diagnostic logging to `SVMImageLayerLoader.initializeBaseLayerTypeBeforePublishing`
+and `SVMImageLayerWriter` (gated behind `-J-Dsvm.traceLayerTypes=true`).
+
+The guarantee checks that `type.isLinked() == typeData.getIsLinked()`. The failing type is
+`io.vertx.core.impl.VertxImpl`:
+- Base layer persisted `isLinked=false` because `VertxImpl` depends on `ContextInternal`
+  which is missing from the stripped base layer classpath.
+- App layer has `isLinked=true` because the full classpath includes `ContextInternal`.
+
+8 types total are persisted as unlinked in the base layer:
+
+| Type | Missing dependency |
+|------|-------------------|
+| `io.vertx.core.impl.VertxImpl` | `io.vertx.core.impl.ContextInternal` |
+| `io.netty.handler.ssl.ConscryptAlpnSslEngine` | `org.conscrypt.BufferAllocator` |
+| `io.netty.handler.ssl.ReferenceCountedOpenSslContext` | `io.netty.internal.tcnative.SSLPrivateKeyMethod` |
+| `io.netty.util.internal.logging.Log4JLogger` | `org.apache.log4j.Priority` |
+| `io.quarkus.vertx.runtime.jackson.QuarkusJacksonJsonCodec` | `com.fasterxml.jackson.databind.JsonSerializer` |
+| `io.vertx.core.json.jackson.DatabindCodec` | `com.fasterxml.jackson.databind.Module` |
+| `io.vertx.core.logging.Log4j2LogDelegate` | `org.apache.logging.log4j.message.Message` |
+| `io.netty.handler.ssl.JettyNpnSslEngine` | `org.eclipse.jetty.npn.NextProtoNego$Provider` |
+
 ### Mandrel logging changes
 
 Protected the diagnostic logging added earlier behind flags:
 - `AnnotationSubstitutionProcessor`: gated behind `-J-Dsvm.traceLinkageErrors=true`
 - `NativeImageClassLoader` class load tracing: gated behind `-J-Dsvm.traceClassLoad=true`
+- `SVMImageLayerWriter` unlinked type tracing: gated behind `-J-Dsvm.traceLayerTypes=true`
+- `SVMImageLayerLoader` guarantee failure diagnostics: always on (pre-crash logging)
