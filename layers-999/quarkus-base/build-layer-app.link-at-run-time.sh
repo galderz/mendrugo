@@ -62,6 +62,7 @@ base_layer_args="--initialize-at-run-time=io.netty.channel.DefaultChannelId
     --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils
     --initialize-at-run-time=io.netty.util.NetUtil
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub
+    --initialize-at-run-time=io.quarkus.runner.ApplicationImpl
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime
     --initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder
     --initialize-at-run-time=io.vertx.core.buffer.impl.PartialPooledByteBufAllocator
@@ -82,7 +83,6 @@ base_layer_args="--initialize-at-run-time=io.netty.channel.DefaultChannelId
 
 ${native_image} \
     ${base_layer_args} \
-    --initialize-at-run-time=io.quarkus.runner.ApplicationImpl \
     --features=io.quarkus.runner.Feature \
     -H:LayerUse=target/libquarkusbaselayer.nil \
     -H:LinkerRPath=. \

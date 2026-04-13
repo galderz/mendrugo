@@ -97,6 +97,7 @@ ${native_image} \
     --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
     --initialize-at-run-time=io.netty.util.NetUtil \
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub \
+    --initialize-at-run-time=io.quarkus.runner.ApplicationImpl \
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime \
     --initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder \
     --initialize-at-run-time=io.vertx.core.buffer.impl.PartialPooledByteBufAllocator \
