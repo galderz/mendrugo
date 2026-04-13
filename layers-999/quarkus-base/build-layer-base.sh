@@ -94,6 +94,7 @@ ${native_image} \
     --initialize-at-run-time=io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler \
     --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
     --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
+    --initialize-at-run-time=io.netty.util.internal.PlatformDependent \
     --initialize-at-run-time=io.netty.util.NetUtil \
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub \
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime \

@@ -97,6 +97,27 @@ these one-by-one with `onlyWith` guards is not scalable — the approach of sele
 JARs for the layer build conflicts with Mandrel's substitution processing which needs to resolve
 all referenced types.
 
+### `PlatformDependent` build-time init fails due to missing `CleanerJava9`
+
+With the substitution errors resolved, the build progressed further but
+`io.netty.util.internal.PlatformDependent` failed to initialize at build time.
+
+Added Mandrel logging to `ClassInitializationSupport.computeInitKindAndMaybeInitializeClass`
+(reason, superclass, and stack trace for `NioServerSocketChannel`) which confirmed:
+
+- `NioServerSocketChannel` is registered for reflection by `ReflectionDataBuilder.registerClass`,
+  making it reachable, which triggers `SVMHost.onTypeReachable` → `maybeInitializeAtBuildTime`.
+- `specifiedInitKind=BUILD_TIME` because `META-INF/native-image/io.netty/netty-codec-http/native-image.properties`
+  and `netty-codec-http2/native-image.properties` both specify `--initialize-at-build-time=io.netty`.
+- `NioServerSocketChannel.<clinit>` → `SelectorProviderUtil.findOpenMethod` →
+  `PlatformDependent.<clinit>` → `NoClassDefFoundError: io/netty/util/internal/CleanerJava9`
+  (stripped from modified netty-common JAR).
+- `PlatformDependent` gets silently demoted from BUILD_TIME to RUN_TIME, causing cascading
+  failures in all classes that depend on it during their static initializers.
+
+**Workaround:** Added `--initialize-at-run-time=io.netty.util.internal.PlatformDependent` to
+`build-layer-base.sh` to prevent the cascading build-time initialization failure.
+
 ### Mandrel logging changes
 
 Protected the diagnostic logging added earlier behind flags:
