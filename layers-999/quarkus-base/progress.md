@@ -70,3 +70,35 @@ io.vertx.core.net.impl.VertxHandler
 The problem is fundamental: `ChannelHandlerAdapter` is the base class for virtually all Netty
 channel handlers, so excluding the `io.netty.channel` transport JAR from the classpath breaks
 most of the Netty handler ecosystem. A different approach is needed.
+
+### Next error: `NoClassDefFoundError: io/vertx/core/impl/ContextInternal`
+
+After the `ChannelHandlerAdapter` issue was resolved, the build fails with a new
+`NoClassDefFoundError` for `ContextInternal`:
+
+```
+java.lang.NoClassDefFoundError: io/vertx/core/impl/ContextInternal
+  at java.lang.Class.getDeclaredMethods0(Native Method)
+  at ...AnnotationSubstitutionProcessor.handleAliasClass(:452)
+```
+
+Same pattern, different failure point. The substitution class
+`Target_io_vertx_core_eventbus_impl_clustered_ClusteredEventBusClusteredEventBus`
+in `VertxSubstitutions.java:73` has a `@Substitute` method `createHandlerHolder` (line 103)
+with `ContextInternal` as a parameter type. When `handleAliasClass` calls
+`annotatedClass.getDeclaredMethods()` to enumerate the substitution class's own methods,
+the JVM resolves all method signatures and fails because `ContextInternal` is missing from the
+modified `vertx-core` JAR (the JAR contains `ContextImpl`, `ContextBase`, etc. but not
+`ContextInternal`).
+
+This is the same root problem as `ChannelHandlerAdapter`: the stripped classpath for the layer
+build is missing classes that substitution classes reference in their method signatures. Fixing
+these one-by-one with `onlyWith` guards is not scalable — the approach of selectively stripping
+JARs for the layer build conflicts with Mandrel's substitution processing which needs to resolve
+all referenced types.
+
+### Mandrel logging changes
+
+Protected the diagnostic logging added earlier behind flags:
+- `AnnotationSubstitutionProcessor`: gated behind `-J-Dsvm.traceLinkageErrors=true`
+- `NativeImageClassLoader` class load tracing: gated behind `-J-Dsvm.traceClassLoad=true`
