@@ -39,3 +39,34 @@ getDeclaredMethods0(SslContext)
 
 `ChannelHandlerAdapter` lives in the `io.netty.channel` transport JAR which is not on the
 classpath for this layer build.
+
+### Workaround attempt: skip `Target_SslContext` during base layer build
+
+Quarkus commit: `fc7ec65e3f7` ("Attempt to only load substitution when building base layer")
+
+Added `IsAppLayerBuild` `BooleanSupplier` that checks `-Dquarkus.native.base-layer-build=true`
+and used it in `@TargetClass(onlyWith = {IsBouncyNotThere.class, IsAppLayerBuild.class})` on
+`Target_SslContext`. Also passed `-J-Dquarkus.native.base-layer-build=true` in
+`build-layer-base.sh`.
+
+This fixed the `AnnotationSubstitutionProcessor` error, but the build still fails with a bare
+`NoClassDefFoundError: io/netty/channel/ChannelHandlerAdapter` later during image generation.
+233 classes transitively fail to load because they depend on `ChannelHandlerAdapter` through
+their class hierarchy. Examples:
+
+```
+io.netty.channel.ChannelInboundHandlerAdapter
+io.netty.channel.ChannelOutboundHandlerAdapter
+io.netty.channel.ChannelDuplexHandler
+io.netty.handler.codec.ByteToMessageDecoder
+io.netty.handler.codec.MessageToMessageDecoder
+io.netty.handler.codec.http.HttpObjectDecoder
+io.netty.handler.codec.http2.Http2ConnectionHandler
+io.netty.handler.ssl.SslHandler
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler
+io.vertx.core.net.impl.VertxHandler
+```
+
+The problem is fundamental: `ChannelHandlerAdapter` is the base class for virtually all Netty
+channel handlers, so excluding the `io.netty.channel` transport JAR from the classpath breaks
+most of the Netty handler ecosystem. A different approach is needed.
