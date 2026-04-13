@@ -7,8 +7,8 @@ CLASSES_TO_EXTRACT=(
     # "io/vertx/core/impl/ContextInternal.class"
     # Need Netty runtime init configuration
     # "io/quarkus/runner/Feature.class"
-    # Need to avoid CNFE
-    # "io/netty/channel/ChannelHandlerAdapter.class"
+    # Need to avoid CNFE (200+ transitive dependencies)
+    "io/netty/channel/ChannelHandlerAdapter.class"
     # More CNFEs
     # "io/netty/channel/DefaultChannelId.class"
     # "io/quarkus/runner/ApplicationImpl.class"
