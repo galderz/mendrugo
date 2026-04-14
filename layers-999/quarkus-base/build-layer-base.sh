@@ -81,9 +81,12 @@ packages=,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jak
 # io.netty.channel.unix.* runtime inits as per NettyProcessor.build()
 
 
+# -J-Dsvm.traceClassInit=true \
+
+#     --initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder \
 
 ${native_image} \
-    -J-Dsvm.traceClassInit=true \
+    -J-Dsvm.traceLayerTypes=true \
     -J-Dquarkus.native.base-layer-build=true \
     --initialize-at-run-time=io.netty.channel.DefaultChannelId \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
@@ -95,8 +98,10 @@ ${native_image} \
     --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
     --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
     --initialize-at-run-time=io.netty.util.internal.PlatformDependent \
+    --initialize-at-run-time=io.netty.util.internal.PlatformDependent0 \
     --initialize-at-run-time=io.netty.util.NetUtil \
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub \
+    --initialize-at-run-time=io.quarkus.runtime.configuration.RuntimeConfigBuilder\$UuidConfigSource\$Holder \
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime \
     --initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder \
     --initialize-at-run-time=io.vertx.core.buffer.impl.PartialPooledByteBufAllocator \
@@ -105,6 +110,7 @@ ${native_image} \
     --initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT \
     --initialize-at-run-time=jakarta.el.ELManager \
     --initialize-at-run-time=java.rmi \
+    --initialize-at-run-time=java.util.logging.ConsoleHandler \
     --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \
     --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch \
     --initialize-at-run-time=jdk.package \
@@ -113,6 +119,7 @@ ${native_image} \
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
     --initialize-at-run-time=sun.rmi \
     --initialize-at-run-time=io.smallrye.common.os.Process \
+    --initialize-at-run-time=io.smallrye.common.net.HostName \
     --initialize-at-build-time="" \
     -H:+PrintClassInitialization \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
