@@ -50,6 +50,7 @@ source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-imag
 #    --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
 
 ${native_image} \
+    -J-Dsvm.traceLayerTypes=true \
     --features=io.quarkus.runner.Feature \
     -H:LayerUse=target/libquarkusbaselayer.nil \
     -H:LinkerRPath=. \
