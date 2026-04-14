@@ -85,7 +85,27 @@ packages=,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jak
 
 #     --initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder \
 
+#    --initialize-at-run-time=io.netty.buffer.PoolThreadCache \
+#    --initialize-at-run-time=io.netty.buffer.AdvancedLeakAwareByteBuf \
+#    --initialize-at-run-time=io.netty.channel.ChannelOutboundBuffer \
+#    --initialize-at-run-time=io.netty.channel.PendingWriteQueue \
+#    --initialize-at-run-time=io.netty.handler.codec.http2.DefaultHttp2Connection \
+#    --initialize-at-run-time=io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder \
+#    --initialize-at-run-time=io.netty.util.Recycler \
+#    --initialize-at-run-time=io.netty.util.concurrent.DefaultPromise \
+#    --initialize-at-run-time=io.netty.util.internal.logging.LocationAwareSlf4JLogger \
+#    --initialize-at-run-time=io.quarkus.bootstrap.logging.InitialConfigurator \
+#    --initialize-at-run-time=org.jboss.logmanager.LogContext \
+#    --trace-object-instantiation=io.quarkus.bootstrap.logging.InitialConfigurator \
+#    --trace-object-instantiation=org.jboss.logmanager.LogContext \
+#    --trace-object-instantiation=io.netty.util.internal.logging.LocationAwareSlf4JLogger \
+#    -J-Dsvm.traceClassInitDemotions=true \
+
+
+# -J-Dlogging.initial-configurator.min-level=500 \
+
 ${native_image} \
+    -J-Dsvm.traceClassInitDemotions=true \
     -J-Dsvm.traceLayerTypes=true \
     -J-Dquarkus.native.base-layer-build=true \
     --initialize-at-run-time=io.netty.channel.DefaultChannelId \

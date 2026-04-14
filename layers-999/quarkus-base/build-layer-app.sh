@@ -49,12 +49,52 @@ source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-imag
 #    --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
 #    --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
 
+# -J-Dlogging.initial-configurator.min-level=500 /
+
+#--initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil\$ExtensionHeaderNames \
+#    --initialize-at-run-time=io.netty.handler.codec.http2.Http2Headers\$PseudoHeaderName \
+#    --initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil \
+#    --initialize-at-run-time=io.netty.handler.codec.http2.HpackStaticTable \
+
 ${native_image} \
-    -J-Dsvm.traceLayerTypes=true \
+    --initialize-at-run-time=io.netty.handler.codec.http2 \
+    --initialize-at-run-time=io.netty.handler.codec.socks \
+    --initialize-at-run-time=io.netty.handler.codec.spdy \
+    --initialize-at-run-time=io.netty.handler.codec.ssl \
+    --initialize-at-run-time=io.netty.channel.pool.SimpleChannelPool \
+    --initialize-at-run-time=io.netty.handler.codec.ReplayingDecoder \
+    --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
+    --initialize-at-run-time=io.vertx.ext.web.handler.impl \
+    --initialize-at-run-time=jakarta.el.ELManager \
+    --initialize-at-run-time=io.netty.handler.codec.compression \
+    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
+    --initialize-at-run-time=io.netty.handler.codec.http.websocketx \
+    --initialize-at-run-time=io.netty.util.AsciiString \
+    --initialize-at-run-time=io.netty.resolver.dns \
+    --initialize-at-run-time=java.rmi \
+    --initialize-at-run-time=sun.rmi \
+    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \
+    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch \
+    --initialize-at-run-time=io.netty.handler.timeout \
+    --initialize-at-run-time=io.vertx.core.http.impl.VertxHttp2Stream \
+    --initialize-at-run-time=io.vertx.core.http.impl.Http2ServerStream \
+    --initialize-at-run-time=io.vertx.core.http.impl.HttpUtils \
+    --initialize-at-run-time=io.netty.handler.traffic \
+    --initialize-at-run-time=io.netty.util.NetUtil \
+    --initialize-at-run-time=io.netty.util.internal.ObjectCleaner \
+    --initialize-at-run-time=io.vertx.core.net.impl.ConnectionBase \
+    --initialize-at-run-time=io.vertx.core.net.impl.NetSocketImpl \
+    --initialize-at-run-time=io.quarkus.vertx.http.runtime.ForwardedParser \
+    --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
+    --initialize-at-run-time=io.netty.channel.nio.NioEventLoop \
+    --initialize-at-run-time=io.netty.channel.nio.NioSocketChannel \
+    --initialize-at-run-time=io.netty.buffer.PoolArena \
+   -J-Dsvm.traceLayerTypes=true \
     --features=io.quarkus.runner.Feature \
     -H:LayerUse=target/libquarkusbaselayer.nil \
     -H:LinkerRPath=. \
-    -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager -J-Dsun.nio.ch.maxUpdateArraySize=100 -J-Dvertx.logger-delegate-factory-class-name=io.quarkus.vertx.core.runtime.VertxLogDelegateFactory -J-Dvertx.disableDnsResolver=true -J-Dio.netty.tryReflectionSetAccessible=true -J-Dio.netty.noUnsafe=false -J-Dio.netty.leakDetection.level=DISABLED -J-Dio.netty.allocator.maxOrder=3 -J-Duser.language=en -J-Duser.country=GB -J-Dlogging.initial-configurator.min-level=500 -H:+UnlockExperimentalVMOptions -H:IncludeLocales=en-GB -H:-UnlockExperimentalVMOptions --enable-native-access=ALL-UNNAMED -J-Dfile.encoding=UTF-8 -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED --features=io.quarkus.runner.Feature,io.quarkus.runtime.graal.DisableLoggingFeature,io.quarkus.runtime.graal.JVMChecksFeature,io.quarkus.runtime.graal.SkipConsoleServiceProvidersFeature -J--add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED -J--add-exports=java.security.jgss/sun.security.jgss=ALL-UNNAMED -J--add-opens=java.base/java.text=ALL-UNNAMED -J--add-opens=java.base/java.io=ALL-UNNAMED -J--add-opens=java.base/java.lang.invoke=ALL-UNNAMED -J--add-opens=java.base/java.util=ALL-UNNAMED -H:+UnlockExperimentalVMOptions -H:BuildOutputJSONFile=getting-started-1.0.0-SNAPSHOT-runner-build-output-stats.json -H:-UnlockExperimentalVMOptions -H:+UnlockExperimentalVMOptions -H:+GenerateBuildArtifactsFile -H:-UnlockExperimentalVMOptions -H:+UnlockExperimentalVMOptions -H:+AllowFoldMethods -H:-UnlockExperimentalVMOptions -J-Djava.awt.headless=true --no-fallback --link-at-build-time -H:+UnlockExperimentalVMOptions -H:+ReportExceptionStackTraces -H:-UnlockExperimentalVMOptions -J-Xmx6g -H:-AddAllCharsets --enable-url-protocols=http -H:NativeLinkerOption=-no-pie -H:+UnlockExperimentalVMOptions -H:-UseServiceLoaderFeature -H:-UnlockExperimentalVMOptions -J--add-exports=org.graalvm.nativeimage/org.graalvm.nativeimage.impl=ALL-UNNAMED --exclude-config io\.netty\.netty-codec /META-INF/native-image/io\.netty/netty-codec/generated/handlers/reflect-config\.json --exclude-config io\.netty\.netty-handler /META-INF/native-image/io\.netty/netty-handler/generated/handlers/reflect-config\.json target/getting-started-1.0.0-SNAPSHOT-runner \
+    -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager -J-Dsun.nio.ch.maxUpdateArraySize=100 -J-Dvertx.logger-delegate-factory-class-name=io.quarkus.vertx.core.runtime.VertxLogDelegateFactory -J-Dvertx.disableDnsResolver=true -J-Dio.netty.tryReflectionSetAccessible=true -J-Dio.netty.noUnsafe=false -J-Dio.netty.leakDetection.level=DISABLED -J-Dio.netty.allocator.maxOrder=3 -J-Duser.language=en -J-Duser.country=GB \
+-H:+UnlockExperimentalVMOptions -H:IncludeLocales=en-GB -H:-UnlockExperimentalVMOptions --enable-native-access=ALL-UNNAMED -J-Dfile.encoding=UTF-8 -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED --features=io.quarkus.runner.Feature,io.quarkus.runtime.graal.DisableLoggingFeature,io.quarkus.runtime.graal.JVMChecksFeature,io.quarkus.runtime.graal.SkipConsoleServiceProvidersFeature -J--add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED -J--add-exports=java.security.jgss/sun.security.jgss=ALL-UNNAMED -J--add-opens=java.base/java.text=ALL-UNNAMED -J--add-opens=java.base/java.io=ALL-UNNAMED -J--add-opens=java.base/java.lang.invoke=ALL-UNNAMED -J--add-opens=java.base/java.util=ALL-UNNAMED -H:+UnlockExperimentalVMOptions -H:BuildOutputJSONFile=getting-started-1.0.0-SNAPSHOT-runner-build-output-stats.json -H:-UnlockExperimentalVMOptions -H:+UnlockExperimentalVMOptions -H:+GenerateBuildArtifactsFile -H:-UnlockExperimentalVMOptions -H:+UnlockExperimentalVMOptions -H:+AllowFoldMethods -H:-UnlockExperimentalVMOptions -J-Djava.awt.headless=true --no-fallback --link-at-build-time -H:+UnlockExperimentalVMOptions -H:+ReportExceptionStackTraces -H:-UnlockExperimentalVMOptions -J-Xmx6g -H:-AddAllCharsets --enable-url-protocols=http -H:NativeLinkerOption=-no-pie -H:+UnlockExperimentalVMOptions -H:-UseServiceLoaderFeature -H:-UnlockExperimentalVMOptions -J--add-exports=org.graalvm.nativeimage/org.graalvm.nativeimage.impl=ALL-UNNAMED --exclude-config io\.netty\.netty-codec /META-INF/native-image/io\.netty/netty-codec/generated/handlers/reflect-config\.json --exclude-config io\.netty\.netty-handler /META-INF/native-image/io\.netty/netty-handler/generated/handlers/reflect-config\.json target/getting-started-1.0.0-SNAPSHOT-runner \
     -cp ${source_jar_dir}/extracted-classes.jar \
     -jar ${source_jar_dir}/getting-started-1.0.0-SNAPSHOT-runner-filtered.jar \
     -o getting-started-1.0.0-SNAPSHOT-runner -H:Path=./target
