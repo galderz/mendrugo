@@ -3,8 +3,9 @@ set -eux
 
 # Configuration: Classes to extract (add more as needed)
 CLASSES_TO_EXTRACT=(
-    # Throws CNFE without it
-    # "io/vertx/core/impl/ContextInternal.class"
+    # Without it io.vertx.core.impl.VertxImpl is not linked,
+    # which fails when app layer is built with a guarantee
+    "io/vertx/core/impl/ContextInternal.class"
     # Need Netty runtime init configuration
     # "io/quarkus/runner/Feature.class"
     # Need to avoid CNFE (200+ transitive dependencies)
