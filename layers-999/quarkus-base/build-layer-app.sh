@@ -59,8 +59,12 @@ source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-imag
 # -J-Dsvm.traceClassInit=true \
 
 ${native_image} \
+    --initialize-at-run-time=io.quarkus.vertx.http.runtime.attribute.AllRequestHeadersAttribute \
+    --initialize-at-run-time=io.vertx.core.impl.Utils \
+    --initialize-at-run-time=io.netty.channel.unix.Unix \
     --initialize-at-run-time=io.netty.handler.codec.http \
     --initialize-at-run-time=io.netty.handler.codec.http2 \
+    --initialize-at-run-time=io.netty.handler.codec.rtsp \
     --initialize-at-run-time=io.netty.handler.codec.socks \
     --initialize-at-run-time=io.netty.handler.codec.spdy \
     --initialize-at-run-time=io.netty.handler.codec.marshalling \
@@ -100,6 +104,7 @@ ${native_image} \
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
     --initialize-at-run-time=io.netty.channel.ChannelOption \
     --initialize-at-run-time=io.netty.channel.nio.NioEventLoop \
+    --initialize-at-run-time=io.netty.channel.socket.nio.NioDatagramChannelConfig \
     --initialize-at-run-time=io.netty.channel.socket.nio.NioSocketChannel \
     --initialize-at-run-time=io.netty.channel.socket.nio.NioServerSocketChannel \
     --initialize-at-run-time=io.netty.channel.socket.nio.NioDomainSocketChannel \
