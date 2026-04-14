@@ -71,7 +71,6 @@ packages=,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jak
 #    --initialize-at-run-time=io.netty.channel.unix.Limits \
 #    --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
 #    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
-
 #     -H:+PrintClassInitialization \
 
 #--trace-object-instantiation=io.netty.buffer.UnpooledByteBufAllocator\$InstrumentedUnpooledUnsafeDirectByteBuf \

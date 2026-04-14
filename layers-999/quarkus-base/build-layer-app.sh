@@ -56,11 +56,16 @@ source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-imag
 #    --initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil \
 #    --initialize-at-run-time=io.netty.handler.codec.http2.HpackStaticTable \
 
+# -J-Dsvm.traceClassInit=true \
+
 ${native_image} \
+    --initialize-at-run-time=io.netty.handler.codec.http \
     --initialize-at-run-time=io.netty.handler.codec.http2 \
     --initialize-at-run-time=io.netty.handler.codec.socks \
     --initialize-at-run-time=io.netty.handler.codec.spdy \
-    --initialize-at-run-time=io.netty.handler.codec.ssl \
+    --initialize-at-run-time=io.netty.handler.codec.marshalling \
+    --initialize-at-run-time=io.netty.util.internal.NativeLibraryLoader \
+    --initialize-at-run-time=io.netty.handler.ssl \
     --initialize-at-run-time=io.netty.channel.pool.SimpleChannelPool \
     --initialize-at-run-time=io.netty.handler.codec.ReplayingDecoder \
     --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
@@ -79,15 +84,26 @@ ${native_image} \
     --initialize-at-run-time=io.vertx.core.http.impl.VertxHttp2Stream \
     --initialize-at-run-time=io.vertx.core.http.impl.Http2ServerStream \
     --initialize-at-run-time=io.vertx.core.http.impl.HttpUtils \
+    --initialize-at-run-time=io.vertx.core.http.impl.headers.HeadersMultiMap \
+    --initialize-at-run-time=io.vertx.core.http.RequestOptions \
+    --initialize-at-run-time=io.vertx.core.http.HttpMethod \
     --initialize-at-run-time=io.netty.handler.traffic \
     --initialize-at-run-time=io.netty.util.NetUtil \
+    --initialize-at-run-time=io.netty.util.Signal \
+    --initialize-at-run-time=io.netty.util.AttributeKey \
     --initialize-at-run-time=io.netty.util.internal.ObjectCleaner \
     --initialize-at-run-time=io.vertx.core.net.impl.ConnectionBase \
     --initialize-at-run-time=io.vertx.core.net.impl.NetSocketImpl \
+    --initialize-at-run-time=io.vertx.core.net.impl.SslHandshakeCompletionHandler \
     --initialize-at-run-time=io.quarkus.vertx.http.runtime.ForwardedParser \
+    --initialize-at-run-time=io.quarkus.vertx.utils.AppendBuffer \
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
+    --initialize-at-run-time=io.netty.channel.ChannelOption \
     --initialize-at-run-time=io.netty.channel.nio.NioEventLoop \
-    --initialize-at-run-time=io.netty.channel.nio.NioSocketChannel \
+    --initialize-at-run-time=io.netty.channel.socket.nio.NioSocketChannel \
+    --initialize-at-run-time=io.netty.channel.socket.nio.NioServerSocketChannel \
+    --initialize-at-run-time=io.netty.channel.socket.nio.NioDomainSocketChannel \
+    --initialize-at-run-time=io.netty.channel.socket.nio.NioServerDomainSocketChannel \
     --initialize-at-run-time=io.netty.buffer.PoolArena \
    -J-Dsvm.traceLayerTypes=true \
     --features=io.quarkus.runner.Feature \
