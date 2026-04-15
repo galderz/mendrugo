@@ -17,11 +17,12 @@ extracted_jar = $(runner_dir)/extracted-classes.jar
 layer_packages = target/layer-packages.txt
 runner_dir = $(app_dir)/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar
 runner_jar = $(runner_dir)/getting-started-1.0.0-SNAPSHOT-runner.jar
-runner = $(target)/getting-started-1.0.0-SNAPSHOT-runner
+runner = target/getting-started-1.0.0-SNAPSHOT-runner
 scan_packages = scan-packages.sh
 split_jar = split-jar.sh
 
 run: $(runner)
+> LD_LIBRARY_PATH=target $<
 
 $(runner): $(base_nil)
 $(runner): $(build_layer_app)
