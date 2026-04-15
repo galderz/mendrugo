@@ -143,6 +143,6 @@ ${native_image} \
     --initialize-at-build-time="" \
     -H:+PrintClassInitialization \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
-    -H:LayerCreate=libquarkusbaselayer.nil,module=java.base${packages} \
+    -H:LayerCreate=libquarkusbaselayer.nil,module=java.base,module=jdk.localedata${packages} \
     -cp "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/*":getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/extracted-classes.jar \
     -o libquarkusbaselayer -H:Path=./target
