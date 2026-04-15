@@ -111,6 +111,13 @@ $(quarkus_extensions_vertx_jar): $(shell find $(QUARKUS_HOME)/extensions/vertx -
 > ./mvnw -DskipTests -f extensions/vertx install
 > touch $@
 
+quarkus_independent_arc_jar = $(QUARKUS_HOME)/independent-projects/arc/runtime/target/arc-$(QUARKUS_VERSION).jar
+$(quarkus_independent_arc_jar): $(shell find $(QUARKUS_HOME)/independent-projects/arc -type f -name '*.java' | grep -v '/target/' | sed 's: :\\ :g')
+$(quarkus_independent_arc_jar): $(shell find $(QUARKUS_HOME)/independent-projects/arc -type f -name 'pom.xml' | sed 's: :\\ :g')
+> cd $(QUARKUS_HOME)
+> ./mvnw -DskipTests -f independent-projects/arc install
+> touch $@
+
 quarkus: $(quarkus_core_jar)
 quarkus: $(quarkus_extensions_amazon_lambda_jar)
 quarkus: $(quarkus_extensions_grpc_jar)
@@ -123,6 +130,7 @@ quarkus: $(quarkus_extensions_scheduler_jar)
 quarkus: $(quarkus_extensions_security_jar)
 quarkus: $(quarkus_extensions_spring_web_jar)
 quarkus: $(quarkus_extensions_vertx_jar)
+quarkus: $(quarkus_independent_arc_jar)
 
 test-quarkus: quarkus
 > cd $(QUARKUS_HOME)
