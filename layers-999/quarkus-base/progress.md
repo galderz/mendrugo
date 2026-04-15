@@ -170,10 +170,117 @@ The guarantee checks that `type.isLinked() == typeData.getIsLinked()`. The faili
 | `io.vertx.core.logging.Log4j2LogDelegate` | `org.apache.logging.log4j.message.Message` |
 | `io.netty.handler.ssl.JettyNpnSslEngine` | `org.eclipse.jetty.npn.NextProtoNego$Provider` |
 
+**Workaround:** Added `ContextInternal` to the stripped JAR via `split-jar.sh` so `VertxImpl`
+links in the base layer, resolving the `isLinked` mismatch. The remaining 7 unlinked types
+have optional dependencies (Conscrypt, tcnative, Log4j, Jackson, Jetty NPN) not on either
+layer's classpath, so their `isLinked=false` is consistent across layers.
+
+## 2026-04-14
+
+### `ConsoleHandler$ConsoleHolder.console` null during field relinking
+
+After the `isLinked` fix, app layer build fails with:
+
+```
+VMError$HostedError: Found NULL_CONSTANT when reading the hosted value of relinked field
+ConsoleHandler$ConsoleHolder.console (PrintWriter)
+```
+
+The field holds a `PrintWriter` wrapping `System.out`/`System.err`. In the base layer it was
+build-time initialized, but the hosted value is null in the app layer context because these
+stream handles are process-specific.
+
+**Workaround:** Added `--initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler$ConsoleHolder`
+to `build-layer-base.sh`.
+
+### Duplicate `java.util.logging.Level` constants in base layer
+
+After the `ConsoleHolder` fix, app layer build fails with:
+
+```
+AnalysisError: Found unexpected snapshot value for base layer value.
+Existing value: ImageHeapConstant<java.util.logging.Level, id: 48290>.
+New value: ImageHeapConstant<java.util.logging.Level, id: 49738>.
+```
+
+Added relink tracing to `SVMImageLayerLoader.relinkStaticFinalFieldValues` (gated behind
+`-J-Dsvm.traceLayerTypes=true`). The trace shows two base layer constants resolve to the
+same hosted `Level` object at relink time:
+
+- **id=48290**: `io.quarkus.bootstrap.logging.InitialConfigurator.MIN_LEVEL`
+- **id=49738**: `java.util.logging.Level.FINE`
+
+Both fields point to the same `Level` instance (int value 500, matching
+`-Dlogging.initial-configurator.min-level=500`). In the base layer they were persisted as
+separate constants. During app layer relinking, `registerBaseLayerValue` requires a 1:1
+mapping between hosted objects and constants, so the second registration fails.
+
+This is a Mandrel layer infrastructure issue — two base layer constants aliased to the same
+singleton object need deduplication handling.
+
+### Class initialization not stable between layers
+
+App layer build fails with `Class initialization info not stable between layers` for
+`Socks4ServerDecoder`, `Socks5InitialRequestDecoder`, `ReplayingDecoder`, and others.
+In the base layer these classes are `Linked, buildTimeInit=false` (runtime init), but the
+app layer expects them to be `FullyInitialized, buildTimeInit=true`.
+
+Added demotion tracing to `ClassInitializationSupport` (gated behind
+`-J-Dsvm.traceClassInitDemotions=true`). The trace reveals 328 classes demoted to runtime
+init in the base layer, all cascading from `PlatformDependent`:
+
+```
+PlatformDependent → runtime-init (explicit flag, CleanerJava9 missing from stripped JAR)
+  → Signal.<clinit> fails (depends on PlatformDependent)
+    → ReplayingDecoder.<clinit> fails (depends on Signal)
+      → Socks4ServerDecoder, Socks5InitialRequestDecoder, etc. (extend ReplayingDecoder)
+  → AttributeKey, AsciiString, UnpooledByteBufAllocator, etc. (depend on PlatformDependent)
+    → CharSequenceValueConverter, DecoderResult, ChannelOption, etc. (depend on above)
+```
+
+The root cause is `--initialize-at-run-time=io.netty.util.internal.PlatformDependent` in
+`build-layer-base.sh`, which was added because `PlatformDependent.<clinit>` fails due to
+missing `CleanerJava9` in the stripped netty-common JAR. This cascades to 328 classes that
+transitively depend on `PlatformDependent` during their static initializers. In the app
+layer, the full classpath is available, so these classes initialize at build time — causing
+the mismatch.
+
+### Class init instability workarounds in app layer
+
+Added `--initialize-at-run-time` flags to `build-layer-app.sh` one by one for classes demoted
+in the base layer (PlatformDependent cascade). The full list of classes added includes
+netty codecs, handlers, vertx HTTP/impl classes, channel options, buffer pools, etc.
+After removing `--link-at-build-time` from the app layer (to avoid fatal errors from
+`registerHeapDynamicHub` trying to link types with missing optional dependencies like
+tcnative, Log4j, Jackson), reflection link failures for `ReferenceCountedOpenSslContext`
+and `Log4JLogger` became non-fatal warnings.
+
+Final class init instabilities resolved:
+- `io.vertx.ext.web.impl.ForwardedParser`
+- `io.netty.handler.pcap.PcapWriteHandler$WildcardAddressHolder`
+- `io.netty.handler.codec.CharSequenceValueConverter`
+
+### `sun.util.resources.cldr.ext` platform package not in base layer
+
+App layer failed with `Newly seen platform package package sun.util.resources.cldr.ext`.
+The `-H:IncludeLocales=en-GB` flag in the app layer pulls in CLDR locale classes from
+`jdk.localedata` module, but the base layer only included `module=java.base`.
+
+**Fix:** Added `module=jdk.localedata` to the base layer's `-H:LayerCreate` option:
+`-H:LayerCreate=libquarkusbaselayer.nil,module=java.base,module=jdk.localedata${packages}`
+
+### App layer build succeeds
+
+With all workarounds in place, both layers build successfully:
+- Base layer: `target/libquarkusbaselayer.so` (309.50MiB), `target/libquarkusbaselayer.nil` (1.57GiB), build time 1m 52s
+- App layer: `target/getting-started-1.0.0-SNAPSHOT-runner` (9.69MiB), build time 30.8s
+
 ### Mandrel logging changes
 
 Protected the diagnostic logging added earlier behind flags:
 - `AnnotationSubstitutionProcessor`: gated behind `-J-Dsvm.traceLinkageErrors=true`
 - `NativeImageClassLoader` class load tracing: gated behind `-J-Dsvm.traceClassLoad=true`
 - `SVMImageLayerWriter` unlinked type tracing: gated behind `-J-Dsvm.traceLayerTypes=true`
+- `SVMImageLayerLoader` relink tracing for specific types: gated behind `-J-Dsvm.traceLayerTypes=true`
 - `SVMImageLayerLoader` guarantee failure diagnostics: always on (pre-crash logging)
+- `ClassInitializationSupport` demotion tracing: gated behind `-J-Dsvm.traceClassInitDemotions=true`
