@@ -103,10 +103,11 @@ packages=,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jak
 
 # -J-Dlogging.initial-configurator.min-level=500 \
 
+# -J-Dsvm.traceClassForName=true \
+
 ${native_image} \
     -J-Dsvm.traceClassInitDemotions=true \
     -J-Dsvm.traceLayerTypes=true \
-    -J-Dsvm.traceClassForName=true \
     -J-Dquarkus.native.base-layer-build=true \
     --initialize-at-run-time=io.netty.channel.DefaultChannelId \
     --initialize-at-run-time=io.netty.channel.unix.Errors \
