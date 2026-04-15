@@ -275,6 +275,79 @@ With all workarounds in place, both layers build successfully:
 - Base layer: `target/libquarkusbaselayer.so` (309.50MiB), `target/libquarkusbaselayer.nil` (1.57GiB), build time 1m 52s
 - App layer: `target/getting-started-1.0.0-SNAPSHOT-runner` (9.69MiB), build time 30.8s
 
+## 2026-04-15
+
+### Runtime `ClassNotFoundException` for `ApplicationImpl`
+
+The native binary builds successfully but fails at runtime:
+
+```
+java.lang.ClassNotFoundException: io.quarkus.runner.ApplicationImpl.
+  This exception was synthesized during native image building from a call to
+  java.lang.Class.forName(String, boolean, ClassLoader) with constant arguments.
+    at io.quarkus.runtime.Quarkus.run(Quarkus.java:74)
+...
+Exception in thread "main" java.lang.RuntimeException: Should never be hit
+    at io.quarkus.runtime.Quarkus.launchFromIDE(Quarkus.java:14)
+    at io.quarkus.runtime.Quarkus.run(Quarkus.java:97)
+```
+
+**Analysis:**
+
+Added tracing to `ReflectionPlugins.processClassForName` in Mandrel (gated behind
+`-J-Dsvm.traceClassForName=true`). The trace confirms the synthesis happens during the
+**shared (base) layer build**:
+
+```
+[CLASS-FORNAME] Synthesizing ClassNotFoundException for Class.forName("io.quarkus.runner.ApplicationImpl")
+  during shared layer build. Caller: io.quarkus.runtime.Quarkus.run(Class, BiConsumer, String[])
+[CLASS-FORNAME] Synthesizing ClassNotFoundException for Class.forName("io.quarkus.runner.ApplicationImpl")
+  during shared layer build. Caller: io.quarkus.runtime.Quarkus.manualInitialize()
+```
+
+**Root cause:** `Quarkus.run()` calls `Class.forName(Application.APP_CLASS_NAME, false, ...)`
+where `APP_CLASS_NAME = "io.quarkus.runner.ApplicationImpl"` is a compile-time constant.
+During native image building, `ReflectionPlugins.processClassForName()` intercepts
+`Class.forName` calls with constant arguments and tries to resolve the class via
+`ImageClassLoader.findClass()`. Since `ApplicationImpl` is an app-generated class that
+doesn't exist on the base layer classpath, Mandrel synthesizes a `ClassNotFoundException`
+that gets permanently baked into the compiled `Quarkus.run()` method.
+
+At runtime the synthesized exception is caught by the `catch (ClassNotFoundException e)` block
+at line 81 (which prints the stack trace), then execution falls through to `launchFromIDE()`
+at line 97 — the dev-mode path — which throws `RuntimeException: Should never be hit`.
+
+The app layer build has `ApplicationImpl` on its classpath, but `Quarkus.run()` was already
+compiled in the base layer with the synthesized exception hardcoded — the app layer does not
+re-parse or re-compile base layer methods.
+
+A second app-generated class is also synthesized during the base layer build:
+- `io.quarkus.arc.runtime.InterceptedStaticMethodsInitializer` (from
+  `InterceptedStaticMethodsRecorder.callInitializer()`)
+
+**Options:**
+
+1. **Mandrel fix — skip synthesis in shared layer builds for app-classpath classes.** Modify
+   `ReflectionPlugins.processClassForName()` to return `false` (skip constant folding) when
+   building a shared layer and the class is not found. This defers the `Class.forName` to
+   runtime where it can succeed with the app layer's classpath. Risk: changes the constant
+   folding contract for all `Class.forName` calls in shared layers.
+
+2. **Quarkus fix — avoid constant `Class.forName` for `ApplicationImpl`.** Change
+   `Quarkus.run()` to use a non-constant class name (e.g. read from a system property or
+   use an indirection) so that Mandrel's constant folding plugin doesn't intercept it.
+   This would also fix `manualInitialize()` and any other constant `Class.forName` sites.
+
+3. **Quarkus fix — use a substitution.** Add a `@TargetClass` substitution for `Quarkus.run()`
+   that replaces the `Class.forName` call with direct instantiation of `ApplicationImpl`,
+   bypassing the reflective lookup entirely.
+
+4. **Build config fix — exclude `Quarkus.run()` from base layer compilation.** Adjust the
+   base layer's package/class scope so that `io.quarkus.runtime.Quarkus` is not parsed during
+   the base layer build. This would require narrowing the base layer's classpath or package
+   filters, which may not be feasible given other classes in `io.quarkus.runtime` that must be
+   in the base layer.
+
 ### Mandrel logging changes
 
 Protected the diagnostic logging added earlier behind flags:
@@ -284,3 +357,4 @@ Protected the diagnostic logging added earlier behind flags:
 - `SVMImageLayerLoader` relink tracing for specific types: gated behind `-J-Dsvm.traceLayerTypes=true`
 - `SVMImageLayerLoader` guarantee failure diagnostics: always on (pre-crash logging)
 - `ClassInitializationSupport` demotion tracing: gated behind `-J-Dsvm.traceClassInitDemotions=true`
+- `ReflectionPlugins` Class.forName synthesis tracing: gated behind `-J-Dsvm.traceClassForName=true`
