@@ -3,6 +3,7 @@ set -eu
 
 lib_dir="getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib"
 output_file="target/layer-packages.txt"
+jar_bin="$HOME/opt/java-21/bin/jar"
 
 prefixes=""
 excludes=""
@@ -34,7 +35,7 @@ all_dirs=$(mktemp)
 trap "rm -f $all_dirs" EXIT
 
 for jar in "$lib_dir"/*.jar; do
-    jar tf "$jar"
+    $jar_bin tf "$jar"
 done | grep '/$' | sort -u > "$all_dirs"
 
 # For each directory entry under a prefix, determine the right output depth.

@@ -6,8 +6,8 @@ native_image=$HOME/src/mandrel/sdk/latest_graalvm_home/bin/native-image
 mkdir -p target
 
 # Build package list from scanned packages
-# packages=$(while IFS= read -r pkg; do printf ",package=%s.*" "$pkg"; done < target/layer-packages.txt)
-packages=,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jakarta.*
+packages=$(while IFS= read -r pkg; do printf ",package=%s.*" "$pkg"; done < target/layer-packages.txt)
+# packages=,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jakarta.*
 
 # getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/extracted-classes.jar \
 
