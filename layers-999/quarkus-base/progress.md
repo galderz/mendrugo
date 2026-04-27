@@ -348,6 +348,50 @@ A second app-generated class is also synthesized during the base layer build:
    filters, which may not be feasible given other classes in `io.quarkus.runtime` that must be
    in the base layer.
 
+### `ApplicationImpl` `Class.forName` fix (option 1 applied)
+
+Applied option 1: modified `ReflectionPlugins.processClassForName()` in Mandrel to return
+`false` (skip constant folding) when `ImageLayerBuildingSupport.buildingSharedLayer()` and the
+class is not found. This defers `Class.forName` resolution to runtime, where the class will
+be available. Fix applied by the user in the Mandrel source.
+
+### Runtime `NullPointerException`: `Arc.container()` returns null
+
+After fixing the `Class.forName` synthesis, the binary starts but crashes immediately:
+
+```
+java.lang.NullPointerException
+  at VertxCoreRecorder.getIgnoredArcContextKeysSupplier(VertxCoreRecorder.java:637)
+  at VertxCoreProcessor$dontPropagateCdiContext.deploy_0(Unknown Source)
+  at ApplicationImpl.doStart(Unknown Source)
+```
+
+Added logging to `Arc.initialize()` and `Arc.container()`. Confirmed `Arc.container()`
+returns null at runtime, and `Arc.initialize()` is **never called at runtime**.
+
+**Root cause:** `Arc.initialize()` is called by `ArcRecorder.initContainer()`, which is a
+`@Record(STATIC_INIT)` step. The call chain during the **app layer native image build** is:
+
+```
+ApplicationImpl.<clinit>()                          ← runs at build time (STATIC_INIT phase)
+  → ArcProcessor$initializeContainer.deploy()
+    → ArcRecorder.initContainer()
+      → Arc.initialize()
+        → sets Arc.INSTANCE = new ArcContainerImpl(...)
+```
+
+However, `Arc` class is in the **base layer** (it's in `io.quarkus.arc` package, covered by
+`package=io.quarkus.*` in `-H:LayerCreate`). The base layer captured `Arc.INSTANCE = null`
+in its image heap. During the app layer build, `ApplicationImpl.<clinit>()` writes to
+`Arc.INSTANCE`, but this modifies a static field owned by a base layer class. The write does
+not persist to the final runtime image — at runtime, `Arc.INSTANCE` is still `null` from the
+base layer's image heap.
+
+**Fix:** Added `-H:ApplicationLayerInitializedClasses=io.quarkus.arc.Arc` to
+`build-layer-base.sh`. This tells Mandrel that `Arc` will be initialized in the app layer,
+so the base layer should not capture its static field values. The app layer's build-time
+initialization of `Arc.INSTANCE` then persists correctly to the runtime image.
+
 ### Mandrel logging changes
 
 Protected the diagnostic logging added earlier behind flags:
