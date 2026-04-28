@@ -10,11 +10,13 @@ CLASSES_TO_EXTRACT=(
     # "io/quarkus/runner/Feature.class"
     # Need to avoid CNFE (200+ transitive dependencies)
     "io/netty/channel/ChannelHandlerAdapter.class"
-    # More CNFEs
-    # "io/netty/channel/DefaultChannelId.class"
+    # Moved to runner jar by Quarkus, runtime-init in base layer
+    "io/netty/channel/DefaultChannelId.class"
     # "io/quarkus/runner/ApplicationImpl.class"
     # Needed by PlatformDependat
-    # "io/netty/util/internal/CleanerJava9.class"
+    "io/netty/util/internal/CleanerJava9.class"
+    # Moved to runner jar by Quarkus, needed by ServerChannelLoadBalancer
+    "io/netty/channel/ChannelInitializer.class"
     # Add more classes here, e.g.:
     # "io/vertx/core/impl/AnotherClass.class"
 )

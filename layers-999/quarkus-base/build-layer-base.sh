@@ -107,6 +107,8 @@ packages=,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jak
 #    -J-Dsvm.traceClassInitDemotions=true \
 #        -J-Dsvm.traceLayerTypes=true \
 
+# -J-Dsvm.traceClassInit=true \
+
 ${native_image} \
     -J-Dquarkus.native.base-layer-build=true \
     --initialize-at-run-time=io.netty.channel.DefaultChannelId \
@@ -142,10 +144,40 @@ ${native_image} \
     --initialize-at-run-time=sun.rmi \
     --initialize-at-run-time=io.smallrye.common.os.Process \
     --initialize-at-run-time=io.smallrye.common.net.HostName \
+    --initialize-at-run-time=io.vertx.core.http.impl.Http1xServerResponse \
+    --initialize-at-run-time=io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec \
+    --initialize-at-run-time=io.vertx.core.parsetools.impl.RecordParserImpl \
+    --initialize-at-run-time=io.netty.handler.ssl.ConscryptAlpnSslEngine \
+    --initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslEngine \
+    --initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslContext \
+    --initialize-at-run-time=io.netty.handler.ssl.JdkSslServerContext \
+    --initialize-at-run-time=io.netty.handler.ssl.util.ThreadLocalInsecureRandom \
+    --initialize-at-run-time=io.netty.handler.codec.http.HttpObjectEncoder \
+    --initialize-at-run-time=io.netty.handler.codec.http.websocketx.extensions.compression.DeflateDecoder \
+    --initialize-at-run-time=io.netty.handler.codec.http.websocketx.WebSocket00FrameEncoder \
+    --initialize-at-run-time=io.netty.handler.codec.http2.Http2CodecUtil \
+    --initialize-at-run-time=io.netty.handler.codec.http2.DefaultHttp2FrameWriter \
+    --initialize-at-run-time=io.netty.handler.codec.http2.Http2ConnectionHandler \
+    --initialize-at-run-time=io.netty.handler.codec.http2.Http2ClientUpgradeCodec \
+    --initialize-at-run-time=io.netty.util.AbstractReferenceCounted \
+    --initialize-at-run-time=io.netty.buffer.AbstractReferenceCountedByteBuf \
+    --initialize-at-run-time=io.netty.buffer.UnpooledByteBufAllocator \
+    --initialize-at-run-time=io.netty.buffer.Unpooled \
+    --initialize-at-run-time=io.netty.handler.codec.http.HttpObjectAggregator \
+    --initialize-at-run-time=io.netty.handler.codec.ReplayingDecoderByteBuf \
+    --initialize-at-run-time=io.netty.buffer.ByteBufUtil\$HexUtil \
+    --initialize-at-run-time=io.netty.buffer.PooledByteBufAllocator \
+    --initialize-at-run-time=io.netty.buffer.ByteBufAllocator \
+    --initialize-at-run-time=io.netty.buffer.ByteBufUtil \
+    --initialize-at-run-time=io.netty.handler.codec.compression.BrotliOptions \
+    --initialize-at-run-time=io.netty.handler.codec.compression.ZstdConstants \
+    --initialize-at-run-time=io.netty.handler.codec.compression.ZstdOptions \
+    --initialize-at-run-time=io.vertx.ext.web.handler.sockjs.impl.XhrTransport \
     --initialize-at-build-time="" \
     -H:+PrintClassInitialization \
     -H:ApplicationLayerInitializedClasses=io.quarkus.arc.Arc \
     -H:ApplicationLayerInitializedClasses=io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder \
+    -H:ApplicationLayerInitializedClasses=io.quarkus.arc.runtime.ArcRecorder \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
     -H:LayerCreate=libquarkusbaselayer.nil,module=java.base,module=jdk.localedata${packages} \
     -cp "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/*":getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/extracted-classes.jar \
