@@ -402,3 +402,98 @@ Protected the diagnostic logging added earlier behind flags:
 - `SVMImageLayerLoader` guarantee failure diagnostics: always on (pre-crash logging)
 - `ClassInitializationSupport` demotion tracing: gated behind `-J-Dsvm.traceClassInitDemotions=true`
 - `ReflectionPlugins` Class.forName synthesis tracing: gated behind `-J-Dsvm.traceClassForName=true`
+- `ReflectionDataBuilder.linkType` reflection link failure tracing: gated behind `-J-Dsvm.traceLayerTypes=true`
+
+## 2026-04-27
+
+### Extracting more bytecode-transformed classes via split-jar
+
+After the app layer build succeeded on 2026-04-14, the split-jar only extracted
+`ContextInternal` (for `VertxImpl` linkage). To fix additional class init instability
+and linkage issues discovered during further testing, three more classes were added to
+`split-jar.sh`:
+
+- `io/netty/channel/ChannelHandlerAdapter.class` — base class for virtually all Netty
+  channel handlers. Without it, 200+ Netty classes fail to load during the base layer
+  build, and classes like `SslChannelProvider` are persisted as unlinked.
+- `io/netty/channel/DefaultChannelId.class` — moved to runner jar by Quarkus bytecode
+  transformation. Set to `--initialize-at-run-time` in base layer to avoid heap issues.
+- `io/netty/util/internal/CleanerJava9.class` — needed by `PlatformDependent.<clinit>`.
+  Without it, `PlatformDependent` is demoted to runtime init, cascading to 328 classes.
+  Extracting it allows `PlatformDependent` to initialize at build time in the base layer,
+  eliminating the class init instability cascade documented on 2026-04-14.
+- `io/netty/channel/ChannelInitializer.class` — needed by `ServerChannelLoadBalancer`.
+
+### Runtime-init entries added to base layer build
+
+With `CleanerJava9` extracted, `PlatformDependent` can now initialize at build time.
+However, additional classes still needed `--initialize-at-run-time` in the base layer
+due to transitive dependencies on missing bytecode-transformed classes or JVM-specific
+resources:
+
+**Vertx classes:**
+- `io.vertx.core.http.impl.Http1xServerResponse`
+- `io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec`
+- `io.vertx.core.parsetools.impl.RecordParserImpl`
+- `io.vertx.ext.web.handler.sockjs.impl.XhrTransport`
+
+**Netty SSL/handler classes:**
+- `io.netty.handler.ssl.ConscryptAlpnSslEngine`
+- `io.netty.handler.ssl.ReferenceCountedOpenSslEngine`
+- `io.netty.handler.ssl.ReferenceCountedOpenSslContext`
+- `io.netty.handler.ssl.JdkSslServerContext`
+- `io.netty.handler.ssl.util.ThreadLocalInsecureRandom`
+
+**Netty codec/buffer classes:**
+- `io.netty.handler.codec.http.HttpObjectEncoder`
+- `io.netty.handler.codec.http.HttpObjectAggregator`
+- `io.netty.handler.codec.http.websocketx.extensions.compression.DeflateDecoder`
+- `io.netty.handler.codec.http.websocketx.WebSocket00FrameEncoder`
+- `io.netty.handler.codec.http2.Http2CodecUtil`
+- `io.netty.handler.codec.http2.DefaultHttp2FrameWriter`
+- `io.netty.handler.codec.http2.Http2ConnectionHandler`
+- `io.netty.handler.codec.http2.Http2ClientUpgradeCodec`
+- `io.netty.handler.codec.ReplayingDecoderByteBuf`
+- `io.netty.handler.codec.compression.BrotliOptions`
+- `io.netty.handler.codec.compression.ZstdConstants`
+- `io.netty.handler.codec.compression.ZstdOptions`
+- `io.netty.util.AbstractReferenceCounted`
+- `io.netty.buffer.AbstractReferenceCountedByteBuf`
+- `io.netty.buffer.UnpooledByteBufAllocator`
+- `io.netty.buffer.Unpooled`
+- `io.netty.buffer.ByteBufUtil$HexUtil`
+- `io.netty.buffer.PooledByteBufAllocator`
+- `io.netty.buffer.ByteBufAllocator`
+- `io.netty.buffer.ByteBufUtil`
+
+### App layer build cleanup
+
+Cleaned up `build-layer-app.sh` by removing `--initialize-at-run-time` entries that were
+no longer needed. Many classes that had been demoted to runtime-init in the base layer
+(due to the `PlatformDependent` cascade) were now initializing at build time in both
+layers since `CleanerJava9` was available. The removed entries included:
+
+- Vertx HTTP/impl classes: `HttpHeaders`, `HttpMethod`, `HttpUtils`, `HeadersMultiMap`,
+  `RequestOptions`, `VertxHttp2Stream`, `Http2ServerStream`, `ConnectionBase`,
+  `NetSocketImpl`, `SslHandshakeCompletionHandler`, `Utils`
+- Vertx runtime classes: `ForwardedParser` (both `io.vertx` and `io.quarkus` variants),
+  `AppendBuffer`, `AllRequestHeadersAttribute`
+- Vertx mutiny: `io.vertx.mutiny.core.http.HttpHeaders`
+- Netty channel classes: `ChannelOption`, `NioEventLoop`, `NioDatagramChannelConfig`,
+  `NioSocketChannel`, `NioServerSocketChannel`, `NioDomainSocketChannel`,
+  `NioServerDomainSocketChannel`, `SimpleChannelPool`, `Unix`
+- Netty codec/util classes: `DecoderResult`, `ReplayingDecoder`, `CharSequenceValueConverter`,
+  `AsciiString`, `Signal`, `AttributeKey`, `ObjectCleaner`, `NativeLibraryLoader`
+- Netty buffer: `PoolArena`
+
+Added to app layer:
+- `--initialize-at-run-time=io.netty.util.internal.PlatformDependent`
+- `--initialize-at-run-time=io.netty.util.internal.PlatformDependent0`
+- `-H:+PrintClassInitialization`
+- `-J-Dsvm.traceLayerTypes=true`
+
+### `ArcRecorder` app-layer initialization
+
+Added `-H:ApplicationLayerInitializedClasses=io.quarkus.arc.runtime.ArcRecorder` to
+`build-layer-base.sh`. Like `Arc` itself, `ArcRecorder` holds references to app-layer state
+that must not be captured in the base layer's image heap.
