@@ -86,6 +86,7 @@ ${native_image} \
     -H:+PrintClassInitialization \
    -J-Dsvm.traceLayerTypes=true \
     --features=io.quarkus.runner.Feature \
+    -H:BuildOutputJSONFile=target/build-output-layer-app.json \
     -H:LayerUse=target/libquarkusbaselayer.nil \
     -H:LinkerRPath=. \
     -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager -J-Dsun.nio.ch.maxUpdateArraySize=100 -J-Dvertx.logger-delegate-factory-class-name=io.quarkus.vertx.core.runtime.VertxLogDelegateFactory -J-Dvertx.disableDnsResolver=true -J-Dio.netty.tryReflectionSetAccessible=true -J-Dio.netty.noUnsafe=false -J-Dio.netty.leakDetection.level=DISABLED -J-Dio.netty.allocator.maxOrder=3 -J-Duser.language=en -J-Duser.country=GB \
