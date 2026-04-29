@@ -15,7 +15,7 @@ GETTING_STARTED_DIR="getting-started"
 NON_LAYERED_SCRIPT="../build-non-layered.sh"
 LAYERED_SCRIPT="./build-layer-app.sh"
 NON_LAYERED_OUTPUT="target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/getting-started-1.0.0-SNAPSHOT-runner-build-output-stats.json"
-LAYERED_OUTPUT="target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/build-output-layer-app.json"
+LAYERED_OUTPUT="target/build-output-layer-app.json"
 LAYERED_BUILD_DIR="target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar"
 
 echo "=== Native Image Build Benchmark ==="
@@ -89,17 +89,15 @@ run_layered_builds() {
         echo "--- Layered Run ${i}/${NUM_RUNS} ---"
 
         # Remove previous native image but keep the jar
-        cd "${GETTING_STARTED_DIR}/${LAYERED_BUILD_DIR}"
-        rm -f getting-started-1.0.0-SNAPSHOT-runner
-        rm -f build-output-layer-app.json
-        cd ../../..
+        rm -f target/getting-started-1.0.0-SNAPSHOT-runner
+        rm -f target/build-output-layer-app.json
 
         # Run layered build
         ${LAYERED_SCRIPT}
 
         # Archive the result
-        if [ -f "${GETTING_STARTED_DIR}/${LAYERED_OUTPUT}" ]; then
-            cp "${GETTING_STARTED_DIR}/${LAYERED_OUTPUT}" \
+        if [ -f "${LAYERED_OUTPUT}" ]; then
+            cp "${LAYERED_OUTPUT}" \
                "${RUN_DIR}/layered/run-${i}.json"
             echo "Archived result to ${RUN_DIR}/layered/run-${i}.json"
         else
