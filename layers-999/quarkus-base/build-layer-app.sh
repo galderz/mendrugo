@@ -55,6 +55,8 @@ source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-imag
 
 # --link-at-build-time \
 
+# -J-Dsvm.traceLayerTypes=true \
+
 ${native_image} \
     --initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder \
     --initialize-at-run-time=io.netty.util.internal.PlatformDependent \
@@ -84,7 +86,6 @@ ${native_image} \
     --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
     --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
     -H:+PrintClassInitialization \
-   -J-Dsvm.traceLayerTypes=true \
     --features=io.quarkus.runner.Feature \
     -H:BuildOutputJSONFile=target/build-output-layer-app.json \
     -H:LayerUse=target/libquarkusbaselayer.nil \
