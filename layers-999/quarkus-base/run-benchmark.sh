@@ -63,6 +63,14 @@ run_non_layered_builds() {
     done
 }
 
+prepare_base_layer() {
+    echo ""
+    echo "=== Prepare base layer ==="
+
+    ./split-jar.sh
+    ./build-layer-base.sh
+}
+
 # Function to run layered builds
 run_layered_builds() {
     echo ""
@@ -105,6 +113,7 @@ echo "Starting benchmark at $(date)"
 START_TIME=$(date +%s)
 
 run_non_layered_builds
+prepare_base_layer
 run_layered_builds
 
 END_TIME=$(date +%s)
