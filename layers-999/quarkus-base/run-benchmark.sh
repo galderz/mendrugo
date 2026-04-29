@@ -12,7 +12,7 @@ RUN_DIR="${RESULTS_DIR}/${TIMESTAMP}"
 
 # Paths
 GETTING_STARTED_DIR="getting-started"
-NON_LAYERED_SCRIPT="./build-non-layered.sh"
+NON_LAYERED_SCRIPT="../build-non-layered.sh"
 LAYERED_SCRIPT="./build-layer-app.sh"
 NON_LAYERED_OUTPUT="target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/getting-started-1.0.0-SNAPSHOT-runner-build-output-stats.json"
 LAYERED_OUTPUT="target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/build-output-layer-app.json"
