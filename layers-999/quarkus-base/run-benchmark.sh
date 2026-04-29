@@ -48,7 +48,9 @@ run_non_layered_builds() {
 
         # Clean and build
         clean_build
+        cd "${GETTING_STARTED_DIR}"
         ${NON_LAYERED_SCRIPT}
+        cd ..
 
         # Archive the result
         if [ -f "${GETTING_STARTED_DIR}/${NON_LAYERED_OUTPUT}" ]; then
