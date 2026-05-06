@@ -1,0 +1,75 @@
+* 29.4.25
+Benchmarking non-layered vs layered (quarkus base):
+
+#+begin_src bash
+$ python3 analyze-benchmark.py benchmark-results/20260429_141519
+Warning: matplotlib not installed. Graphs will not be generated.
+Install with: pip install matplotlib
+Warning: scipy not installed. Statistical significance tests will be skipped.
+Install with: pip install scipy
+Loading results from benchmark-results/20260429_141519
+  Non-layered runs: 5
+  Layered runs: 5
+
+======================================================================
+NATIVE IMAGE BUILD BENCHMARK RESULTS
+======================================================================
+
+Runs per configuration: 5 (before), 5 (after)
+
+Statistical Method: Median with Interquartile Range (IQR)
+  - Median is robust to outliers from system variability
+  - IQR shows the spread of the middle 50% of values
+
+----------------------------------------------------------------------
+KEY METRICS SUMMARY
+----------------------------------------------------------------------
+
+image_size_mb:
+  Before: 49.47 MB (IQR: 0.00 MB)
+  After:  10.85 MB (IQR: 0.00 MB)
+  Change: -78.06%
+
+peak_rss_mb:
+  Before: 2973.91 MB (IQR: 199.92 MB)
+  After:  4503.02 MB (IQR: 202.18 MB)
+  Change: +51.42%
+
+gc_time_secs:
+  Before: 2.038s (IQR: 0.108s)
+  After:  1.755s (IQR: 0.055s)
+  Change: -13.89%
+
+total_time_secs:
+  Before: 29.505s (IQR: 0.480s)
+  After:  30.792s (IQR: 0.464s)
+  Change: +4.36%
+
+----------------------------------------------------------------------
+ALL METRICS (sorted by absolute % change)
+----------------------------------------------------------------------
+
+Metric                          Before        After       Change
+----------------------------------------------------------------
+total_fields                    32,211       84,204    +161.41%
+total_types                     13,607       34,162    +151.06%
+reachable_types                 11,311          332     -97.06%
+reachable_fields                15,431          786     -94.91%
+reachable_methods               55,699        3,974     -92.87%
+code_size_mb                  19.07 MB      1.48 MB     -92.26%
+total_methods                  104,380      199,703     +91.32%
+compilation_units               37,093        3,828     -89.68%
+image_size_mb                 49.47 MB     10.85 MB     -78.06%
+heap_size_mb                  26.75 MB      6.94 MB     -74.07%
+heap_objects                   329,724      103,313     -68.67%
+gc_count                           113           41     -63.72%
+peak_rss_mb                 2973.91 MB   4503.02 MB     +51.42%
+cpu_load                         16.53        10.85     -34.34%
+gc_time_secs                    2.038s       1.755s     -13.89%
+total_time_secs                29.505s      30.792s      +4.36%
+gc_max_heap_mb              5461.50 MB   5461.50 MB       0.00%
+
+======================================================================
+
+Summary saved to: benchmark-results/20260429_141519/summary.txt
+#+end_src
