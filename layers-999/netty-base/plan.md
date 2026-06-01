@@ -16,3 +16,5 @@ If that works, shutdown the app execution and indicate success.
 If adding any initialize at runtime flags,
 prefer adding individual classes rather package names,
 so any requirements are clearly defined.
+
+Respect the `JAVA_HOME` environment variable as set currently.
