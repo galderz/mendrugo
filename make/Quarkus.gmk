@@ -4,7 +4,7 @@ TEST_MODULE ?= main
 
 build-quarkus:
 > cd $(QUARKUS_HOME)
-> ./mvnw -Dquickly
+> ./mvnw install -DskipTests -DskipDocs -Dquickly -Dinvoker.skip -DskipExtensionValidation -Dskip.gradle.tests -Dskip.gradle.build -Dtruststore.skip -Dinsecure.repositories=WARN
 .PHONY: build-quarkus
 
 test_quarkus_args += -Dnative

@@ -1,3 +1,5 @@
 .idea
 target/
 getting-started-1.0.0-SNAPSHOT-runner-build-output-stats.json
+# Emacs
+*~
