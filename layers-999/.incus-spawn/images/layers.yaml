@@ -15,9 +15,10 @@ parent: tpl-mydev
 # image: images:fedora/43
 
 # System packages to install via dnf
-# packages:
-#   - htop
-#   - ripgrep
+packages:
+  - @development-tools
+  - g++
+  - patch
 
 # Tool definitions to set up
 # Built-in tools: podman, maven-3, gh, claude
