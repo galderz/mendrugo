@@ -1,0 +1,31 @@
+diff --git a/src/mx/_impl/mx.py b/src/mx/_impl/mx.py
+index fe02f16..4a4ef4d 100755
+--- a/src/mx/_impl/mx.py
++++ b/src/mx/_impl/mx.py
+@@ -334,6 +334,8 @@ import os, errno, time, subprocess, shlex, zipfile, signal, tempfile, platform
+ import textwrap
+ import socket
+ import tarfile, gzip
++import ssl
++ssl._create_default_https_context = ssl._create_unverified_context
+ import hashlib
+ import itertools
+ from functools import cmp_to_key
+@@ -5267,7 +5269,7 @@ class AbstractTARDistribution(AbstractDistribution):
+             output = self.get_output()
+             with tarfile.open(tarfilename, 'r:') as tar:
+                 logv(f'Extracting {tarfilename} to {output}')
+-                tar.extractall(output)
++                tar.extractall(output, filter='fully_trusted')
+         return tarfilename
+
+     def prePush(self, f):
+@@ -8377,7 +8379,7 @@ class TarExtractor(Extractor):
+         return ar.getnames()
+
+     def _extractall(self, ar, dst):
+-        return ar.extractall(dst)
++        return ar.extractall(dst, filter='fully_trusted')
+
+
+ class ZipExtractor(Extractor):

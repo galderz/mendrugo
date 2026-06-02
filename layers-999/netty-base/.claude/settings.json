@@ -1,0 +1,8 @@
+{                                                                                                                                                                                                                                                                                     
+  "additionalDirectories": [                                                                                                                                                                                                                                                          
+    "~/quarkus",
+    "~/mandrel",
+    "~/.mx",
+    "~/mendrugo"
+  ]                                                                                                                                                                                                                                                                                   
+}
