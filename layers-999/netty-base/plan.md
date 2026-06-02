@@ -37,3 +37,15 @@ Any changes you make inside Mendrugo, Quarkus or Mandrel, commit them in some ki
 Finally, keep a PROGRESS.md file where you keep track of the different errors, approaches tried and solutions that worked,
 so that the logic followed can be reviewed at a later stage.
 This will also enable picking specific changes at a later stage if necessary.
+
+The design of native image layers can be found here:
+https://github.com/oracle/graal/blob/master/substratevm/src/com.oracle.svm.core/src/com/oracle/svm/core/imagelayer/NativeImageLayers.md
+
+The `../quarkus-base` folder has a previous experiment where netty + vert.x + quarkus was in the base layer,
+but it had to workaround some issues around split jars.
+You might be able to get inspired with the code there.
+
+Also, you are allowed to workaround some of the issues using the techniques in these commits:
+* https://github.com/galderz/quarkus/commit/fc7ec65e3f771dc7ea391743e3671fad239325bf
+* https://github.com/galderz/quarkus/commit/cec9ba6f2b041181af7884bf897b85c547b412bd
+* https://github.com/galderz/quarkus/commit/6f8970d3efcaac1ef7ccb706a7a77ff2a375893a
