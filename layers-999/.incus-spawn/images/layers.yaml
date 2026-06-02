@@ -1,0 +1,45 @@
+# Template definition for incus-spawn
+
+# Required: unique name, conventionally prefixed with 'tpl-'
+name: tpl-layers
+
+# Optional: human-readable description
+description: Integrate with native image layers
+
+# Parent template to inherit from (packages, tools, repos are additive)
+# Common parents: tpl-minimal, tpl-dev, tpl-java
+parent: tpl-mydev
+
+# Base image (only for root templates without a parent)
+# Default: images:fedora/43
+# image: images:fedora/43
+
+# System packages to install via dnf
+# packages:
+#   - htop
+#   - ripgrep
+
+# Tool definitions to set up
+# Built-in tools: podman, maven-3, gh, claude
+# tools:
+#   - podman
+tools:
+  - podman
+  - gradle
+  - mx
+  - pi
+
+# Git repositories to clone
+repos:
+  - url: https://github.com/galderz/mandrel
+    path: ~/mandrel
+    branch: oracle-master
+  - url: https://github.com/galderz/mendrugo
+    path: ~/mendrugo
+  - url: https://github.com/galderz/quarkus
+    path: ~/quarkus
+    branch: isx.modified-classes
+
+# Claude Code skills
+# skills:
+#   - owner/skills-repo@skill-name

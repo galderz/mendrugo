@@ -1,0 +1,12 @@
+# .incus-spawn/tools/gradle.yaml
+name: mx
+description: mx 7.80.0
+
+downloads:
+  - url: https://github.com/graalvm/mx/archive/93717bb20d5579e4ad825f3fefa77746b4fb3ef1.zip
+    sha256: b07a3aaeb1ce650ea753b79177378a0335aaf3011e0e607d454f5aae64afd8e3
+    extract: /opt
+    links:
+      /opt/mx-93717bb20d5579e4ad825f3fefa77746b4fb3ef1/mx: /usr/local/bin/mx
+
+verify: mx --version
