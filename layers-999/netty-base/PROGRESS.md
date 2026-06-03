@@ -208,3 +208,34 @@ transitively on many other Quarkus jars. The full classpath is required.
 The Quarkus substitution fix for `ConfigMappingLoader.configMappingObject()` (using
 `invoke()` instead of `invokeExact()`) remains necessary as the workaround for the
 cross-layer MethodType reference inequality issue.
+
+### Successful: Restricted classpath with quarkus-core and quarkus-netty
+
+Adding just the essential Quarkus jars to the base layer classpath (instead of all
+`lib/*`) works. The required jars beyond netty are:
+
+- `io.quarkus.quarkus-core` — AWT substitutions, logging substitutions, config substitutions
+- `io.quarkus.quarkus-netty` — netty-specific substitutions (EmptyByteBuf, SSL, etc.)
+- `io.quarkus.quarkus-bootstrap-runner` — InitialConfigurator (referenced by core substitutions)
+- `io.quarkus.quarkus-classloader-commons` — classloader utilities
+- `io.smallrye.common.smallrye-common-*` — constraint, ref, net, etc. (transitive deps)
+- `io.smallrye.config.smallrye-config-{core,common}` — ConfigurationSubstitutions target
+- `org.jboss.logmanager.jboss-logmanager` — LoggingSubstitutions target
+- `org.jboss.logging.jboss-logging` — logging API
+- `org.jboss.threads.jboss-threads` — thread utilities
+- `org.slf4j.slf4j-api` — LoggingSubstitutions target
+- `org.wildfly.common.wildfly-common` — CidrAddress/Inet substitutions
+- `org.eclipse.microprofile.config.microprofile-config-api` — SmallRyeConfigProviderResolver superclass
+
+This reduces the base layer classpath from ~80 jars to ~40 jars. The non-netty
+runtime-init flags for vertx, quarkus.runtime.ExecutorRecorder, and
+quarkus.runtime.configuration.RuntimeConfigBuilder are no longer needed since
+those classes aren't on the restricted classpath.
+
+**However**, `smallrye-config-core` (which contains `ConfigMappingLoader`) is
+still required because `quarkus-core`'s `ConfigurationSubstitutions` targets
+`SmallRyeConfigProviderResolver`. This means the `WrongMethodTypeException`
+from `invokeExact` still occurs, and the Quarkus substitution fix remains
+necessary.
+
+The restricted classpath was applied to `build-layer-base.sh`.

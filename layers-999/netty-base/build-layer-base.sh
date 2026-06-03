@@ -59,17 +59,7 @@ ${native_image} \
     --initialize-at-run-time=io.smallrye.common.net.HostName \
     --initialize-at-run-time=io.smallrye.common.ref.References\$ReaperThread \
     --initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub \
-    --initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder \
-    --initialize-at-run-time=io.quarkus.runtime.configuration.RuntimeConfigBuilder\$UuidConfigSource\$Holder \
     --initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime \
-    --initialize-at-run-time=io.vertx.core.buffer.impl.PartialPooledByteBufAllocator \
-    --initialize-at-run-time=io.vertx.core.buffer.impl.VertxByteBufAllocator \
-    --initialize-at-run-time=io.vertx.core.eventbus.impl.clustered.ClusteredEventBus \
-    --initialize-at-run-time=io.vertx.core.http.impl.Http1xServerResponse \
-    --initialize-at-run-time=io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec \
-    --initialize-at-run-time=io.vertx.core.parsetools.impl.RecordParserImpl \
-    --initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT \
-    --initialize-at-run-time=io.vertx.ext.web.handler.sockjs.impl.XhrTransport \
     --initialize-at-run-time=java.rmi \
     --initialize-at-run-time=sun.rmi \
     --initialize-at-run-time=org.jboss.threads.JDKSpecific\$ThreadAccess \
@@ -78,5 +68,22 @@ ${native_image} \
     --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
     --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \
     --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch \
-    -cp "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/*" \
+    -cp $(echo \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.netty.*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/modified-io.netty.*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/com.aayushatharva.brotli4j.*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.quarkus.quarkus-core-999-SNAPSHOT.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.quarkus.quarkus-netty-999-SNAPSHOT.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.quarkus.quarkus-bootstrap-runner-999-SNAPSHOT.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.quarkus.quarkus-classloader-commons-999-SNAPSHOT.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.smallrye.common.smallrye-common-*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.smallrye.config.smallrye-config-core-*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/io.smallrye.config.smallrye-config-common-*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/org.jboss.logmanager.jboss-logmanager-*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/org.jboss.logging.jboss-logging-*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/org.jboss.threads.jboss-threads-*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/org.slf4j.slf4j-api-*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/org.wildfly.common.wildfly-common-*.jar \
+        getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/org.eclipse.microprofile.config.microprofile-config-api-*.jar \
+        | tr ' ' ':') \
     -o libnettybaselayer -H:Path=./target
