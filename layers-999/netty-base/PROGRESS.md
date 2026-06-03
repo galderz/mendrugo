@@ -174,3 +174,37 @@ hello  (HTTP 200)
 **Mendrugo** (1 commit):
 - `build-layer-base.sh`: Full set of `--initialize-at-run-time` flags, `jdk.localedata` module
 - `build-layer-app.sh`: Matching `--initialize-at-run-time` flags + `ApplicationLayerInitializedClasses`
+
+## 2026-06-03
+
+### Attempted: Restrict base layer classpath to netty-only jars
+
+The full classpath (`lib/*`) includes all Quarkus, Vert.x, SmallRye jars which
+causes non-netty classes like `ConfigMappingLoader` to be compiled in the base
+layer. Investigated restricting the classpath to only netty jars to avoid this.
+
+**Attempt 1: Netty jars + brotli4j only**
+
+Failed with cascading AWT initialization errors (`sun.awt.X11.XWM`,
+`sun.java2d.SurfaceData`, `java.awt.font.FontRenderContext`, etc.). These come
+from JDK modules (java.desktop) that get pulled in during analysis even though
+they're not on the classpath. Adding `--initialize-at-run-time` for AWT packages
+requires many entries and cascades into more image heap issues.
+
+**Attempt 2: Netty jars + Quarkus netty runtime jar**
+
+Failed because the `io.quarkus.quarkus-netty` jar contains substitutions that
+reference `quarkus-core` classes and other Quarkus packages. Adding
+`quarkus-core` to the classpath triggers `MissingType` `ClassCastException`
+because `quarkus-core` itself depends on many other jars.
+
+**Conclusion: Netty-only classpath is not feasible**
+
+The Quarkus ecosystem has deep interdependencies between its jars. The netty
+substitutions in `io.quarkus.quarkus-netty` are essential for correct netty
+class initialization (e.g., `EmptyByteBuf.EMPTY_BYTE_BUFFER`), and they depend
+transitively on many other Quarkus jars. The full classpath is required.
+
+The Quarkus substitution fix for `ConfigMappingLoader.configMappingObject()` (using
+`invoke()` instead of `invokeExact()`) remains necessary as the workaround for the
+cross-layer MethodType reference inequality issue.
