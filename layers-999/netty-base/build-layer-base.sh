@@ -9,6 +9,7 @@ ${native_image} \
     -H:+PrintClassInitialization \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
     -H:LayerCreate=libnettybaselayer.nil,module=java.base,module=jdk.localedata,package=io.netty.* \
+    -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
     --initialize-at-build-time="" \
     --initialize-at-run-time=io.netty.buffer.AbstractReferenceCountedByteBuf \
     --initialize-at-run-time=io.netty.buffer.ByteBufAllocator \
