@@ -1,11 +1,12 @@
 diff --git a/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java b/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
-index f5a824e5009..b7249dafd5e 100644
+index f5a824e5009..1a1b3c0f3e8 100644
 --- a/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
 +++ b/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
-@@ -206,8 +206,98 @@ public static void run(Application application, Class<? extends QuarkusApplicati
+@@ -206,8 +206,105 @@ public static void run(Application application, Class<? extends QuarkusApplicati
                          && !StringUtil.isNullOrEmpty(rootCause.getMessage())) {
                      System.err.println(rootCause.getMessage());
                  } else {
+-                    applicationLogger.errorv(t, "Failed to start application");
 +                    // Runtime diagnostics for logging provider
 +                    try {
 +                        Class<?> p = Class.forName("org.jboss.logging.LoggerProviders");
@@ -43,8 +44,15 @@ index f5a824e5009..b7249dafd5e 100644
 +                    System.err.println("[RT-DIAG] about to call applicationLogger.errorv");
 +                    System.err.flush();
 +
-                     applicationLogger.errorv(t, "Failed to start application");
-+                    System.err.println("[RT-DIAG] errorv returned");
++                    try {
++                        applicationLogger.errorv(t, "Failed to start application");
++                        System.err.println("[RT-DIAG] errorv returned normally");
++                    } catch (Throwable errorvEx) {
++                        System.err.println(
++                                "[RT-DIAG] errorv THREW: " + errorvEx.getClass().getName() + ": " + errorvEx.getMessage());
++                        errorvEx.printStackTrace(System.err);
++                    }
++                    System.err.flush();
 +                    System.err.println("[RT-DIAG] ConsoleHandler level="
 +                            + InitialConfigurator.DELAYED_HANDLER.getHandlers()[0].getLevel());
 +                    System.err.println("[RT-DIAG] ConsoleHandler formatter="
