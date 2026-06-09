@@ -1,24 +1,54 @@
 diff --git a/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java b/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
-index f5a824e5009..60b6f31bdd7 100644
+index f5a824e5009..96338f42f8f 100644
 --- a/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
 +++ b/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
-@@ -206,8 +206,20 @@ public static void run(Application application, Class<? extends QuarkusApplicati
-                         && !StringUtil.isNullOrEmpty(rootCause.getMessage())) {
+@@ -207,7 +207,51 @@ public static void run(Application application, Class<? extends QuarkusApplicati
                      System.err.println(rootCause.getMessage());
                  } else {
--                    applicationLogger.errorv(t, "Failed to start application");
+                     applicationLogger.errorv(t, "Failed to start application");
 -                    ensureConsoleLogsDrained();
-+                    try {
-+                        applicationLogger.errorv(t, "Failed to start application");
-+                        System.err.println("[RT-DIAG] errorv returned normally");
-+                    } catch (Throwable errorvEx) {
-+                        System.err.println("[RT-DIAG] errorv THREW: " + errorvEx);
-+                    }
 +                    System.err.flush();
-+                    // Fallback: print directly to stderr bypassing all logging
-+                    // frameworks, in case the logging system failed to output
-+                    // the error (e.g. locale resource bundle missing, handler
-+                    // formatter failure, ErrorManager already reported, etc.)
++
++                    // Check what happened inside errorv():
++                    // LoggerNode.publish() catches Throwable from handler.publish()
++                    // and calls ErrorManager.error(). Did it fire?
++                    try {
++                        java.util.logging.Handler consoleHandler = InitialConfigurator.DELAYED_HANDLER.getHandlers()[0];
++                        // ErrorManager.error() sets reported=true after first call.
++                        // Test by calling it now - if output appears, it wasn't called before.
++                        // If no output, reported was already set by the errorv() path.
++                        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
++                        java.io.PrintStream capture = new java.io.PrintStream(baos);
++                        java.io.PrintStream savedErr = System.err;
++                        System.setErr(capture);
++                        consoleHandler.getErrorManager().error("POST_ERRORV_TEST", null, 0);
++                        System.setErr(savedErr);
++                        capture.flush();
++                        String captured = baos.toString();
++                        if (captured.isEmpty()) {
++                            System.err.println("[RT-DIAG] ErrorManager.reported=true AFTER errorv");
++                            System.err.println("[RT-DIAG] → ErrorManager.error() WAS called during errorv()");
++                            System.err.println("[RT-DIAG] → But its output was lost (formatter/locale failure?)");
++                        } else {
++                            System.err.println("[RT-DIAG] ErrorManager.reported=false AFTER errorv");
++                            System.err.println("[RT-DIAG] → ErrorManager.error() was NOT called during errorv()");
++                            System.err.println("[RT-DIAG] → The Error was handled differently");
++                        }
++                    } catch (Throwable diagErr) {
++                        System.err.println("[RT-DIAG] ErrorManager check failed: " + diagErr);
++                    }
++
++                    // Also test: does StandardOutputStreams.printError work?
++                    // LoggerNode uses this as fallback when ErrorManager.error() throws
++                    try {
++                        org.jboss.logmanager.StandardOutputStreams
++                                .printError("[RT-DIAG] StandardOutputStreams.printError works");
++                    } catch (Throwable soErr) {
++                        System.err.println("[RT-DIAG] StandardOutputStreams.printError FAILED: " + soErr);
++                    }
++
++                    System.err.flush();
++                    // Reliable fallback
 +                    System.err.println("ERROR: Failed to start application");
 +                    t.printStackTrace(System.err);
 +                    System.err.flush();
