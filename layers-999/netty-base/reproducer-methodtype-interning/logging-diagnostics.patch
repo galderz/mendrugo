@@ -1,8 +1,8 @@
 diff --git a/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java b/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
-index f5a824e5009..4036d8aadab 100644
+index f5a824e5009..b7249dafd5e 100644
 --- a/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
 +++ b/core/runtime/src/main/java/io/quarkus/runtime/ApplicationLifecycleManager.java
-@@ -206,8 +206,84 @@ public static void run(Application application, Class<? extends QuarkusApplicati
+@@ -206,8 +206,98 @@ public static void run(Application application, Class<? extends QuarkusApplicati
                          && !StringUtil.isNullOrEmpty(rootCause.getMessage())) {
                      System.err.println(rootCause.getMessage());
                  } else {
@@ -50,6 +50,20 @@ index f5a824e5009..4036d8aadab 100644
 +                    System.err.println("[RT-DIAG] ConsoleHandler formatter="
 +                            + InitialConfigurator.DELAYED_HANDLER.getHandlers()[0].getFormatter());
 +                    System.err.println("[RT-DIAG] DELAYED_HANDLER level=" + InitialConfigurator.DELAYED_HANDLER.getLevel());
++                    try {
++                        // Test if ErrorManager.reported is already true by calling it directly
++                        java.util.logging.Handler ch2 = InitialConfigurator.DELAYED_HANDLER.getHandlers()[0];
++                        java.io.ByteArrayOutputStream testBaos = new java.io.ByteArrayOutputStream();
++                        java.io.PrintStream oldErr = System.err;
++                        System.setErr(new java.io.PrintStream(testBaos));
++                        ch2.getErrorManager().error("TEST_ERROR_MANAGER", null, 0);
++                        System.setErr(oldErr);
++                        String emOutput = testBaos.toString();
++                        System.err.println("[RT-DIAG] ErrorManager test output: [" + emOutput.trim() + "]");
++                        System.err.println("[RT-DIAG] ErrorManager already reported (inferred)=" + emOutput.isEmpty());
++                    } catch (Throwable emErr) {
++                        System.err.println("[RT-DIAG] ErrorManager check failed: " + emErr);
++                    }
 +
 +                    try {
 +                        System.err.println("[RT-DIAG] about to try direct console handler");
