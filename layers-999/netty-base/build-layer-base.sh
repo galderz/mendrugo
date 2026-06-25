@@ -42,6 +42,15 @@ ${native_image} \
     --initialize-at-run-time=io.netty.handler.ssl.ConscryptAlpnSslEngine \
     --initialize-at-run-time=io.netty.handler.ssl.JdkSslServerContext \
     --initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslContext \
+    --initialize-at-run-time=io.netty.handler.ssl.OpenSslAsyncPrivateKeyMethod \
+    --initialize-at-run-time=io.netty.handler.ssl.OpenSslPrivateKeyMethod \
+    --initialize-at-run-time=io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod \
+    --initialize-at-run-time=io.netty.internal.tcnative.CertificateCompressionAlgo \
+    --initialize-at-run-time=io.netty.internal.tcnative.CertificateVerifier \
+    --initialize-at-run-time=io.netty.internal.tcnative.SSL \
+    --initialize-at-run-time=io.netty.internal.tcnative.SSLContext \
+    --initialize-at-run-time=io.netty.internal.tcnative.SSLPrivateKeyMethod \
+    --initialize-at-run-time=io.netty.internal.tcnative.SSLSession \
     --initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslEngine \
     --initialize-at-run-time=io.netty.handler.ssl.util.ThreadLocalInsecureRandom \
     --initialize-at-run-time=io.netty.resolver.HostsFileEntriesResolver \

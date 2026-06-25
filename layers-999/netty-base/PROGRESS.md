@@ -1,5 +1,132 @@
 # Progress
 
+## 2026-06-25
+
+### Context
+
+After updating Mandrel (which now includes AArch64 layered image support from
+commit `2d6d14f19b2 Enable Native Image Layers on Darwin`) and Quarkus, the
+previously working layered native image build broke with multiple issues.
+
+### Error 1: Singleton with DISALLOWED trait
+
+**Error:** `Singleton with DISALLOWED trait should never be added to a layered build`
+for `RegisterDumper` and `AbiUtils`.
+
+**Root cause:** When layered images were enabled on AArch64 (previously only AMD64),
+the AArch64-specific singletons still had `@SingletonTraits(other = Disallowed.class)`
+instead of the layer-compatible traits used by their AMD64/Darwin counterparts.
+
+**Fix (Mandrel):**
+- `AArch64LinuxUContextRegisterDumper`: Changed from `other = Disallowed.class`
+  to `layeredInstallationKind = InitialLayerOnly.class` (matching AMD64 version)
+- `AbiUtils.LinuxAArch64`: Changed from `other = Disallowed.class` to
+  `layeredInstallationKind = Duplicable.class` (matching MacOsAArch64 and SysV)
+
+### Error 2: CharKey ClassCastException (regression)
+
+**Error:** `ClassCastException: class java.lang.Package cannot be cast to class
+CharInfo$CharKey` in `CrossLayerConstantRegistryFeature.isConstantRegistered()`
+
+**Root cause:** Same as documented on 2026-06-02. The fix had been reverted by
+an upstream Mandrel update.
+
+**Fix (Mandrel):** Reapplied identity comparison fix in `isConstantRegistered()`.
+
+### Error 3: tcnative JNI UnsatisfiedLinkError
+
+**Error:** `UnsatisfiedLinkError` for `io.netty.internal.tcnative` classes during
+build-time class initialization.
+
+**Root cause:** Several netty tcnative classes (`SSLPrivateKeyMethod`,
+`AsyncSSLPrivateKeyMethod`, `CertificateCompressionAlgo`, etc.) and OpenSSL handler
+classes call JNI native methods in their static initializers. These methods are not
+available during native image build.
+
+**Fix:** Added `--initialize-at-run-time` flags for:
+- `io.netty.handler.ssl.OpenSslAsyncPrivateKeyMethod`
+- `io.netty.handler.ssl.OpenSslPrivateKeyMethod`
+- `io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod`
+- `io.netty.internal.tcnative.CertificateCompressionAlgo`
+- `io.netty.internal.tcnative.CertificateVerifier`
+- `io.netty.internal.tcnative.SSL`
+- `io.netty.internal.tcnative.SSLContext`
+- `io.netty.internal.tcnative.SSLPrivateKeyMethod`
+- `io.netty.internal.tcnative.SSLSession`
+
+Added to both `build-layer-base.sh` and `build-layer-app.sh`.
+
+### Error 4: Segfault at runtime (cross-layer code calls)
+
+**Error:** Segfault (signal 11) immediately at startup, before any Java output.
+
+**Investigation:**
+- Used `LD_PRELOAD` with a custom SIGSEGV handler to capture registers
+- PC was jumping to an invalid address computed as `code_base + function_offset`
+- The `code_base` value was the PLT entry address of `__svm_layer_code_section_0`
+  (e.g., `0x4b9af0`) instead of the runtime address of the symbol in
+  `libnettybaselayer.so`
+
+**Root cause:** The app layer binary was built as a non-PIE executable
+(`-H:NativeLinkerOption=-no-pie`). In non-PIE executables on AArch64, the linker
+resolves `R_AARCH64_ABS64` relocations for external symbols at link time using
+their PLT stub addresses. This gives a fixed address that works for direct calls
+(the PLT does lazy binding), but is completely wrong when used as a base address
+for computing function offsets (as done in layered image cross-layer calls).
+
+The `.data` section slot for `__svm_layer_code_section_0` was filled with the
+PLT entry address instead of being deferred to the dynamic linker. A PIE
+executable generates proper `R_AARCH64_ABS64` dynamic relocations that the
+linker resolves at load time with the actual shared library address.
+
+**Fix:** Removed `-H:NativeLinkerOption=-no-pie` from `build-layer-app.sh`.
+The resulting PIE executable has proper dynamic relocations for the base layer
+code section symbol.
+
+### Error 5: WrongMethodTypeException (regression)
+
+**Error:** `WrongMethodTypeException: handle's method type (ConfigMappingContext)Object
+but found (ConfigMappingContext)Object` in `ConfigMappingLoader.configMappingObject()`
+
+**Root cause:** Same as documented on 2026-06-02. The Quarkus substitution that
+was previously applied had been removed when Quarkus was updated.
+
+**Fix (Quarkus):** Re-added the substitution for `configMappingObject()` that
+uses `invoke()` instead of `invokeExact()`.
+
+### Final result
+
+Both layers build successfully and the layered native image runs correctly:
+
+```
+$ LD_LIBRARY_PATH=target target/getting-started-1.0.0-SNAPSHOT-runner
+__  ____  __  _____   ___  __ ____  ______
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/
+getting-started 1.0.0-SNAPSHOT native (powered by Quarkus 999-SNAPSHOT) started in 0.016s.
+Listening on: http://0.0.0.0:8080
+
+$ curl http://localhost:8080/hello
+hello  (HTTP 200)
+```
+
+### Summary of changes
+
+**Mandrel** (1 commit):
+- `AArch64LinuxUContextRegisterDumper`: Fixed DISALLOWED singleton trait
+- `AbiUtils.LinuxAArch64`: Fixed DISALLOWED singleton trait
+- `CrossLayerConstantRegistryFeature`: Reapplied CharKey CCE fix
+- `HostedImageLayerBuildingSupport`: Improved DISALLOWED error message
+
+**Quarkus** (1 commit):
+- `Substitutions.java`: Re-added `configMappingObject()` substitution
+
+**Mendrugo** (1 commit):
+- `build-layer-base.sh`: Added tcnative/OpenSSL runtime-init flags
+- `build-layer-app.sh`: Added tcnative/OpenSSL runtime-init flags,
+  removed `-no-pie` linker option
+
 ## 2026-06-02
 
 ### Goal
