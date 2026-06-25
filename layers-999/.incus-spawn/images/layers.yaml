@@ -16,7 +16,7 @@ parent: tpl-mydev
 
 # System packages to install via dnf
 packages:
-  - @development-tools
+  - "@development-tools"
   - g++
   - patch
 
