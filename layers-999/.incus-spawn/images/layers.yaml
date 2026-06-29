@@ -27,19 +27,21 @@ packages:
 tools:
   - podman
   - gradle
-  - mx
   - pi
 
 # Git repositories to clone
 repos:
   - url: https://github.com/galderz/mandrel
     path: ~/mandrel
-    branch: oracle-master
+    branch: topic.layers.netty-base.aarch64
   - url: https://github.com/galderz/mendrugo
     path: ~/mendrugo
+    branch: topic.layers.netty-base.aarch64
   - url: https://github.com/galderz/quarkus
     path: ~/quarkus
     branch: isx.modified-classes
+  - url: https://github.com/graalvm/mx
+    path: ~/mx
 
 # Claude Code skills
 # skills:
