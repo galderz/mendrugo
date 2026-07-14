@@ -6,6 +6,7 @@ native_image=$JAVA_HOME/bin/native-image
 mkdir -p target
 
 ${native_image} \
+    -H:-CheckToolchain \
     -H:+PrintClassInitialization \
     -H:BuildOutputJSONFile=target/build-output-layer-base.json \
     -H:LayerCreate=libnettybaselayer.nil,module=java.base,module=jdk.localedata,package=io.netty.* \

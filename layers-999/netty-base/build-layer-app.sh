@@ -4,6 +4,7 @@ set -eux
 native_image=$JAVA_HOME/bin/native-image
 
 ${native_image} \
+    -H:-CheckToolchain \
     -H:ApplicationLayerInitializedClasses=io.quarkus.arc.Arc \
     -H:ApplicationLayerInitializedClasses=io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder \
     -H:ApplicationLayerInitializedClasses=io.quarkus.arc.runtime.ArcRecorder \

@@ -61,13 +61,28 @@ run_non_layered_builds() {
             echo "WARNING: Expected output file not found!"
         fi
     done
+
+    # Run runtime performance benchmark for non-layered binary
+    echo ""
+    echo "=== Running Runtime Performance Benchmark for Non-Layered ==="
+    if [ -f "./workshop-benchmark.sh" ]; then
+        bash ./workshop-benchmark.sh -b non-layered -d 40
+        # Move profiling results to benchmark directory
+        if ls *_cpu.html 1> /dev/null 2>&1; then
+            mv *_cpu.html "./${RUN_DIR}/non-layered/" || true
+        fi
+        if ls *_perfstat.txt 1> /dev/null 2>&1; then
+            mv *_perfstat.txt "./${RUN_DIR}/non-layered/" || true
+        fi
+    else
+        echo "WARNING: workshop-benchmark.sh not found, skipping runtime benchmark"
+    fi
 }
 
 prepare_base_layer() {
     echo ""
     echo "=== Prepare base layer ==="
 
-    ./split-jar.sh
     ./build-layer-base.sh
 }
 
@@ -104,6 +119,22 @@ run_layered_builds() {
             echo "WARNING: Expected output file not found!"
         fi
     done
+
+    # Run runtime performance benchmark for layered binary
+    echo ""
+    echo "=== Running Runtime Performance Benchmark for Layered ==="
+    if [ -f "./workshop-benchmark.sh" ]; then
+        bash ./workshop-benchmark.sh -b layered -d 40
+        # Move profiling results to benchmark directory
+        if ls *_cpu.html 1> /dev/null 2>&1; then
+            mv *_cpu.html "./${RUN_DIR}/layered/" || true
+        fi
+        if ls *_perfstat.txt 1> /dev/null 2>&1; then
+            mv *_perfstat.txt "./${RUN_DIR}/layered/" || true
+        fi
+    else
+        echo "WARNING: workshop-benchmark.sh not found, skipping runtime benchmark"
+    fi
 }
 
 # Main execution

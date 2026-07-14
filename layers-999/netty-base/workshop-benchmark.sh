@@ -21,6 +21,9 @@ JFR_ARGS=
 
 TOTAL=false
 
+# Binary type: jvm, non-layered, or layered
+BINARY_TYPE="jvm"
+
 # default to 1 GB heap and using Parallel GC
 JVM_ARGS="-Xmx1g -Xms1g -XX:+UseParallelGC"
 
@@ -52,6 +55,9 @@ Help()
    echo "Syntax: benchmark [OPTIONS]"
    echo "options:"
    echo "h    Display this guide."
+   echo ""
+   echo "b    Binary type to benchmark: jvm, non-layered, or layered"
+   echo "     default is jvm"
    echo ""
    echo "u    Final part of the URL to benchmark."
    echo "     e.g. benchmark -u time would benchmark http://localhost:8080/time"
@@ -90,10 +96,12 @@ Help()
    echo "Note: you can also enable PERF_STAT by exporting PERF_STAT=true in the environment to run 'perf stat' attached to the Quarkus PID instead of async-profiler."
 }
 
-while getopts "hu:e:f:d:jr:c:p:a:g" option; do
+while getopts "hb:u:e:f:d:jr:c:p:a:g" option; do
    case $option in
       h) Help
          exit;;
+      b) BINARY_TYPE=${OPTARG}
+         ;;
       u) URL=${OPTARG}
          ;;
       e) EVENT=${OPTARG}
@@ -119,9 +127,35 @@ while getopts "hu:e:f:d:jr:c:p:a:g" option; do
    esac
 done
 
-if ! [[ -f benchmark.sh ]]; then
-    die "error: should be run from the scripts/ directory"
-fi
+# Validate binary type
+case "${BINARY_TYPE}" in
+    jvm|non-layered|layered)
+        ;;
+    *)
+        die "Invalid binary type: ${BINARY_TYPE}. Must be one of: jvm, non-layered, layered"
+        ;;
+esac
+
+# Determine binary path and type
+case "${BINARY_TYPE}" in
+    jvm)
+        BINARY_PATH="../target/quarkus-app/quarkus-run.jar"
+        IS_NATIVE=false
+        ;;
+    non-layered)
+        BINARY_PATH="getting-started/target/getting-started-1.0.0-SNAPSHOT-runner"
+        IS_NATIVE=true
+        ;;
+    layered)
+        BINARY_PATH="target/getting-started-1.0.0-SNAPSHOT-runner"
+        IS_NATIVE=true
+        ;;
+esac
+
+# Check if binary exists
+#if ! [[ -f "${BINARY_PATH}" ]]; then
+#    die "error: binary not found at ${BINARY_PATH}. Please build the ${BINARY_TYPE} binary first."
+#fi
 
 WARMUP=$((${DURATION}*2/5))
 
@@ -204,8 +238,12 @@ count_cpus_from_list() {
 if [ -n "${CPU_AFFINITY}" ]; then
   # Prefer taskset when available (works on Linux). If taskset is missing, fall back to ActiveProcessorCount.
   if command -v taskset >/dev/null 2>&1; then
-    echo "----- Starting Quarkus pinned to CPUs ${CPU_AFFINITY} with taskset"
-    taskset -c ${CPU_AFFINITY} java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ../target/quarkus-app/quarkus-run.jar &
+    echo "----- Starting Quarkus (${BINARY_TYPE}) pinned to CPUs ${CPU_AFFINITY} with taskset"
+    if [ "${IS_NATIVE}" = true ]; then
+      taskset -c ${CPU_AFFINITY} ${BINARY_PATH} &
+    else
+      taskset -c ${CPU_AFFINITY} java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
+    fi
     AFFINITY_DESC="pinned to CPUs ${CPU_AFFINITY}"
   else
     echo "----- WARNING: taskset not found; attempting to fall back to -XX:ActiveProcessorCount based on the affinity list"
@@ -222,12 +260,20 @@ if [ -n "${CPU_AFFINITY}" ]; then
         echo "----- PROCESSORS explicitly set by user (${PROCESSORS}); not overriding with affinity-derived count"
       fi
     else
-      echo "----- WARNING: couldn't parse CPU affinity list '${CPU_AFFINITY}'; starting JVM without affinity or processor constraints"
+      echo "----- WARNING: couldn't parse CPU affinity list '${CPU_AFFINITY}'; starting without affinity or processor constraints"
     fi
-    java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ../target/quarkus-app/quarkus-run.jar &
+    if [ "${IS_NATIVE}" = true ]; then
+      LD_LIBRARY_PATH=target ${BINARY_PATH} &
+    else
+      java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
+    fi
   fi
 else
-  java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ../target/quarkus-app/quarkus-run.jar &
+  if [ "${IS_NATIVE}" = true ]; then
+    LD_LIBRARY_PATH=target ${BINARY_PATH} &
+  else
+    java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
+  fi
 fi
 
 quarkus_pid=$!
