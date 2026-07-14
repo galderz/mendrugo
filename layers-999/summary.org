@@ -1,0 +1,295 @@
+* Netty Base
+In this experiment, we attempt to build a base layer that is only java.base + Netty (io.netty and required Quarkus Netty code)
+
+Build times 30.6.26
+#+begin_src bash
+Non layered:
+Finished generating 'getting-started-1.0.0-SNAPSHOT-runner' in 23.9s.
+
+Base layer:
+Finished generating 'libnettybaselayer' in 1m 27s.
+
+App layer:
+Finished generating 'getting-started-1.0.0-SNAPSHOT-runner' in 22.4s.
+#+end_src
+
+Build time statistic results 30.6.26 (20260630_112243):
+#+begin_src bash
+======================================================================
+NATIVE IMAGE BUILD BENCHMARK RESULTS
+======================================================================
+
+Runs per configuration: 5 (before), 5 (after)
+
+Statistical Method: Median with Interquartile Range (IQR)
+  - Median is robust to outliers from system variability
+  - IQR shows the spread of the middle 50% of values
+
+----------------------------------------------------------------------
+KEY METRICS SUMMARY
+----------------------------------------------------------------------
+
+image_size_mb:
+  Before: 43.31 MB (IQR: 0.00 MB)
+  After:  16.39 MB (IQR: 0.00 MB)
+  Change: -62.15%
+
+peak_rss_mb:
+  Before: 2888.67 MB (IQR: 29.44 MB)
+  After:  3530.91 MB (IQR: 26.88 MB)
+  Change: +22.23%
+
+gc_time_secs:
+  Before: 1.578s (IQR: 0.058s)
+  After:  1.265s (IQR: 0.050s)
+  Change: -19.84%
+
+total_time_secs:
+  Before: 23.914s (IQR: 0.548s)
+  After:  23.183s (IQR: 0.399s)
+  Change: -3.06%
+
+----------------------------------------------------------------------
+ALL METRICS (sorted by absolute % change)
+----------------------------------------------------------------------
+
+Metric                          Before        After       Change
+----------------------------------------------------------------
+total_fields                    32,633       73,275    +124.54%
+total_types                     13,836       29,733    +114.90%
+gc_max_heap_mb             27300.00 MB   5461.50 MB     -79.99%
+reachable_methods               56,671       12,900     -77.24%
+compilation_units               37,691        9,019     -76.07%
+total_methods                  105,932      183,755     +73.47%
+reachable_types                 11,478        3,142     -72.63%
+code_size_mb                  17.36 MB      4.83 MB     -72.18%
+reachable_fields                15,748        4,533     -71.22%
+image_size_mb                 43.31 MB     16.39 MB     -62.15%
+gc_count                           608          242     -60.20%
+heap_size_mb                  25.31 MB     10.69 MB     -57.78%
+heap_objects                   306,170      133,041     -56.55%
+cpu_load                          8.68         6.38     -26.46%
+peak_rss_mb                 2888.67 MB   3530.91 MB     +22.23%
+gc_time_secs                    1.578s       1.265s     -19.84%
+total_time_secs                23.914s      23.183s      -3.06%
+
+======================================================================
+#+end_src
+
+Run time statistics results 30.6.26 (measured on darwin/aarch64 laptop):
+#+begin_src bash
+Non-layered:
+ %CPU    RSS      VSZ
+516.9  55248 468968288
+533.6  57344 468968288
+457.6  57280 468968288
+440.3  57360 468968288
+445.7  56896 468968288
+441.2  56848 468968288
+439.4  56896 468968288
+467.5  56352 468968288
+450.0  56896 468968288
+511.3  56960 468968288
+469.5  56880 468968288
+456.4  57376 468968288
+443.1  56416 468968288
+450.2  56432 468968288
+440.8  57344 468968288
+
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    97.59μs   35.18μs  11.40ms   94.57%
+    Req/Sec   97326.49  15383.10  101957.00     97.56
+  3990386 requests in 40.006s, 468.08MB read
+Requests/sec: 99744.69
+Transfer/sec:  11.70MB
+
+Layered:
+ %CPU    RSS      VSZ
+499.3  80368 469207696
+550.8  80832 469207696
+493.8  80384 469207696
+475.1  80320 469207696
+481.7  81456 469207696
+475.1  80816 469207696
+479.5  81424 469207696
+477.7  80928 469207696
+474.2  80928 469207696
+485.5  81472 469207696
+476.0  80912 469207696
+484.8  80336 469207696
+476.0  80384 469207696
+488.1  78416 469207696
+480.7  81024 469207696
+
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    97.24μs   29.66μs   1.38ms   91.83%
+    Req/Sec   97703.54  15546.56  101860.00     97.56
+  4005845 requests in 40.005s, 469.89MB read
+Requests/sec: 100133.61
+Transfer/sec:  11.75MB
+#+end_src
+
+Analysis:
+App layer taking almost same as base layer
+total_* stats showing a considerably bigger universe (75-125% bigger than non-layered).
+Build time RSS of app layer vs non-layered is ~25% higher.
+Runtime throughput looks about the same.
+Runtime RSS is ~45% higher (80MB layered vs 55MB non-layered)
+* All-In-Quarkus Base
+In this experiment, we try to build java.base and all of Quarkus framework code into a base layer,
+then the user code and any additional Quarkus code into the app layer.
+
+Build times 29.4.26
+#+begin_src bash
+Non layered:
+Finished generating 'getting-started-1.0.0-SNAPSHOT-runner' in 29.5s.
+
+Base layer:
+Finished generating 'libquarkusbaselayer' in 1m 52s.
+
+App layer:
+Finished generating 'getting-started-1.0.0-SNAPSHOT-runner' in 31.2s.
+#+end_src
+
+Build time statistic results 29.4.26
+#+begin_src bash
+$ python3 analyze-benchmark.py benchmark-results/20260429_141519
+Warning: matplotlib not installed. Graphs will not be generated.
+Install with: pip install matplotlib
+Warning: scipy not installed. Statistical significance tests will be skipped.
+Install with: pip install scipy
+Loading results from benchmark-results/20260429_141519
+  Non-layered runs: 5
+  Layered runs: 5
+
+======================================================================
+NATIVE IMAGE BUILD BENCHMARK RESULTS
+======================================================================
+
+Runs per configuration: 5 (before), 5 (after)
+
+Statistical Method: Median with Interquartile Range (IQR)
+  - Median is robust to outliers from system variability
+  - IQR shows the spread of the middle 50% of values
+
+----------------------------------------------------------------------
+KEY METRICS SUMMARY
+----------------------------------------------------------------------
+
+image_size_mb:
+  Before: 49.47 MB (IQR: 0.00 MB)
+  After:  10.85 MB (IQR: 0.00 MB)
+  Change: -78.06%
+
+peak_rss_mb:
+  Before: 2973.91 MB (IQR: 199.92 MB)
+  After:  4503.02 MB (IQR: 202.18 MB)
+  Change: +51.42%
+
+gc_time_secs:
+  Before: 2.038s (IQR: 0.108s)
+  After:  1.755s (IQR: 0.055s)
+  Change: -13.89%
+
+total_time_secs:
+  Before: 29.505s (IQR: 0.480s)
+  After:  30.792s (IQR: 0.464s)
+  Change: +4.36%
+
+----------------------------------------------------------------------
+ALL METRICS (sorted by absolute % change)
+----------------------------------------------------------------------
+
+Metric                          Before        After       Change
+----------------------------------------------------------------
+total_fields                    32,211       84,204    +161.41%
+total_types                     13,607       34,162    +151.06%
+reachable_types                 11,311          332     -97.06%
+reachable_fields                15,431          786     -94.91%
+reachable_methods               55,699        3,974     -92.87%
+code_size_mb                  19.07 MB      1.48 MB     -92.26%
+total_methods                  104,380      199,703     +91.32%
+compilation_units               37,093        3,828     -89.68%
+image_size_mb                 49.47 MB     10.85 MB     -78.06%
+heap_size_mb                  26.75 MB      6.94 MB     -74.07%
+heap_objects                   329,724      103,313     -68.67%
+gc_count                           113           41     -63.72%
+peak_rss_mb                 2973.91 MB   4503.02 MB     +51.42%
+cpu_load                         16.53        10.85     -34.34%
+gc_time_secs                    2.038s       1.755s     -13.89%
+total_time_secs                29.505s      30.792s      +4.36%
+gc_max_heap_mb              5461.50 MB   5461.50 MB       0.00%
+
+======================================================================
+
+Summary saved to: benchmark-results/20260429_141519/summary.txt
+#+end_src
+
+Analysis:
+App layer taking as long as the base layer.
+total_* stats showing a considerably bigger universe (100-150% bigger than non-layered).
+Build time RSS of app layer vs non-layered is ~50% higher.
+* Java Base
+The first experiment that was created was to have java.base module as a base layer,
+and the rest of Quarkus as an app layer.
+
+Results 27.1.26
+#+begin_src bash
+----------------------------------------------------------------------
+KEY METRICS SUMMARY
+----------------------------------------------------------------------
+
+image_size_mb:
+  Before: 46.77 MB (IQR: 0.00 MB)
+  After:  22.30 MB (IQR: 0.00 MB)
+  Change: -52.33%
+
+peak_rss_mb:
+  Before: 3031.96 MB (IQR: 76.87 MB)
+  After:  4120.87 MB (IQR: 224.61 MB)
+  Change: +35.91%
+
+gc_time_secs:
+  Before: 1.778s (IQR: 0.037s)
+  After:  2.007s (IQR: 0.092s)
+  Change: +12.88%
+
+total_time_secs:
+  Before: 30.614s (IQR: 0.405s)
+  After:  31.685s (IQR: 0.506s)
+  Change: +3.50%
+
+----------------------------------------------------------------------
+ALL METRICS (sorted by absolute % change)
+----------------------------------------------------------------------
+
+Metric                          Before        After       Change
+----------------------------------------------------------------
+total_fields                    32,114       71,482    +122.59%
+total_types                     13,602       29,138    +114.22%
+total_methods                  105,062      184,100     +75.23%
+code_size_mb                  19.01 MB      7.60 MB     -60.04%
+reachable_types                 11,410        4,789     -58.03%
+reachable_methods               55,463       23,381     -57.84%
+gc_count                           125           54     -56.80%
+compilation_units               36,982       16,245     -56.07%
+reachable_fields                15,399        6,921     -55.06%
+heap_objects                   290,281      137,680     -52.57%
+image_size_mb                 46.77 MB     22.30 MB     -52.33%
+heap_size_mb                  24.12 MB     11.56 MB     -52.07%
+peak_rss_mb                 3031.96 MB   4120.87 MB     +35.91%
+cpu_load                         16.31        13.12     -19.53%
+gc_time_secs                    1.778s       2.007s     +12.88%
+total_time_secs                30.614s      31.685s      +3.50%
+gc_max_heap_mb              5461.50 MB   5461.50 MB       0.00%
+
+======================================================================
+#+end_src
+
+Notes on statistics:
+Total field/type/method: includes both app and base layer (app layer build loads the base analysis universe and continues analysis).
+Code size: only app layer
+Reachable field/type/method: only reachable elements in app layer
+
+Analysis:
+This approach doesn't make native image builds faster and it increases build time RSS.
