@@ -5,7 +5,7 @@ let
   mxSrc = pkgs.fetchFromGitHub {
     owner = "graalvm";
     repo = "mx";
-    rev = "master";
+    rev = "60cbd02fc9c9706c36da730c502e10e981aa5b81";
     # To obtain the hash execute:
     # $ nix-shell -p nix-prefetch-git jq --run "nix hash convert sha256:\$(nix-prefetch-git --url https://github.com/graalvm/mx --quiet --rev 60cbd02fc9c9706c36da730c502e10e981aa5b81 | jq -r '.sha256')"
     hash = "sha256-YEy759CCdnGz3oiguCJZHVYzQwlW2vafaiujaA+V8AY=";
