@@ -6,7 +6,9 @@ let
     owner = "graalvm";
     repo = "mx";
     rev = "master";
-    hash = "sha256-UFyPzv3vXi6B+R6Nm2oAn46K/RQbpBq9VEE8LBh7eL4=";
+    # To obtain the hash execute:
+    # $ nix-shell -p nix-prefetch-git jq --run "nix hash convert sha256:\$(nix-prefetch-git --url https://github.com/graalvm/mx --quiet --rev 60cbd02fc9c9706c36da730c502e10e981aa5b81 | jq -r '.sha256')"
+    hash = "sha256-YEy759CCdnGz3oiguCJZHVYzQwlW2vafaiujaA+V8AY=";
   };
 in
 pkgs.mkShell {
@@ -26,7 +28,8 @@ pkgs.mkShell {
     umask 0022
 
     # Set JAVA_HOME to the labsjdk path
-    export JAVA_HOME=/nix/store/idw58k6a6jw8jlgad5463rf9apwzamn4-labsjdk-ce-latest-jvmci-25.1-b14_aarch64/Contents/Home
+    # $ nix-store add ~/.mx/jdks/labsjdk-ce-latest-jvmci-25.3-b21_aarch64
+    export JAVA_HOME=/nix/store/fkdlgi8q2zmqsw82x20c9h3gz4d2z2dg-labsjdk-ce-latest-jvmci-25.3-b21_aarch64
 
     # Set MX_PYTHON to python3 binary
     export MX_PYTHON=${pkgs.python3}/bin/python3
