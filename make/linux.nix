@@ -28,8 +28,8 @@ pkgs.mkShell {
     umask 0022
 
     # Set JAVA_HOME to the labsjdk path
-    # $ nix-store add ~/.mx/jdks/labsjdk-ce-latest-jvmci-25.3-b21_aarch64
-    export JAVA_HOME=/nix/store/fkdlgi8q2zmqsw82x20c9h3gz4d2z2dg-labsjdk-ce-latest-jvmci-25.3-b21_aarch64
+    # $ nix-store add ~/.mx/jdks/labsjdk-ce-latest-jvmci-25.1-b16_amd64
+    export JAVA_HOME=/nix/store/vciqd85ml62r6vl7bcz3in9i662y74n1-labsjdk-ce-latest-jvmci-25.1-b16_amd64
 
     # Set MX_PYTHON to python3 binary
     export MX_PYTHON=${pkgs.python3}/bin/python3
