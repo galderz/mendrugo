@@ -1,0 +1,691 @@
+#+STARTUP: overview
+
+* Bookmarks
+native async profiler:
+#+begin_src bash
+mvn clean package -Ddebug=true && LD_PRELOAD=$HOME/opt/async-profiler/lib/libasyncProfiler.so java -jar target/benchmarks.jar -prof org.mendrugo.fibula.NativeAsyncProfiler:verbose=true -v EXTRA mhandle
+# or
+mvn clean package -Ddebug=true -DbuildArgs=-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings && LD_PRELOAD=$HOME/opt/async-profiler/lib/libasyncProfiler.so java -jar target/benchmarks.jar -prof org.mendrugo.fibula.NativeAsyncProfiler:verbose=true -v EXTRA mhandle
+
+#mvn clean package -Ddebug=true -DbuildArgs=-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings && LD_LIBRARY_PATH=/home/agentuser/opt/async-profiler/lib java -jar target/benchmarks.jar -prof org.mendrugo.fibula.NativeAsyncProfiler:verbose=true -v EXTRA mhandle
+#+end_src
+
+native async profiler with jdwp:
+#+begin_src bash
+mvn clean package -Ddebug=true -DbuildArgs=-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings && LD_PRELOAD=$HOME/opt/async-profiler/lib/libasyncProfiler.so java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005 -jar target/benchmarks.jar -prof org.mendrugo.fibula.NativeAsyncProfiler:verbose=true -v EXTRA mhandle
+#+end_src
+
+perf dwarf profiler:
+#+begin_src bash
+mvn clean package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings && java -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler -v EXTRA mhandle
+#+end_src
+
+jvm mode:
+#+begin_src bash
+mvn clean package -f jmh.xml && LD_LIBRARY_PATH=/home/agentuser/opt/async-profiler/lib java -jar target/benchmarks.jar -prof async:verbose=true -v EXTRA mhandle
+#+end_src
+
+jvm mode with jdwp:
+#+begin_src bash
+mvn clean package -f jmh.xml && LD_LIBRARY_PATH=/home/agentuser/opt/async-profiler/lib java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005 -jar target/benchmarks.jar -prof async:verbose=true -v EXTRA mhandle
+#+end_src
+* 17.9.26
+* 16.9.26
+** back to workaround for env variables
+read library preload from different ways
+build the async profiler profile command
+switch off other bits
+** consider running with agent to configure jni, library load...etc
+Not enough because JVMTI
+** using bots to come up with async profiler config
+response:
+#+begin_src markdown
+ Complete Root Cause Analysis
+
+ There are two distinct failures happening, one masking the other. Here's the full chain:
+
+ ### Failure 1: Silent profiler instantiation failure in the forked process
+
+ JMH's architecture splits profiler work between two processes:
+ - Runner (parent JVM): ExternalProfiler methods — beforeTrial(), afterTrial(), addJVMOptions(). These print # Preparing profilers: NativeAsyncProfiler.
+ - Forked process (native image): InternalProfiler methods — beforeIteration(), afterIteration(). These print [async-profiler] start,... and [async-profiler] stop.
+
+ In the forked native image, BenchmarkHandler calls ProfilerFactory.getSupportedInternal() to create a new instance of the profiler. This goes through getProfilerOrNull():
+
+ ```java
+   // ProfilerFactory.java line 50
+   private static Profiler getProfilerOrNull(ProfilerConfig cfg) {
+       try {
+           return getProfiler(cfg);
+       } catch (Exception e) {
+           return null;  // ← SILENTLY SWALLOWS ALL ERRORS
+       }
+   }
+ ```
+
+ When the constructor throws, the profiler is silently skipped. The internal profilers list ends up empty, so beforeIteration() / afterIteration() are never called, and no [async-profiler] messages appear.
+
+ ### Failure 2: async-profiler's JNI_OnLoad requires JVMTI
+
+ The actual exception thrown inside the forked native image is:
+
+ ```
+   java.lang.UnsatisfiedLinkError: Unsupported JNI version 0x0,
+       required by /home/agentuser/opt/async-profiler-4.5-linux-x64/lib/libasyncProfiler.so
+ ```
+
+ This happens because:
+
+ 1. NativeAsyncProfiler(initLine) → super(initLine) → AsyncProfiler constructor → JavaApi.getInstance(libPath) → System.load(libasyncProfiler.so)
+ 2. Native image calls JNI_OnLoad in the library
+ 3. async-profiler's JNI_OnLoad calls JavaVM->GetEnv(&env, 0x30010000) requesting JVMTI version 1.0
+ 4. GraalVM native image doesn't support JVMTI in the way async-profiler needs → GetEnv fails
+ 5. JNI_OnLoad returns 0 (error)
+ 6. Native image interprets JNI version 0x0 as unsupported → throws UnsatisfiedLinkError
+ 7. AsyncProfiler constructor wraps this as ProfilerException
+ 8. getProfilerOrNull() catches it and returns null
+
+ I confirmed this by disassembling JNI_OnLoad in libasyncProfiler.so:
+
+ ```asm
+   # offset 0x505a5: mov $0x30010000,%edx     ← JVMTI_VERSION_1_0
+   # offset 0x505b1: call *0x30(%rax)          ← JavaVM->GetEnv()
+   # offset 0x505b6: jne 505c6                ← if GetEnv fails, jump to error return
+   # offset 0x505c6: xor %eax,%eax            ← return 0 (failure)
+ ```
+
+ ### How I debugged this
+
+ I added a print statement to ProfilerFactory.getProfilerOrNull() to print the exception instead of silently returning null:
+
+ ```java
+   } catch (Exception e) {
+       System.out.println("[DEBUG] Failed to create profiler: " + cfg.getKlass() + ", error: " + e);
+       e.printStackTrace(System.out);
+       return null;
+   }
+ ```
+
+ Then rebuilt the full chain:
+
+ ```bash
+   cd ~/src/jmh && mvn install -DskipTests -pl jmh-core -q
+   cd ~/src/fibula && mvn install -DskipTests -pl fibula-core -q
+   cd ~/src/fibula-show/2609-handles && mvn clean package -q
+ ```
+
+ And re-ran:
+
+ ```bash
+   java -jar target/benchmarks.jar \
+     -prof "org.mendrugo.fibula.NativeAsyncProfiler:verbose=true;libPath=/home/agentuser/opt/async-profiler-4.5-linux-x64/lib/libasyncProfiler.so" \
+     -f 1 -wi 2 -i 2 "mhandleInvokeGetField"
+ ```
+
+ This revealed the full stack trace with UnsatisfiedLinkError: Unsupported JNI version 0x0.
+
+ ### How GDB could be used
+
+ Rebuilding with debug info:
+
+ ```bash
+   mvn clean package -Ddebug=true \
+     -DbuildArgs=-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings
+ ```
+
+ Then to debug the forked native image process:
+ 1. The forked command is visible in the runner output: Forking using command: [target/benchmarks, ...]
+ 2. The command contains -agentlib:jdwp=... arguments, but these are JVM arguments that native image ignores
+ 3. To use GDB, you would add a sleep/pause in NativeForkedMain.main() before it calls ForkedMain, giving you time to find the PID and attach: gdb -p <pid> target/benchmarks
+ 4. With the debug symbols, you can set breakpoints on Java methods: break 'org.openjdk.jmh.profile.AsyncProfiler::AsyncProfiler' and step through the constructor to see the UnsatisfiedLinkError
+ 5. You can also break on the C function: break JNI_OnLoad to watch the JVMTI request fail
+
+ ### The libPath option
+
+ libPath is a profiler-specific option defined inside AsyncProfiler's constructor via joptsimple:
+
+ ```java
+   OptionSpec<String> optLibPath = parser.accepts("libPath",
+       "Location of asyncProfiler library. If not specified, System.loadLibrary will be used...")
+       .withRequiredArg().ofType(String.class).describedAs("path");
+ ```
+
+ It's passed on the command line as part of the -prof flag, with profiler options separated by semicolons:
+
+ ```bash
+   # Without libPath (uses System.loadLibrary, needs LD_LIBRARY_PATH):
+   -prof org.mendrugo.fibula.NativeAsyncProfiler
+
+   # With libPath (uses System.load with absolute path):
+   -prof "org.mendrugo.fibula.NativeAsyncProfiler:libPath=/home/agentuser/opt/async-profiler-4.5-linux-x64/lib/libasyncProfiler.so"
+
+   # Multiple options separated by semicolons:
+   -prof "org.mendrugo.fibula.NativeAsyncProfiler:verbose=true;libPath=/home/agentuser/opt/async-profiler-4.5-linux-x64/lib/libasyncProfiler.so"
+ ```
+
+ When libPath is set, the constructor calls JavaApi.getInstance(libPathValue) → System.load(libPathValue) (absolute path).
+ When libPath is not set, it calls JavaApi.getInstance() → System.loadLibrary("asyncProfiler") (searches java.library.path/LD_LIBRARY_PATH).
+
+ Either way, both paths end up calling JNI_OnLoad, which fails in native image.
+
+ ### The exact JNI registration JSON
+
+ Even though it won't help with the current JVMTI blocker, here's the JNI config that would be needed for RegisterNatives to bind the native methods to AsyncProfiler$JavaApi IF the library could load. async-profiler's JNI_OnLoad uses JVMTI stack walking to find the calling class
+ and then calls RegisterNatives on it:
+
+ ```json
+   {
+     "name": "org.openjdk.jmh.profile.AsyncProfiler$JavaApi",
+     "methods": [
+       {"name": "start0",        "parameterTypes": ["java.lang.String", "long", "boolean"]},
+       {"name": "stop0",         "parameterTypes": []},
+       {"name": "execute0",      "parameterTypes": ["java.lang.String"]},
+       {"name": "getSamples",    "parameterTypes": []},
+       {"name": "filterThread0", "parameterTypes": ["java.lang.Thread", "boolean"]}
+     ]
+   }
+ ```
+
+ These entries would go in fibula-core/src/main/resources/META-INF/native-image/org.mendrugo.fibula/fibula-core/jni-config.json.
+
+ The reflection config already exists and is correct — NativeAsyncProfiler and the enum types (OutputType, Direction, CStackMode) are already registered in reflect-config.json.
+
+ ### The path forward
+
+ The System.load()/System.loadLibrary() approach (JNI JavaApi) cannot work in native image because async-profiler's JNI_OnLoad fundamentally requires JVMTI.
+
+ The working alternative is the LD_PRELOAD approach (already sketched in the commented-out code in NativeAsyncProfiler). I confirmed it works:
+
+ ```bash
+   $ env LD_PRELOAD=/home/agentuser/opt/async-profiler-4.5-linux-x64/lib/libasyncProfiler.so \
+         ASPROF_COMMAND="start,event=cpu,cstack=dwarf,file=profile.html" \
+         target/benchmarks 127.0.0.1 12345
+   Profiling started
+ ```
+
+ With LD_PRELOAD, the library is loaded via the dynamic linker's constructor mechanism (Agent_OnLoad), bypassing JNI_OnLoad and the JVMTI requirement entirely. The ASPROF_COMMAND environment variable tells async-profiler what to do. This would be implemented via
+ addJVMInvokeOptions() (as shown in the commented-out code) to prepend env LD_PRELOAD=... ASPROF_COMMAND=... before the forked native image command.
+#+end_src
+** jni error
+#+begin_src bash
+Forking using command: [target/benchmarks, -cp, target/benchmarks.jar, org.openjdk.jmh.runner.ForkedMain, 127.0.0.1, 45453]
+# Fork: 1 of 1
+# Preparing profilers: NativeAsyncProfiler
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by org.openjdk.jmh.profile.AsyncProfiler$JavaApi in an unnamed module (file:/home/agentuser/src/fibula-show/2609-handles/target/benchmarks)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[DEBUG] Failed to create profiler: org.mendrugo.fibula.NativeAsyncProfiler, error: java.lang.reflect.InvocationTargetException
+java.lang.reflect.InvocationTargetException
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateConstructorAccessor.newInstance(SubstrateConstructorAccessor.java:68)
+	at java.base@25.0.4.1/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base@25.0.4.1/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at org.openjdk.jmh.profile.ProfilerFactory.instantiate(ProfilerFactory.java:84)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfiler(ProfilerFactory.java:79)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfilerOrNull(ProfilerFactory.java:52)
+	at org.openjdk.jmh.profile.ProfilerFactory.getSupportedInternal(ProfilerFactory.java:112)
+	at org.openjdk.jmh.runner.BenchmarkHandler.<init>(BenchmarkHandler.java:76)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmark(BaseRunner.java:232)
+	at org.openjdk.jmh.runner.BaseRunner.doSingle(BaseRunner.java:138)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmarksForked(BaseRunner.java:75)
+	at org.openjdk.jmh.runner.ForkedRunner.run(ForkedRunner.java:72)
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:86)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateMethodAccessor.invoke(SubstrateMethodAccessor.java:118)
+	at java.base@25.0.4.1/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.mendrugo.fibula.NativeForkedMain.main(NativeForkedMain.java:21)
+Caused by: org.openjdk.jmh.profile.ProfilerException: Unable to load async-profiler. Ensure asyncProfiler library is on LD_LIBRARY_PATH (Linux), DYLD_LIBRARY_PATH (Mac OS), or -Djava.library.path. Alternatively, point to explicit library location with -prof async:libPath=<path>.
+	at org.openjdk.jmh.profile.AsyncProfiler.<init>(AsyncProfiler.java:249)
+	at org.mendrugo.fibula.NativeAsyncProfiler.<init>(NativeAsyncProfiler.java:14)
+	... 16 more
+Caused by: java.lang.UnsatisfiedLinkError: Unsupported JNI version 0x0, required by /home/agentuser/opt/async-profiler-4.5-linux-x64/lib/libasyncProfiler.so
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.jni.JNILibraryInitializer.initialize(JNILibraryInitializer.java:125)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk.NativeLibrarySupport.addLibrary(NativeLibrarySupport.java:147)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk.NativeLibrarySupport.addLibrary(NativeLibrarySupport.java:91)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk.NativeLibraries.loadLibrary0(NativeLibraries.java:148)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk.NativeLibraries.loadLibraryRelative(NativeLibraries.java:134)
+	at java.base@25.0.4.1/java.lang.ClassLoader.loadLibrary(ClassLoader.java:174)
+	at java.base@25.0.4.1/java.lang.Runtime.loadLibrary0(Runtime.java:822)
+	at java.base@25.0.4.1/java.lang.System.loadLibrary(System.java:1686)
+	at org.openjdk.jmh.profile.AsyncProfiler$JavaApi.<init>(AsyncProfiler.java:625)
+	at org.openjdk.jmh.profile.AsyncProfiler$JavaApi.getInstance(AsyncProfiler.java:614)
+	at org.openjdk.jmh.profile.AsyncProfiler.<init>(AsyncProfiler.java:246)
+	... 17 more
+#+end_src
+** enum reflection errors
+CStackMode error:
+#+begin_src bash
+Forking using command: [target/benchmarks, -cp, target/benchmarks.jar, org.openjdk.jmh.runner.ForkedMain, 127.0.0.1, 34681]
+# Fork: 1 of 1
+# Preparing profilers: NativeAsyncProfiler
+[DEBUG] Failed to create profiler: org.mendrugo.fibula.NativeAsyncProfiler, error: java.lang.reflect.InvocationTargetException
+java.lang.reflect.InvocationTargetException
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateConstructorAccessor.newInstance(SubstrateConstructorAccessor.java:68)
+	at java.base@25.0.4.1/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base@25.0.4.1/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at org.openjdk.jmh.profile.ProfilerFactory.instantiate(ProfilerFactory.java:84)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfiler(ProfilerFactory.java:79)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfilerOrNull(ProfilerFactory.java:52)
+	at org.openjdk.jmh.profile.ProfilerFactory.getSupportedInternal(ProfilerFactory.java:112)
+	at org.openjdk.jmh.runner.BenchmarkHandler.<init>(BenchmarkHandler.java:76)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmark(BaseRunner.java:232)
+	at org.openjdk.jmh.runner.BaseRunner.doSingle(BaseRunner.java:138)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmarksForked(BaseRunner.java:75)
+	at org.openjdk.jmh.runner.ForkedRunner.run(ForkedRunner.java:72)
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:86)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateMethodAccessor.invoke(SubstrateMethodAccessor.java:118)
+	at java.base@25.0.4.1/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.mendrugo.fibula.NativeForkedMain.main(NativeForkedMain.java:21)
+Caused by: java.lang.IllegalArgumentException: class org.openjdk.jmh.profile.AsyncProfiler$CStackMode is not a value type
+	at joptsimple.internal.Reflection.findConverter(Reflection.java:66)
+	at joptsimple.ArgumentAcceptingOptionSpec.ofType(ArgumentAcceptingOptionSpec.java:106)
+	at org.openjdk.jmh.profile.AsyncProfiler.<init>(AsyncProfiler.java:189)
+	at org.mendrugo.fibula.NativeAsyncProfiler.<init>(NativeAsyncProfiler.java:14)
+	... 16 more
+#+end_src
+
+Direction errors:
+#+begin_src bash
+Forking using command: [target/benchmarks, -cp, target/benchmarks.jar, org.openjdk.jmh.runner.ForkedMain, 127.0.0.1, 41471]
+# Fork: 1 of 1
+# Preparing profilers: NativeAsyncProfiler
+[DEBUG] Failed to create profiler: org.mendrugo.fibula.NativeAsyncProfiler, error: java.lang.reflect.InvocationTargetException
+java.lang.reflect.InvocationTargetException
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateConstructorAccessor.newInstance(SubstrateConstructorAccessor.java:68)
+	at java.base@25.0.4.1/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base@25.0.4.1/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at org.openjdk.jmh.profile.ProfilerFactory.instantiate(ProfilerFactory.java:84)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfiler(ProfilerFactory.java:79)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfilerOrNull(ProfilerFactory.java:52)
+	at org.openjdk.jmh.profile.ProfilerFactory.getSupportedInternal(ProfilerFactory.java:112)
+	at org.openjdk.jmh.runner.BenchmarkHandler.<init>(BenchmarkHandler.java:76)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmark(BaseRunner.java:232)
+	at org.openjdk.jmh.runner.BaseRunner.doSingle(BaseRunner.java:138)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmarksForked(BaseRunner.java:75)
+	at org.openjdk.jmh.runner.ForkedRunner.run(ForkedRunner.java:72)
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:86)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateMethodAccessor.invoke(SubstrateMethodAccessor.java:118)
+	at java.base@25.0.4.1/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.mendrugo.fibula.NativeForkedMain.main(NativeForkedMain.java:21)
+Caused by: java.lang.IllegalArgumentException: class org.openjdk.jmh.profile.AsyncProfiler$Direction is not a value type
+	at joptsimple.internal.Reflection.findConverter(Reflection.java:66)
+	at joptsimple.ArgumentAcceptingOptionSpec.ofType(ArgumentAcceptingOptionSpec.java:106)
+	at org.openjdk.jmh.profile.AsyncProfiler.<init>(AsyncProfiler.java:96)
+	at org.mendrugo.fibula.NativeAsyncProfiler.<init>(NativeAsyncProfiler.java:14)
+	... 16 more
+#+end_src
+
+OutputType error:
+#+begin_src bash
+Forking using command: [target/benchmarks, -cp, target/benchmarks.jar, org.openjdk.jmh.runner.ForkedMain, 127.0.0.1, 40223]
+# Fork: 1 of 1
+# Preparing profilers: NativeAsyncProfiler
+[DEBUG] Failed to create profiler: org.mendrugo.fibula.NativeAsyncProfiler, error: java.lang.reflect.InvocationTargetException
+java.lang.reflect.InvocationTargetException
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateConstructorAccessor.newInstance(SubstrateConstructorAccessor.java:68)
+	at java.base@25.0.4.1/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base@25.0.4.1/java.lang.reflect.Constructor.newInstance(Constructor.java:483)
+	at org.openjdk.jmh.profile.ProfilerFactory.instantiate(ProfilerFactory.java:84)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfiler(ProfilerFactory.java:79)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfilerOrNull(ProfilerFactory.java:52)
+	at org.openjdk.jmh.profile.ProfilerFactory.getSupportedInternal(ProfilerFactory.java:112)
+	at org.openjdk.jmh.runner.BenchmarkHandler.<init>(BenchmarkHandler.java:76)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmark(BaseRunner.java:232)
+	at org.openjdk.jmh.runner.BaseRunner.doSingle(BaseRunner.java:138)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmarksForked(BaseRunner.java:75)
+	at org.openjdk.jmh.runner.ForkedRunner.run(ForkedRunner.java:72)
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:86)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateMethodAccessor.invoke(SubstrateMethodAccessor.java:118)
+	at java.base@25.0.4.1/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.mendrugo.fibula.NativeForkedMain.main(NativeForkedMain.java:21)
+Caused by: java.lang.IllegalArgumentException: class org.openjdk.jmh.profile.AsyncProfiler$OutputType is not a value type
+	at joptsimple.internal.Reflection.findConverter(Reflection.java:66)
+	at joptsimple.ArgumentAcceptingOptionSpec.ofType(ArgumentAcceptingOptionSpec.java:106)
+	at org.openjdk.jmh.profile.AsyncProfiler.<init>(AsyncProfiler.java:92)
+	at org.mendrugo.fibula.NativeAsyncProfiler.<init>(NativeAsyncProfiler.java:14)
+	... 16 more
+#+end_src
+** why does perf dwarf profiler work if it's not registered for reflection?
+it also fails to class load but it's not an issue because there's nothing to do in the native process:
+#+begin_src bash
+# Run progress: 0.00% complete, ETA 00:00:10
+Forking using command: [perf, record, --freq, 1000, --event, cycles, --output, /tmp/jmh14467355512459319323perfbin, --call-graph, dwarf, target/benchmarks, -cp, target/benchmarks.jar, org.openjdk.jmh.runner.ForkedMain, 127.0.0.1, 42039]
+# Fork: 1 of 1
+# Preparing profilers: PerfDwarfProfiler
+[DEBUG] Failed to create profiler: org.mendrugo.fibula.PerfDwarfProfiler, error: java.lang.ClassNotFoundException: org.mendrugo.fibula.PerfDwarfProfiler
+java.lang.ClassNotFoundException: org.mendrugo.fibula.PerfDwarfProfiler
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.hub.registry.ClassRegistries.forName(ClassRegistries.java:243)
+	at java.base@25.0.4.1/java.lang.Class.forName0(DynamicHub.java:2036)
+	at java.base@25.0.4.1/java.lang.Class.forName(DynamicHub.java:467)
+	at java.base@25.0.4.1/java.lang.Class.forName(DynamicHub.java:458)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfiler(ProfilerFactory.java:78)
+	at org.openjdk.jmh.profile.ProfilerFactory.getProfilerOrNull(ProfilerFactory.java:52)
+	at org.openjdk.jmh.profile.ProfilerFactory.getSupportedInternal(ProfilerFactory.java:112)
+	at org.openjdk.jmh.runner.BenchmarkHandler.<init>(BenchmarkHandler.java:76)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmark(BaseRunner.java:232)
+	at org.openjdk.jmh.runner.BaseRunner.doSingle(BaseRunner.java:138)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmarksForked(BaseRunner.java:75)
+	at org.openjdk.jmh.runner.ForkedRunner.run(ForkedRunner.java:72)
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:86)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.SubstrateMethodAccessor.invoke(SubstrateMethodAccessor.java:118)
+	at java.base@25.0.4.1/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.mendrugo.fibula.NativeForkedMain.main(NativeForkedMain.java:21)
+# Warmup Iteration   1: 1628.481 ops/ms
+# Warmup Iteration   2: 1701.095 ops/ms
+# Warmup Iteration   3: 1675.439 ops/ms
+# Warmup Iteration   4: 1694.853 ops/ms
+# Warmup Iteration   5: 1699.572 ops/ms
+# Warmup Iteration   6: 1689.070 ops/ms
+# Warmup Iteration   7: 1694.149 ops/ms
+# Warmup Iteration   8: 1686.555 ops/ms
+# Warmup Iteration   9: 1693.829 ops/ms
+# Warmup Iteration  10: 1691.444 ops/ms
+Iteration   1: 1681.915 ops/ms
+Iteration   2: 1679.703 ops/ms
+Iteration   3: 1670.367 ops/ms
+Iteration   4: 1688.377 ops/ms
+Iteration   5: 1673.095 ops/ms
+[ perf record: Woken up 321 times to write data ]
+[ perf record: Captured and wrote 81.021 MB /tmp/jmh14467355512459319323perfbin (10076 samples) ]
+# Processing profiler results: PerfDwarfProfiler
+
+
+Result "org.sample.handles.Invokes.mhandleInvokeGetField":
+  1678.691 ±(99.9%) 27.622 ops/ms [Average]
+  (min, avg, max) = (1670.367, 1678.691, 1688.377), stdev = 7.173
+  CI (99.9%): [1651.070, 1706.313] (assumes normal distribution)
+
+Secondary result "org.sample.handles.Invokes.mhandleInvokeGetField:dwarf":
+Perf binary output saved to ./org.sample.handles.Invokes.mhandleInvokeGetField-Throughput.perfbin
+#+end_src
+** silent native async profiler
+What would you expect to see as output with async prof?
+Nothing appearing with NativeAsyncProfiler...
+
+prompt:
+#+begin_src markdown
+You are developing a profiler for Fibula (~/src/fibula), an extension for JMH (~/src/jmh).
+The profiler is called NativeAsyncProfiler and it should profile the benchmarks run, which are compiled to GraalVM native image.
+
+If you run JMH standalone in JVM mode with async-profiler you would see:
+```
+Forking using command: [/usr/lib/jvm/java-25-openjdk/bin/java, -XX:+UnlockDiagnosticVMOptions, -XX:+DebugNonSafepoints, -XX:+UnlockDiagnosticVMOptions, -XX:+UnlockExperimentalVMOptions, -DcompilerBlackholesEnabled=true, -XX:CompileCommandFile=/tmp/jmh8613473382601984052compilecommand, -cp, target/benchmarks.jar, org.openjdk.jmh.runner.ForkedMain, 127.0.0.1, 36839]
+# Fork: 1 of 1
+# Preparing profilers: AsyncProfiler
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/src/fibula-show/2609-handles/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by org.openjdk.jmh.profile.AsyncProfiler$JavaApi in an unnamed module (file:/home/agentuser/src/fibula-show/2609-handles/target/benchmarks.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[async-profiler] version=4.5
+# Warmup Iteration   1: [async-profiler] start,event=cpu
+168523.579 ops/ms
+# Warmup Iteration   2: 171885.133 ops/ms
+# Warmup Iteration   3: 185692.201 ops/ms
+# Warmup Iteration   4: 185642.717 ops/ms
+# Warmup Iteration   5: 185246.705 ops/ms
+# Warmup Iteration   6: 185851.772 ops/ms
+# Warmup Iteration   7: 184877.496 ops/ms
+# Warmup Iteration   8: 185996.827 ops/ms
+# Warmup Iteration   9: 184266.459 ops/ms
+# Warmup Iteration  10: 185390.635 ops/ms
+Iteration   1: [async-profiler] stop
+[async-profiler] start,event=cpu
+185788.221 ops/ms
+Iteration   2: 185914.717 ops/ms
+Iteration   3: 185891.589 ops/ms
+Iteration   4: 185699.308 ops/ms
+Iteration   5: [async-profiler] stop
+[async-profiler] flat=200,traces=200,event=cpu,file=/home/agentuser/src/fibula-show/2609-handles/org.sample.handles.Invokes.mhandleInvokeGetField-Throughput/summary-cpu.txt
+185700.213 ops/ms
+                 async: (text only)
+
+# Processing profiler results: AsyncProfiler
+```
+
+But with NativeAsyncProfiler you only see:
+```
+Forking using command: [target/benchmarks, -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005, -cp, target/benchmarks.jar, org.openjdk.jmh.runner.ForkedMain, 127.0.0.1, 35851]
+# Fork: 1 of 1
+# Preparing profilers: NativeAsyncProfiler
+# Warmup Iteration   1: 1745.340 ops/ms
+# Warmup Iteration   2: 1826.028 ops/ms
+# Warmup Iteration   3: 1732.469 ops/ms
+# Warmup Iteration   4: 1844.310 ops/ms
+# Warmup Iteration   5: 1823.141 ops/ms
+# Warmup Iteration   6: 1820.811 ops/ms
+# Warmup Iteration   7: 1820.622 ops/ms
+# Warmup Iteration   8: 1832.122 ops/ms
+# Warmup Iteration   9: 1810.943 ops/ms
+# Warmup Iteration  10: 1801.415 ops/ms
+Iteration   1: 1810.443 ops/ms
+Iteration   2: 1830.905 ops/ms
+Iteration   3: 1782.956 ops/ms
+Iteration   4: 1822.565 ops/ms
+Iteration   5: 1812.553 ops/ms
+# Processing profiler results: NativeAsyncProfiler
+```
+
+You don't see the `[async-profiler] start,...` message.
+Find out what why this message does not appear and why the profiler does not work.
+
+You can rebuild the JMH benchmark with GDB debug info with the following command `mvn clean package -Ddebug=true -DbuildArgs=-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings`.
+This might be useful in debugging this.
+Also, if you manage to use GDB to debug this particular case,
+indicate how you achieved this.
+
+Otherwise, you might need to add print statements to JMH and/or Fibula to see what is going on.
+#+end_src
+
+answer:
+#+begin_src markdown
+ No ServiceLoader service file for Profiler. So the profiler discovery falls through to Class.forName(), which fails in native image because NativeAsyncProfiler is not in the reflection configuration.
+
+ Here's the complete analysis:
+
+ ────────────────────────────────────────────────────────────────────────────────
+
+ Root Cause
+
+ The [async-profiler] start,... message never appears because the NativeAsyncProfiler is never instantiated inside the forked native image process. Here's the chain of events:
+
+ ### How JMH profilers work
+
+ JMH's AsyncProfiler implements both ExternalProfiler and InternalProfiler:
+ - ExternalProfiler methods (beforeTrial, afterTrial, addJVMOptions) run in the runner/parent JVM process
+ - InternalProfiler methods (beforeIteration, afterIteration) run in the forked child process
+
+ The [async-profiler] start,event=cpu message is printed by AsyncProfiler.execute() (called from beforeIteration()), which runs inside the forked process.
+
+ ### What happens in the forked native image
+
+ 1. The native image runs NativeForkedMain → ForkedMain.main() → ForkedRunner → BaseRunner.runBenchmark() → BenchmarkHandler.<init>()
+
+ 2. BenchmarkHandler constructor calls ProfilerFactory.getSupportedInternal(options.getProfilers()) to create internal profilers inside the forked process.
+
+ 3. ProfilerFactory.getProfiler() tries three approaches:
+     - Built-in profilers map → not found
+     - ServiceLoader<Profiler> discovery → no service file exists in the jar
+     - Class.forName("org.mendrugo.fibula.NativeAsyncProfiler") → ClassNotFoundException!
+
+ 4. The ClassNotFoundException is silently caught by getProfilerOrNull():
+    ```java
+      private static Profiler getProfilerOrNull(ProfilerConfig cfg) {
+          try {
+              return getProfiler(cfg);
+          } catch (Exception e) {
+              return null;  // silently swallowed!
+          }
+      }
+    ```
+
+ 5. Result: the internal profilers list is empty, so beforeIteration() and afterIteration() are never called, async-profiler is never started, and no [async-profiler] messages appear.
+
+ ### Why Class.forName() fails
+
+ In GraalVM native image, Class.forName() only works for classes registered in reflect-config.json. The class org.mendrugo.fibula.NativeAsyncProfiler is not registered in either:
+ - fibula-core/src/main/resources/META-INF/native-image/org.mendrugo.fibula/fibula-core/reflect-config.json
+ - 2609-handles/target/classes/META-INF/native-image/reflect-config.json
+
+ ### Evidence
+
+ Adding a debug print to getProfilerOrNull() reveals:
+
+ ```
+   [DEBUG] Failed to create profiler: org.mendrugo.fibula.NativeAsyncProfiler, error: java.lang.ClassNotFoundException: org.mendrugo.fibula.NativeAsyncProfiler
+       at org.graalvm.nativeimage.builder/com.oracle.svm.core.hub.registry.ClassRegistries.forName(ClassRegistries.java:243)
+       at java.base@25.0.4.1/java.lang.Class.forName0(DynamicHub.java:2036)
+       at java.base@25.0.4.1/java.lang.Class.forName(DynamicHub.java:467)
+       at org.openjdk.jmh.profile.ProfilerFactory.getProfiler(ProfilerFactory.java:78)
+       ...
+ ```
+
+ How to Fix
+
+ To make NativeAsyncProfiler work, at minimum:
+
+ 1. Register NativeAsyncProfiler for reflection in the native image config so Class.forName() and reflective constructor invocation work. Add to reflect-config.json:
+    ```json
+      {
+        "name": "org.mendrugo.fibula.NativeAsyncProfiler",
+        "methods": [
+          {"name": "<init>", "parameterTypes": ["java.lang.String"]},
+          {"name": "<init>", "parameterTypes": []}
+        ]
+      }
+    ```
+
+ 2. Register AsyncProfiler$JavaApi JNI native methods in jni-config.json so that System.load()/System.loadLibrary() can bind the native methods (execute0, start0, stop0, getSamples, filterThread0).
+
+ 3. Ensure the async-profiler library path is passed correctly (via libPath option) since java.library.path may differ in native image.
+
+ How I Debugged This (and how GDB could be used)
+
+ I added a print statement to ProfilerFactory.getProfilerOrNull() in JMH to print the exception instead of silently returning null, rebuilt JMH (mvn install -DskipTests -pl jmh-core), rebuilt fibula-core, rebuilt the benchmark (mvn clean package), and re-ran. The
+ ClassNotFoundException stack trace immediately revealed the issue.
+
+ Using GDB would also be possible after rebuilding with debug info (mvn clean package -Ddebug=true -DbuildArgs=-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings):
+
+ 1. The forked command shown in the output already includes -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005 which is a JDWP debugger argument (not GDB), but this won't work for a native image binary since JDWP is a JVM feature.
+
+ 2. For GDB with native image, you would:
+     - Run the benchmark runner: java -jar target/benchmarks.jar -prof "org.mendrugo.fibula.NativeAsyncProfiler:..." ...
+     - When the native image fork starts, note its PID
+     - Attach GDB: gdb -p <pid> or modify the fork command to use GDB: wrap the forked binary invocation
+     - With the debug symbols (-H:+SourceLevelDebug), you can set breakpoints on Java methods like break 'org.openjdk.jmh.profile.ProfilerFactory::getProfilerOrNull' and inspect the exception
+     - Alternatively, since suspend=y is in the fork command args (and native image ignores it), you could override addJVMOptions in NativeAsyncProfiler to instead add a sleep/wait mechanism that gives time to attach GDB
+#+end_src
+* 15.9.26
+prompt:
+#+begin_src markdown
+With GRAALVM_HOME environment set to `/home/agentuser/opt/graalvm`,
+running `mvn package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings`
+creates a Fibula (see ~/src/fibula source code) JMH benchmark for native image version of the Java code.
+
+Then, runninng `java -jar target/benchmarks.jar -prof org.mendrugo.fibula.NativeAsyncProfiler -v EXTRA mhandle`
+produces a profile.html generated with async profiler.
+
+As it is, the profile.html shows all stack trace elements as flat.
+If you remove `-H:-DeleteLocalSymbols` from the native image build,
+the profile.html is generated appropiately and all stack elements appear in their place.
+
+The async profiler should be consuming the debug symbols with DWARF stacktraces.
+Having the local symbols might be causing an issue, but which one?
+Debug the issue and find out what might be going in async-profiler.
+#+end_src
+
+answer:
+#+begin_src markdown
+ This confirms it perfectly. The .eh_frame in the main binary covers only C library functions (starting at 0x901b40+) and a few entry points. The .debug_frame in benchmarks.debug covers the actual Java AOT-compiled code (starting at 0x020000, which is the start of .text where
+ all the Java methods live).
+
+ Here's the complete analysis:
+
+ ────────────────────────────────────────────────────────────────────────────────
+
+ Root Cause
+
+ The issue is in async-profiler v4.5's symbol/DWARF loading logic and how it interacts with GraalVM native image's split debug info.
+
+ ### The Two DWARF Sources
+
+ GraalVM's native image build with -Ddebug=true produces:
+ - benchmarks (main binary): contains .eh_frame/.eh_frame_hdr with only 655 FDEs — these cover the C runtime/entry point functions, NOT the AOT-compiled Java methods
+ - benchmarks.debug (separate debug info, linked via .gnu_debuglink): contains .debug_frame with 15,717 FDEs — these cover ALL AOT-compiled Java methods
+
+ ### async-profiler's Loading Logic (v4.5)
+
+ In symbols_linux.cpp, ElfParser::loadSymbols():
+
+ ```cpp
+   ElfSection* symtab = findSection(SHT_SYMTAB, ".symtab");
+   if (symtab != NULL) {
+       loadSymbolTable(...);           // loads symbols
+       _cc->setDebugSymbols(true);     // marks debug symbols as found
+   } else if (use_debug) {
+       // Follow .gnu_debuglink to external debug file
+       loadSymbolsUsingBuildId() || loadSymbolsUsingDebugLink();
+   }
+ ```
+
+ When -H:-DeleteLocalSymbols keeps local symbols (BAD case):
+ 1. .symtab IS found in the main binary → symbols loaded → setDebugSymbols(true)
+ 2. The else if branch is skipped → benchmarks.debug is never opened
+ 3. .debug_frame (15,717 FDEs) is never parsed
+ 4. Later, parseProgramHeaders() → parseUnwindInfo() parses .eh_frame_hdr → only 655 FDEs
+ 5. DWARF unwinding fails for all AOT-compiled Java methods → flat stack traces
+
+ When local symbols are deleted (GOOD case):
+ 1. No .symtab in main binary → falls through to loadSymbolsUsingDebugLink()
+ 2. Opens benchmarks.debug → parseFile(cc, base, path, use_debug=false)
+ 3. Since use_debug=false, parseDebugFrameSection() IS called
+ 4. .debug_frame (15,717 FDEs) is parsed → complete DWARF table set
+ 5. Later, parseUnwindInfo() sees hasDwarfTable() returns true → skips .eh_frame_hdr
+ 6. DWARF unwinding works for all methods → correct flame graph
+
+ ### The Bug
+
+ The presence of .symtab (local symbols) in the main binary prevents async-profiler from following .gnu_debuglink to the separate debug file. This is a problem because:
+ - .symtab and .debug_frame serve different purposes (symbol names vs. stack unwinding)
+ - Finding symbol names should not prevent loading DWARF frame descriptors from the debug file
+ - The main binary's .eh_frame is incomplete for GraalVM native images (only covers C runtime, not Java AOT code)
+
+ The fix in async-profiler would be to decouple the debug symbol loading from the DWARF frame loading — even when .symtab is found in the main binary, it should still check the external debug file for .debug_frame if the .eh_frame coverage is insufficient, or always follow
+ .gnu_debuglink for .debug_frame regardless of whether .symtab was found.
+#+end_src
+* 14.9.26
+aot:
+#+begin_src bash
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 25.0.4, Substrate VM, GraalVM CE 25.2.4+7.1
+...
+Benchmark                       Mode  Cnt       Score     Error   Units
+Invokes.mhandleInvokeGetField  thrpt    5    3316.585 ±  25.030  ops/ms
+Invokes.reflectInvokeGetField  thrpt    5  119456.561 ± 442.389  ops/ms
+#+end_src
+
+jvm:
+#+begin_src bash
+# JMH version: 1.37
+# VM version: JDK 26.0.1, OpenJDK 64-Bit Server VM, 26.0.1+8
+...
+Benchmark                       Mode  Cnt       Score       Error   Units
+Invokes.mhandleInvokeGetField  thrpt    5  461110.225 ± 17154.174  ops/ms
+Invokes.reflectInvokeGetField  thrpt    5  315058.166 ±  1156.229  ops/ms
+#+end_src
+* 11.9.26
+Jul 2025 https://github.com/netty/netty/pull/15486
+  Florian's comment in https://github.com/netty/netty/pull/15486#issuecomment-3078599156
+  Benchmarks in https://github.com/netty/netty/pull/15486#issuecomment-3077766557
+
+Nov 2025 https://github.com/netty/netty/issues/15827
+
+Mar 2026 https://github.com/netty/netty/pull/16573
+  Benchmark in https://github.com/netty/netty/pull/16573#issuecomment-4178205665
+
+Sep 2026 https://github.com/quarkusio/quarkus/issues/56330#issuecomment-5489775098
+  Jackson methodhandle issue

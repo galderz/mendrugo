@@ -1,0 +1,115 @@
+#+STARTUP: overview
+
+* Bookmarks
+aot:
+#+begin_src bash
+mvn clean package && java -jar target/benchmarks.jar MethodHandleBench
+#+end_src
+
+jvm -Djvm.mode:
+#+begin_src bash
+mvn clean package -Djvm.mode && java -jar target/benchmarks.jar MethodHandleBench
+#+end_src
+
+jvm jmh.xml:
+#+begin_src bash
+mvn clean package -f jmh.xml && java -jar target/benchmarks.jar MethodHandleBench
+#+end_src
+* 22.9.26
+** issue comment
+#+begin_src markdown
+Btw, the reason `methodHandleStaticFinal` and `mh_staticPlainLong_staticFinal` perform worse in JVM mode is because they both rely on `calls` being passed in to `invoke`, and the inliner can't inline `invoke` that takes `calls` because it doesn't see it as a constant (`calls` belongs to the `this` benchmark and the `this` is not a constant so `calls` can't be):
+
+```bash
+1044 3%     org.sample.handles.jmh_generated.MethodHandleBench_methodHandleStaticFinal_jmhTest::methodHandleStaticFinal_thrpt_jmhStub @ 13 (54 bytes)(code size: 3080)
+    @ 7 java.lang.System::nanoTime succeed: intrinsic (end time: 0.0000)
+    @ 17 org.sample.handles.MethodHandleBench::methodHandleStaticFinal succeed: force inline by CompileCommand (end time: 0.9520)
+      @ 8 java.lang.invoke.LambdaForm$MH/0x000000005b188400::invoke_MT succeed: force inline by annotation (end time: 0.9520)
+        @ 8 java.lang.invoke.Invokers::checkGenericType succeed: force inline by annotation (end time: 0.9520)
+          @ 2 java.lang.invoke.MethodHandle::asType succeed: force inline by annotation (end time: 0.9510)
+            @ 12 java.lang.invoke.MethodHandle::asTypeCached fail: callee is too large (end time: 0.0000)
+            @ 24 java.lang.invoke.MethodHandle::setAsTypeCache fail: don't inline by annotation (end time: 0.0000)
+        @ 13 java.lang.invoke.Invokers::checkCustomized succeed: force inline by annotation (end time: 0.9520)
+          @ 1 java.lang.invoke.MethodHandleImpl::isCompileConstant succeed: inline (end time: 0.9520)
+          @ 19 java.lang.invoke.Invokers::maybeCustomize fail: don't inline by annotation (end time: 0.0000)
+        @ 18 java.lang.invoke.MethodHandle::invokeBasic fail: receiver not constant (end time: 0.0000) <-- HERE
+      @ 11 org.openjdk.jmh.infra.Blackhole::consume succeed: force inline by CompileCommand (end time: 0.9520)
+        @ 7 org.openjdk.jmh.infra.Blackhole::consumeCompiler succeed: intrinsic (end time: 0.0000)
+    @ 34 java.lang.System::nanoTime succeed: intrinsic (end time: 0.0000)
+```
+#+end_src
+** experiments
+#+begin_src bash
+$ java -jar target/benchmarks.jar methodHandleStaticFinal -jvmArgsAppend -XX:+LogCompilation
+$ java -jar /home/agentuser/src/jdk/src/utils/LogCompilation/target/LogCompilation-1.0-SNAPSHOT.jar -i hotspot_pid137804.log
+...
+1044 3%     org.sample.handles.jmh_generated.MethodHandleBench_methodHandleStaticFinal_jmhTest::methodHandleStaticFinal_thrpt_jmhStub @ 13 (54 bytes)(code size: 3080)
+    @ 7 java.lang.System::nanoTime succeed: intrinsic (end time: 0.0000)
+    @ 17 org.sample.handles.MethodHandleBench::methodHandleStaticFinal succeed: force inline by CompileCommand (end time: 0.9520)
+      @ 8 java.lang.invoke.LambdaForm$MH/0x000000005b188400::invoke_MT succeed: force inline by annotation (end time: 0.9520)
+        @ 8 java.lang.invoke.Invokers::checkGenericType succeed: force inline by annotation (end time: 0.9520)
+          @ 2 java.lang.invoke.MethodHandle::asType succeed: force inline by annotation (end time: 0.9510)
+            @ 12 java.lang.invoke.MethodHandle::asTypeCached fail: callee is too large (end time: 0.0000)
+            @ 24 java.lang.invoke.MethodHandle::setAsTypeCache fail: don't inline by annotation (end time: 0.0000)
+        @ 13 java.lang.invoke.Invokers::checkCustomized succeed: force inline by annotation (end time: 0.9520)
+          @ 1 java.lang.invoke.MethodHandleImpl::isCompileConstant succeed: inline (end time: 0.9520)
+          @ 19 java.lang.invoke.Invokers::maybeCustomize fail: don't inline by annotation (end time: 0.0000)
+        @ 18 java.lang.invoke.MethodHandle::invokeBasic fail: receiver not constant (end time: 0.0000)
+      @ 11 org.openjdk.jmh.infra.Blackhole::consume succeed: force inline by CompileCommand (end time: 0.9520)
+        @ 7 org.openjdk.jmh.infra.Blackhole::consumeCompiler succeed: intrinsic (end time: 0.0000)
+    @ 34 java.lang.System::nanoTime succeed: intrinsic (end time: 0.0000)
+#+end_src
+
+jdk master release:
+#+begin_src bash
+$ mvn clean package -Djvm.mode && java -jar target/benchmarks.jar MethodHandleBench
+...
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 28-internal, OpenJDK 64-Bit Server VM, 28-internal-adhoc.agentuser.jdk
+# VM invoker: /home/agentuser/src/jdk/build/release-linux-x86_64/jdk/bin/java
+Benchmark                                          Mode  Cnt     Score    Error   Units
+MethodHandleBench.baseline                        thrpt    5  1811.875 ± 95.243  ops/us
+MethodHandleBench.methodHandleStaticFinal         thrpt    5   204.694 ±  0.272  ops/us
+MethodHandleBench.mh_plainObject_staticFinal      thrpt    5  1471.289 ± 20.023  ops/us
+MethodHandleBench.mh_staticPlainLong_staticFinal  thrpt    5   318.285 ±  1.344  ops/us
+#+end_src
+
+aot:
+#+begin_src bash
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 25.0.4.1.1, Substrate VM, GraalVM CE 25.4.4.1.1-dev+1.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+...
+Benchmark                                          Mode  Cnt     Score   Error   Units
+MethodHandleBench.baseline                        thrpt    5  1842.242 ± 4.089  ops/us
+MethodHandleBench.methodHandleStaticFinal         thrpt    5  1842.437 ± 3.373  ops/us
+MethodHandleBench.mh_plainObject_staticFinal      thrpt    5  1471.782 ± 1.426  ops/us
+MethodHandleBench.mh_staticPlainLong_staticFinal  thrpt    5  1842.155 ± 1.672  ops/us
+#+end_src
+
+jvm jmh.xml:
+#+begin_src bash
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+...
+Benchmark                                          Mode  Cnt     Score    Error   Units
+MethodHandleBench.baseline                        thrpt    5  1836.968 ± 31.709  ops/us
+MethodHandleBench.methodHandleStaticFinal         thrpt    5   175.422 ±  0.538  ops/us
+MethodHandleBench.mh_plainObject_staticFinal      thrpt    5  1471.589 ± 14.968  ops/us
+MethodHandleBench.mh_staticPlainLong_staticFinal  thrpt    5   296.754 ±  0.476  ops/us
+#+end_src
+
+jvm -Djvm.mode:
+#+begin_src bash
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+...
+Benchmark                                          Mode  Cnt     Score    Error   Units
+MethodHandleBench.baseline                        thrpt    5  1840.327 ± 14.197  ops/us
+MethodHandleBench.methodHandleStaticFinal         thrpt    5   175.350 ±  0.110  ops/us
+MethodHandleBench.mh_plainObject_staticFinal      thrpt    5  1466.647 ± 18.407  ops/us
+MethodHandleBench.mh_staticPlainLong_staticFinal  thrpt    5   298.075 ±  0.269  ops/us
+#+end_src

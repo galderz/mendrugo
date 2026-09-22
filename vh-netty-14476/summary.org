@@ -1,0 +1,574 @@
+#+STARTUP: overview
+
+* Bookmarks
+ato, vh, perf:
+#+begin_src bash
+mvn clean package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols && java -Dnetty.use-new-code=true -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler:events=cycles:P NettyByteArrays
+#+end_src
+
+aot, vh, async profiler:
+#+begin_src bash
+mvn clean package -Ddebug=true && java -Dnetty.use-new-code=true -jar target/benchmarks.jar -prof org.mendrugo.fibula.NativeAsyncProfiler:libPath=$HOME/opt/async-profiler/lib/libasyncProfiler.so NettyByteArrays
+#+end_src
+
+aot
+#+begin_src bash
+mvn clean package && java -jar target/benchmarks.jar ByteArrays
+#+end_src
+
+jvm
+#+begin_src bash
+mvn clean package -f jmh.xml && java -jar target/benchmarks.jar ByteArrays
+#+end_src
+* 21.9.26
+** netty issue draft
+#+begin_src markdown
+FAO @jonas
+
+Netty can't enable VarHandle in native image due to performance issues.
+One of those issues is https://github.com/oracle/graal/issues/14476
+
+If `PlatformDependant.VAR_HANDLE` could be initialized at build time,
+the issue above could be worked around.
+
+To resolve `VAR_HANDLE` Netty checks the java version (which also checks if it's Android),
+checks whether the platform supports alignment,
+and checks if VarHandle can be correctly instantiated.
+
+It's unclear if all of these checks could be deferred to build time.
+#+end_src
+** graal issue draft
+#+begin_src markdown
+Netty's migration from Unsafe to VarHandle has not activated in native image due to performance issues.
+Under certain conditions, native image ends up using `MethodHandle::linkToStatic` to execute VarHandle instead of intrisifying the call.
+This results is really poor performance.
+
+Netty has a static final boolean variable to see if VarHandle is available or not.
+Even though it's final, the GraalVM compiler is not treating that as a constant when the class holding it is runtime init.
+
+# Background
+
+A Netty community contributor created the JMH benchmark in
+https://github.com/Songdoeon/netty-varhandle-bench
+which you can run with my JMH extension for GraalVM native image called [Fibula](https://github.com/galderz/fibula).
+
+Using the newly added Async Profiler integration, we observe this flamegraph.
+Note that only non-inlined frames appear:
+
+```bash
+$ mvn clean package -Ddebug=true && java -Dnetty.use-new-code=true -jar target/benchmarks.jar -bm thrpt -tu ms -f 1 -p size=256 -prof org.mendrugo.fibula.NativeAsyncProfiler:libPath=$HOME/opt/async-profiler/lib/libasyncProfiler.so
+```
+
+// todo
+
+**NOTE:** `netty.use-new-code` system property activates VarHandle even if its disables by default in Netty.
+
+The bulk of the time is being spent in Netty's `VarHandleByteBufferAccess.getLongLE` which ends up calling `MethodHandle::linkToStatic`.
+
+After some experimentation I ended up replicating that scenario with the following vanilla Java JMH benchmark (see [here](https://github.com/galderz/fibula-show/tree/main/2609-handles) for full project):
+
+```java
+package org.sample.handles;
+
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 10, time = 500, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 5, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+@Fork(1)
+public class NettyByteArrays
+{
+    @Param({"256"})
+    private int size;
+
+    byte[] b;
+
+    int index;
+
+    @Setup
+    public void setup()
+    {
+        final Random r = new Random(42);
+
+        b = new byte[size];
+        for (int i = 0; i < b.length; i++)
+        {
+            b[i] = (byte) r.nextInt();
+        }
+
+        index = 0;
+    }
+
+    @Benchmark
+    public long plainGetLongLE()
+    {
+        return ((long) b[index] & 0xFF) |
+            ((long) b[index + 1] & 0xFF) << 8 |
+            ((long) b[index + 2] & 0xFF) << 16 |
+            ((long) b[index + 3] & 0xFF) << 24 |
+            ((long) b[index + 4] & 0xFF) << 32 |
+            ((long) b[index + 5] & 0xFF) << 40 |
+            ((long) b[index + 6] & 0xFF) << 48 |
+            ((long) b[index + 7] & 0xFF) << 56;
+    }
+
+    private static final boolean VAR_HANDLE;
+    private static final VarHandle LONG_LE_ARRAY_VIEW;
+
+    static
+    {
+        VAR_HANDLE = initializeVarHandle();
+
+        VarHandle longLeArrayViewHandle = null;
+        try
+        {
+            MethodHandles.Lookup lookup = MethodHandles.lookup();
+            MethodHandle byteArrayViewHandle = lookup.findStatic(
+                MethodHandles.class
+                , "byteArrayViewVarHandle"
+                , MethodType.methodType(VarHandle.class, Class.class, ByteOrder.class)
+            );
+
+            longLeArrayViewHandle = (VarHandle) byteArrayViewHandle.invokeExact(long[].class, ByteOrder.LITTLE_ENDIAN);
+        }
+        catch (Throwable e)
+        {
+            longLeArrayViewHandle = null;
+        }
+        finally
+        {
+            LONG_LE_ARRAY_VIEW = longLeArrayViewHandle;
+        }
+    }
+
+    @Benchmark
+    public long vhandleGetLongLE()
+    {
+        VarHandle vh = null;
+        if (VAR_HANDLE) {
+            vh = LONG_LE_ARRAY_VIEW;
+        }
+
+        return (long) vh.get(b, index);
+    }
+
+    private static boolean initializeVarHandle()
+    {
+        if (javaVersion0() < 9) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static int javaVersion0()
+    {
+        final int majorVersion;
+        majorVersion = majorVersionFromJavaSpecificationVersion();
+        System.out.println("Java version: " + majorVersion);
+        return majorVersion;
+    }
+
+    private static int majorVersionFromJavaSpecificationVersion()
+    {
+        return majorVersion(SystemPropertyUtil.get("java.specification.version", "1.6"));
+    }
+
+    private static int majorVersion(final String javaSpecVersion)
+    {
+        final String[] components = javaSpecVersion.split("\\.");
+        final int[] version = new int[components.length];
+        for (int i = 0; i < components.length; i++)
+        {
+            version[i] = Integer.parseInt(components[i]);
+        }
+
+        if (version[0] == 1)
+        {
+            assert version[1] >= 6;
+            return version[1];
+        }
+        else
+        {
+            return version[0];
+        }
+    }
+}
+```
+
+Running it with the JDK 25.0.4 we observe these results:
+
+```bash
+$ mvn clean package -f jmh.xml && java -jar target/benchmarks.jar NettyByteArrays
+...
+Benchmark                         (size)   Mode  Cnt       Score      Error   Units
+NettyByteArrays.plainGetLongLE       256  thrpt    5  427834.182 ± 5152.275  ops/ms
+NettyByteArrays.vhandleGetLongLE     256  thrpt    5  878615.788 ± 1534.100  ops/ms
+```
+
+Whereas running with GraalVM master 94439026ca2b7767ccfdaba7df5f999cf6f27158 we see:
+
+```
+$ mvn clean package && java -jar target/benchmarks.jar NettyByteArrays
+...
+Benchmark                         (size)   Mode  Cnt       Score     Error   Units
+NettyByteArrays.plainGetLongLE       256  thrpt    5  250611.903 ± 590.873  ops/ms
+NettyByteArrays.vhandleGetLongLE     256  thrpt    5   10814.419 ±  70.745  ops/ms
+```
+
+The case that replicates Netty's usage pattern is `vhandleGetLongLE`, where the JVM mode behaves 80x the speed of native image.
+Looking at the Async Profiler flamegraph we observe the same pattern as above:
+
+// todo 1809/12-netty-cond-aot-ap
+
+We can also observe the `linkToStatic` call in the assembly:
+
+```perf
+$ mvn clean package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols && java -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler:events=cycles:P NettyByteArrays
+...
+long org.sample.handles.NettyByteArrays::vhandleGetLongLE()  /home/agentuser/src/fibula-show/2609-handles/target/benchmarks [Percent: local period]
+Percent │       leaq  (%r14,%rdx,8),%rdx
+   3.41 │105:   addq  $0x38,%rsp
+   1.52 │       cmpl  $0x0,0x10(%r15)
+   3.24 │     → jle   void com.oracle.svm.core.thread.SafepointSlowpath::enterSlowPathSafepointCheckCalleeSavedCCONV()
+   3.24 │     ← retq
+        │115: → callq void com.oracle.svm.core.snippets.ImplicitExceptions::throwNewNullPointerException()
+   4.95 │11a:   movl  0xc(%r14,%rdx,8),%edi
+   3.24 │       leaq  (%r14,%rdx,8),%rdx
+   2.09 │       testl %edi,%edi
+        │     ↓ je    3ac
+   1.33 │       cmpl  $0x0,0x4(%r14,%rdi,8)
+   2.29 │     ↓ je    3c5
+   3.23 │       movl  0x8(%r14,%rdi,8),%edi
+   2.10 │       nop
+   2.86 │       testl %edi,%edi
+        │     ↓ je    214
+   1.31 │       leaq  (%r14,%rdi,8),%rdi
+   0.95 │       movq  %rdi,%rcx
+   3.05 │       movq  %rbp,0x20(%rsp)
+   2.86 │       movq  %rsi,0x28(%rsp)
+   1.52 │159:   movq  0x20(%rsp),%rdi
+   0.95 │       movq  0x28(%rsp),%rsi
+   1.14 │       movl  $0x0,%edx
+   2.56 │     → callq long java.lang.invoke.MethodHandle::linkToStatic(java.lang.Object*, java.lang.Object*, int, java.lang.invoke.MemberName*)
+   4.94 │     ↑ jmp   105
+```
+
+How good could this benchmark be in the VarHandle was intrinsified?
+To answer this question, we can use this separate benchmark where the VarHandle usage is not conditional:
+
+```java
+package org.sample.handles;
+
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 10, time = 500, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 5, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+@Fork(1)
+public class VanillaByteArrays
+{
+    private static final VarHandle LONG_LE_ARRAY_VIEW;
+
+    @Param({"256"})
+    private int size;
+
+    byte[] b;
+
+    int index;
+
+    static
+    {
+        VarHandle longLeArrayViewHandle = null;
+        try
+        {
+            MethodHandles.Lookup lookup = MethodHandles.lookup();
+            MethodHandle byteArrayViewHandle = lookup.findStatic(
+                MethodHandles.class
+                , "byteArrayViewVarHandle"
+                , MethodType.methodType(VarHandle.class, Class.class, ByteOrder.class)
+            );
+
+            longLeArrayViewHandle = (VarHandle) byteArrayViewHandle.invokeExact(long[].class, ByteOrder.LITTLE_ENDIAN);
+        }
+        catch (Throwable e)
+        {
+            longLeArrayViewHandle = null;
+        }
+        finally
+        {
+            LONG_LE_ARRAY_VIEW = longLeArrayViewHandle;
+        }
+    }
+
+    @Setup
+    public void setup()
+    {
+        final Random r = new Random(42);
+
+        b = new byte[size];
+        for (int i = 0; i < b.length; i++)
+        {
+            b[i] = (byte) r.nextInt();
+        }
+
+        index = 0;
+    }
+
+    @Benchmark
+    public long vhandleGetLongLE()
+    {
+        return (long) LONG_LE_ARRAY_VIEW.get(b, index);
+    }
+
+    @Benchmark
+    public long plainGetLongLE()
+    {
+        return ((long) b[index] & 0xFF) |
+            ((long) b[index + 1] & 0xFF) << 8 |
+            ((long) b[index + 2] & 0xFF) << 16 |
+            ((long) b[index + 3] & 0xFF) << 24 |
+            ((long) b[index + 4] & 0xFF) << 32 |
+            ((long) b[index + 5] & 0xFF) << 40 |
+            ((long) b[index + 6] & 0xFF) << 48 |
+            ((long) b[index + 7] & 0xFF) << 56;
+    }
+}
+```
+
+With this benchmark the performance improves drastically, it's 40x of the conditional version above.
+It's still 1/2 of the speed of the JVM version, but improving this would help Netty adopt VarHandles:
+
+```bash
+$ mvn clean package && java -jar target/benchmarks.jar VanillaByteArrays
+...
+Benchmark                           (size)   Mode  Cnt       Score      Error   Units
+VanillaByteArrays.plainGetLongLE       256  thrpt    5  250616.269 ±  587.297  ops/ms
+VanillaByteArrays.vhandleGetLongLE     256  thrpt    5  452696.103 ± 1318.832  ops/ms
+```
+
+It's useful to instrospect this new `vhandleGetLongLE` shape with AsyncProfiler,
+where we see no trace of `linkToStatic`:
+
+```bash
+$ mvn clean package -Ddebug=true && java -jar target/benchmarks.jar -prof org.mendrugo.fibula.NativeAsyncProfiler:libPath=$HOME/opt/async-profiler/lib/libasyncProfiler.so VanillaByteArrays
+```
+
+// todo 2109/01-no-cond-vh-aot-ap
+
+Finally, looking at the assembly we see the intrisification:
+
+```bash
+$ mvn clean package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols && java -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler:events=cycles:P VanillaByteArrays
+...
+long org.sample.handles.VanillaByteArrays::vhandleGetLongLE()  /home/agentuser/src/fibula-show/2609-handles/target/benchmarks [Percent: local period]
+   6.39 │      leaq  -0x18(%rsp),%rbx
+   5.99 │      cmpq  0x8(%r15),%rbx
+        │    → jbe   void com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl::throwNewStackOverflowError()
+   5.81 │      movq  %rbx,%rsp
+   5.64 │      movl  0x4(%rdi),%eax
+   6.73 │      leaq  (%r14,%rax,8),%rcx
+   6.90 │      nop
+   6.25 │      testl %eax,%eax
+        │    ↓ je    43
+  12.53 │      movl  0x4(%r14,%rax,8),%edi
+   5.52 │      cmpl  $0x8,%edi
+        │    ↓ jb    48
+   6.20 │      movq  0x8(%r14,%rax,8),%rax
+   6.03 │      addq  $0x18,%rsp
+   6.23 │      cmpl  $0x0,0x10(%r15)
+  13.16 │    → jle   void com.oracle.svm.core.thread.SafepointSlowpath::enterSlowPathSafepointCheckCalleeSavedCCONV()
+   6.61 │    ← retq
+```
+
+As an experiment, I made `NettyByteArrays` build time initialized and that really makes `VAR_HANDLE` a constant such that it performs the same as in `VanillaByteArrays`:
+
+```bash
+$ mvn clean package -DbuildArgs=--initialize-at-build-time=org.sample.handles.NettyByteArrays,-H:+PrintClassInitialization && java -jar target/benchmarks.jar NettyByteArrays
+...
+Benchmark                         (size)   Mode  Cnt       Score      Error   Units
+NettyByteArrays.plainGetLongLE       256  thrpt    5  250521.602 ±  415.478  ops/ms
+NettyByteArrays.vhandleGetLongLE     256  thrpt    5  452809.474 ± 1054.749  ops/ms
+
+$ cat class_initialization_report...
+org.sample.handles.NettyByteArrays, BUILD_TIME, from command line with 'org.sample.handles.NettyByteArrays'
+```
+#+end_src
+** class init
+After build time init:
+#+begin_src bash
+$ mvn clean package -DbuildArgs=--initialize-at-build-time=org.sample.handles.NettyByteArrays,-H:+PrintClassInitialization && java -jar target/benchmarks.jar NettyByteArrays
+
+Benchmark                         (size)   Mode  Cnt       Score      Error   Units
+NettyByteArrays.plainGetLongLE       256  thrpt    5  250521.602 ±  415.478  ops/ms
+NettyByteArrays.vhandleGetLongLE     256  thrpt    5  452809.474 ± 1054.749  ops/ms
+
+g@m25 04-netty-vh-aot-buildtimeinit % grep NettyByteArrays class_initialization_report_20260921_111317.csv
+org.sample.handles.NettyByteArrays, BUILD_TIME, from command line with 'org.sample.handles.NettyByteArrays'
+#+end_src
+
+NettyByteArrays also runtime init by default:
+#+begin_src bash
+org.sample.handles.NettyByteArrays, RUN_TIME, classes are initialized at run time by default
+org.sample.handles.jmh_generated.NettyByteArrays_jmhType, RUN_TIME, classes are initialized at run time by default
+org.sample.handles.jmh_generated.NettyByteArrays_plainGetLongLE_jmhTest, SIMULATED, classes are initialized at run time by default
+org.sample.handles.jmh_generated.NettyByteArrays_vhandleGetLongLE_jmhTest, SIMULATED, classes are initialized at run time by default
+#+end_src
+
+VanillaByteArrays class init at runtime by default:
+#+begin_src bash
+org.sample.handles.VanillaByteArrays, SIMULATED, classes are initialized at run time by default
+org.sample.handles.jmh_generated.VanillaByteArrays_jmhType, SIMULATED, classes are initialized at run time by default
+org.sample.handles.jmh_generated.VanillaByteArrays_plainGetLongLE_jmhTest, SIMULATED, classes are initialized at run time by default
+org.sample.handles.jmh_generated.VanillaByteArrays_vhandleGetLongLE_jmhTest, SIMULATED, classes are initialized at run time by default
+#+end_src
+* 18.9.26
+** experiments
+all native mode:
+#+begin_src bash
+#+end_src
+
+all jvm mode:
+#+begin_src bash
+
+#+end_src
+
+condVhGetLongLE native mode:
+#+begin_src bash
+Benchmark                          (size)   Mode  Cnt      Score     Error   Units
+VanillaByteArrays.condVhGetLongLE     256  thrpt    5  12153.321 ± 371.099  ops/ms
+#+end_src
+
+condVhGetLongLE jvm mode:
+#+begin_src bash
+Benchmark                          (size)   Mode  Cnt       Score      Error   Units
+VanillaByteArrays.condVhGetLongLE     256  thrpt    5  878349.939 ± 2091.014  ops/ms
+#+end_src
+
+mimicking VarHandleByteBufferAccess.getLongLE native mode:
+#+begin_src bash
+Benchmark                         (size)   Mode  Cnt       Score      Error   Units
+NettyByteArrays.plainGetLongLE       256  thrpt    5  251120.720 ± 1129.286  ops/ms
+NettyByteArrays.vhandleGetLongLE     256  thrpt    5   11943.808 ±  223.953  ops/ms
+#+end_src
+
+mimicking VarHandleByteBufferAccess.getLongLE jvm mode:
+#+begin_src bash
+Benchmark                         (size)   Mode  Cnt       Score      Error   Units
+NettyByteArrays.plainGetLongLE       256  thrpt    5  431151.043 ± 1077.677  ops/ms
+NettyByteArrays.vhandleGetLongLE     256  thrpt    5  877013.771 ± 3649.881  ops/ms
+#+end_src
+
+graalvm master:
+#+begin_src bash
+Benchmark                    (size)   Mode  Cnt       Score     Error   Units
+ByteArrays.plainGetLongLE       256  thrpt    5  250552.326 ± 465.132  ops/ms
+ByteArrays.vhandleGetLongLE     256  thrpt    5  452523.600 ± 666.677  ops/ms
+#+end_src
+
+The 100x difference seen in indexOf is not just down to pure var handle use.
+Additional things are getting in the way (possibly interface and multiple impls issue?).
+
+graalvm 25.3.4:
+#+begin_src bash
+# VM version: JDK 25.0.4.1, Substrate VM, GraalVM CE 25.3.4.1+1.1
+Benchmark                    (size)   Mode  Cnt       Score       Error   Units
+ByteArrays.plainGetLongLE       256  thrpt    5  247841.778 ±   650.045  ops/ms
+ByteArrays.vhandleGetLongLE     256  thrpt    5  423713.961 ± 15778.999  ops/ms
+#+end_src
+
+jdk25:
+#+begin_src bash
+$ java --version
+openjdk 25.0.4.1 2026-08-18
+OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1)
+OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+
+$ mvn clean package -f jmh.xml && java -jar target/benchmarks.jar ByteArrays
+Benchmark                    (size)   Mode  Cnt       Score       Error   Units
+ByteArrays.plainGetLongLE       256  thrpt    5  424869.202 ± 12647.330  ops/ms
+ByteArrays.vhandleGetLongLE     256  thrpt    5  874650.295 ±  9135.530  ops/ms
+#+end_src
+* 17.9.26
+graalvm master
+**hasVarHandle: true**
+hasUnsafe: false
+canUnalignedAccess: true
+isUnaligned: false
+#+begin_src bash
+Benchmark                   (size)   Mode  Cnt    Score   Error   Units
+VarHandleBenchmark.indexOf     256  thrpt   10  369.621 ± 3.697  ops/ms
+#+end_src
+
+graalvm 25.3.4
+**hasVarHandle: true**
+hasUnsafe=false
+canUnalignedAccess=true
+#+begin_src bash
+Benchmark                   (size)   Mode  Cnt    Score   Error   Units
+VarHandleBenchmark.indexOf     256  thrpt   10  387.452 ± 0.289  ops/ms
+#+end_src
+
+graalvm 25.3.4
+**hasVarHandle=false**
+hasUnsafe=false
+canUnalignedAccess=false
+#+begin_src bash
+Benchmark                   (size)   Mode  Cnt     Score   Error   Units
+VarHandleBenchmark.indexOf     256  thrpt   30  1917.965 ± 2.309  ops/ms
+VarHandleBenchmark.indexOf    2048  thrpt   30   255.080 ± 0.055  ops/ms
+VarHandleBenchmark.indexOf    8192  thrpt   30    64.242 ± 0.024  ops/ms
+VarHandleBenchmark.indexOf   16384  thrpt   30    32.158 ± 0.009  ops/ms
+#+end_src
+
+jdk25
+hasVarHandle=true
+hasUnsafe=false
+canUnalignedAccess=true
+#+begin_src bash
+Benchmark                   (size)   Mode  Cnt      Score    Error   Units
+VarHandleBenchmark.indexOf     256  thrpt   30  38084.823 ± 17.892  ops/ms
+VarHandleBenchmark.indexOf    2048  thrpt   30   5819.699 ±  1.942  ops/ms
+VarHandleBenchmark.indexOf    8192  thrpt   30   1359.691 ± 52.275  ops/ms
+VarHandleBenchmark.indexOf   16384  thrpt   30    661.704 ±  0.352  ops/ms
+#+end_src
