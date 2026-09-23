@@ -83,7 +83,7 @@ RUN_INIT_FEATURE_ARGS=(
     "--initialize-at-run-time=io.vertx.ext.web.handler.sockjs.impl.XhrTransport"
 )
 
-LAYERED_ARGS=(
+LAYER_ARGS=(
     "--initialize-at-build-time="
     "-H:+PrintClassInitialization"
     "-H:ApplicationLayerInitializedClasses=io.quarkus.arc.Arc"
@@ -100,4 +100,4 @@ ${GRAALVM_HOME}/bin/native-image \
     "${TRACE_ARGS[@]}" \
     "${RUN_INIT_BASE_ARGS[@]}" \
     "${RUN_INIT_FEATURE_ARGS[@]}" \
-    "${LAYERED_ARGS[@]}"
+    "${LAYER_ARGS[@]}"
