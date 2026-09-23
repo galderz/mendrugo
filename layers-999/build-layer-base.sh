@@ -84,7 +84,7 @@ RUN_INIT_FEATURE_ARGS=(
 )
 
 LAYERED_ARGS=(
-    "--initialize-at-build-time=\"\""
+    "--initialize-at-build-time="
     "-H:+PrintClassInitialization"
     "-H:ApplicationLayerInitializedClasses=io.quarkus.arc.Arc"
     "-H:ApplicationLayerInitializedClasses=io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder"
@@ -97,7 +97,7 @@ LAYERED_ARGS=(
 )
 
 ${GRAALVM_HOME}/bin/native-image \
-    ${TRACE_ARGS[@]}" \
+    "${TRACE_ARGS[@]}" \
     "${RUN_INIT_BASE_ARGS[@]}" \
     "${RUN_INIT_FEATURE_ARGS[@]}" \
     "${LAYERED_ARGS[@]}"
