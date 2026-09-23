@@ -5,93 +5,87 @@ native_image=$HOME/src/mandrel/sdk/latest_graalvm_home/bin/native-image
 
 source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar
 
-#--initialize-at-run-time=io.netty.handler.codec.http2.Http2Headers\$PseudoHeaderName \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil\$ExtensionHeaderNames \
+BASE_ARGS=(
+    "-J-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+    "-J-Dsun.nio.ch.maxUpdateArraySize=100"
+    "-J-Dvertx.logger-delegate-factory-class-name=io.quarkus.vertx.core.runtime.VertxLogDelegateFactory"
+    "-J-Dvertx.disableDnsResolver=true"
+    "-J-Dio.netty.tryReflectionSetAccessible=true"
+    "-J-Dio.netty.noUnsafe=true"
+    "-J-Dio.netty.leakDetection.level=DISABLED"
+    "-J-Dio.netty.allocator.maxOrder=3"
+    "-J-Duser.language=en"
+    "-J-Dlogging.initial-configurator.min-level=500" "-H:+UnlockExperimentalVMOptions"
+    "-H:IncludeLocales=en" "-H:-UnlockExperimentalVMOptions"
+    "--enable-native-access=ALL-UNNAMED"
+    "-J-Dfile.encoding=UTF-8"
+    "-J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED"
+    "--features=io.quarkus.runner.Feature,io.quarkus.runtime.graal.DisableLoggingFeature,io.quarkus.runtime.graal.JVMChecksFeature,io.quarkus.runtime.graal.SkipConsoleServiceProvidersFeature"
+    "-J--add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED"
+    "-J--add-exports=java.security.jgss/sun.security.jgss=ALL-UNNAMED"
+    "-J--add-opens=java.base/java.text=ALL-UNNAMED"
+    "-J--add-opens=java.base/java.io=ALL-UNNAMED"
+    "-J--add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
+    "-J--add-opens=java.base/java.util=ALL-UNNAMED" "-H:+UnlockExperimentalVMOptions"
+    "-H:BuildOutputJSONFile=target/build-output-layer-app.json" "-H:-UnlockExperimentalVMOptions" "-H:+UnlockExperimentalVMOptions"
+    "-H:+GenerateBuildArtifactsFile" "-H:-UnlockExperimentalVMOptions"
+    "-H:+PrintClassInitialization"
+    "-H:-CheckToolchain" "-H:+UnlockExperimentalVMOptions"
+    "-H:+AllowFoldMethods" "-H:-UnlockExperimentalVMOptions" "-H:+UnlockExperimentalVMOptions"
+    "-H:+SharedArenaSupport" "-H:-UnlockExperimentalVMOptions"
+    "-J-Djava.awt.headless=true"
+    "-H:+UnlockExperimentalVMOptions"
+    "-H:+ReportExceptionStackTraces" "-H:-UnlockExperimentalVMOptions"
+    "-H:-AddAllCharsets"
+    "--enable-url-protocols=http"
+    "-H:NativeLinkerOption=-no-pie"
+    "--enable-monitoring=heapdump,threaddump" "-H:+UnlockExperimentalVMOptions"
+    "-H:-UseServiceLoaderFeature" "-H:-UnlockExperimentalVMOptions"
+    "--exclude-config" 'io\.netty\.netty-codec.*' '/META-INF/native-image/io\.netty/netty-codec.*/generated/handlers/reflect-config\.json'
+    "--exclude-config" 'io\.netty\.netty-handler' '/META-INF/native-image/io\.netty/netty-handler/generated/handlers/reflect-config\.json'
+)
 
-#--initialize-at-run-time=io.netty.handler.codec.http2.Http2Headers\$PseudoHeaderName \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil\$ExtensionHeaderNames \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.HpackDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.socks.SocksAuthResponseDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.socks.SocksAuthRequestDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.socks.SocksCmdRequestDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.socks.SocksCmdResponseDecoder \
-#    --initialize-at-run-time=io,netty.handler.codec.ReplayingDecoder \
-#    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
+RUN_INIT_BASE_ARGS=(
+    "--initialize-at-run-time=io.netty.handler.timeout"
+    "--initialize-at-run-time=io.netty.handler.traffic"
+    "--initialize-at-run-time=io.netty.util.NetUtil"
+    "--initialize-at-run-time=io.netty.util.internal.PlatformDependent"
+    "--initialize-at-run-time=io.netty.util.internal.PlatformDependent0"
+    "--initialize-at-run-time=io.vertx.ext.web.handler.impl"
+    "--initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder"
+    "--initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler"
+    "--initialize-at-run-time=jakarta.el.ELManager"
+    "--initialize-at-run-time=java.rmi"
+    "--initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch"
+    "--initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch"
+    "--initialize-at-run-time=jdk.tools.jlink.internal.plugins"
+    "--initialize-at-run-time=sun.rmi"
+)
 
-#--initialize-at-run-time=io.netty.channel.unix.Errors \
-#    --initialize-at-run-time=io.netty.channel.unix.FileDescriptor \
-#    --initialize-at-run-time=io.netty.channel.unix.Limits \
-#    --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
-#    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
+RUN_INIT_FEATURE_ARGS=(
+    "--initialize-at-run-time=io.netty.resolver.dns"
+    "--initialize-at-run-time=io.netty.handler.codec.http"
+    "--initialize-at-run-time=io.netty.handler.codec.http2"
+    "--initialize-at-run-time=io.netty.handler.proxy"
+    "--initialize-at-run-time=io.netty.handler.codec.rtsp"
+    "--initialize-at-run-time=io.netty.handler.ssl"
+    "--initialize-at-run-time=io.netty.handler.codec.compression"
+    "--initialize-at-run-time=io.netty.handler.codec.socks"
+    "--initialize-at-run-time=io.netty.handler.codec.spdy"
+    "--initialize-at-run-time=io.netty.handler.codec.marshalling"
+    "--initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
+)
 
-#    --initialize-at-run-time=io.netty.channel.pool.FixedChannelPool \
-#    --initialize-at-run-time=io.netty.handler.codec.http.HttpMessageDecoderResult \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.HpackDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.Http2Headers\$PseudoHeaderName \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil\$ExtensionHeaderNames \
-#    --initialize-at-run-time=io.netty.handler.codec.socks.SocksAuthRequestDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.socks.SocksAuthResponseDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.socks.SocksCmdRequestDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.socks.SocksCmdResponseDecoder \
-#    --initialize-at-run-time=io.netty.handler.codec.spdy.SpdyHttpHeaders\$Names \
-#    --initialize-at-run-time=io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler \
-#    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
-#    --initialize-at-run-time=jakarta.el.ELManager \
-#    --initialize-at-run-time=java.rmi \
-#    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \
-#    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch \
-#    --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
-#    --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
-
-# -J-Dlogging.initial-configurator.min-level=500 /
-
-#--initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil\$ExtensionHeaderNames \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.Http2Headers\$PseudoHeaderName \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.HttpConversionUtil \
-#    --initialize-at-run-time=io.netty.handler.codec.http2.HpackStaticTable \
-
-# -J-Dsvm.traceClassInit=true \
-
-# --link-at-build-time \
-
-# -J-Dsvm.traceLayerTypes=true \
+LAYER_ARGS=(
+    "-H:LayerUse=target/libquarkusbaselayer.nil"
+    "-H:LinkerRPath=."
+    "-jar" "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/getting-started-1.0.0-SNAPSHOT-runner.jar"
+    "-o" "getting-started-1.0.0-SNAPSHOT-runner"
+    "-H:Path=./target"
+)
 
 ${native_image} \
-    --initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder \
-    --initialize-at-run-time=io.netty.util.internal.PlatformDependent \
-    --initialize-at-run-time=io.netty.util.internal.PlatformDependent0 \
-    --initialize-at-run-time=io.netty.handler.proxy \
-    --initialize-at-run-time=io.netty.handler.codec.http \
-    --initialize-at-run-time=io.netty.handler.codec.http2 \
-    --initialize-at-run-time=io.netty.handler.codec.rtsp \
-    --initialize-at-run-time=io.netty.handler.codec.socks \
-    --initialize-at-run-time=io.netty.handler.codec.spdy \
-    --initialize-at-run-time=io.netty.handler.codec.marshalling \
-    --initialize-at-run-time=io.netty.handler.ssl \
-    --initialize-at-run-time=jdk.tools.jlink.internal.plugins \
-    --initialize-at-run-time=io.vertx.ext.web.handler.impl \
-    --initialize-at-run-time=jakarta.el.ELManager \
-    --initialize-at-run-time=io.netty.handler.codec.compression \
-    --initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils \
-    --initialize-at-run-time=io.netty.handler.codec.http.websocketx \
-    --initialize-at-run-time=io.netty.resolver.dns \
-    --initialize-at-run-time=java.rmi \
-    --initialize-at-run-time=sun.rmi \
-    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch \
-    --initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch \
-    --initialize-at-run-time=io.netty.handler.timeout \
-    --initialize-at-run-time=io.netty.handler.traffic \
-    --initialize-at-run-time=io.netty.util.NetUtil \
-    --initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder \
-    --initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler \
-    -H:+PrintClassInitialization \
-    --features=io.quarkus.runner.Feature \
-    -H:LayerUse=target/libquarkusbaselayer.nil \
-    -H:LinkerRPath=. \
-    -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager -J-Dsun.nio.ch.maxUpdateArraySize=100 -J-Dvertx.logger-delegate-factory-class-name=io.quarkus.vertx.core.runtime.VertxLogDelegateFactory -J-Dvertx.disableDnsResolver=true -J-Dio.netty.tryReflectionSetAccessible=true -J-Dio.netty.noUnsafe=false -J-Dio.netty.leakDetection.level=DISABLED -J-Dio.netty.allocator.maxOrder=3 -J-Duser.language=en -J-Duser.country=GB -H:+UnlockExperimentalVMOptions -H:IncludeLocales=en-GB -H:-UnlockExperimentalVMOptions --enable-native-access=ALL-UNNAMED -J-Dfile.encoding=UTF-8 -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED --features=io.quarkus.runner.Feature,io.quarkus.runtime.graal.DisableLoggingFeature,io.quarkus.runtime.graal.JVMChecksFeature,io.quarkus.runtime.graal.SkipConsoleServiceProvidersFeature -J--add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED -J--add-exports=java.security.jgss/sun.security.jgss=ALL-UNNAMED -J--add-opens=java.base/java.text=ALL-UNNAMED -J--add-opens=java.base/java.io=ALL-UNNAMED -J--add-opens=java.base/java.lang.invoke=ALL-UNNAMED -J--add-opens=java.base/java.util=ALL-UNNAMED -H:+UnlockExperimentalVMOptions \
-    -H:BuildOutputJSONFile=target/build-output-layer-app.json \
-    -H:-UnlockExperimentalVMOptions -H:+UnlockExperimentalVMOptions -H:+GenerateBuildArtifactsFile -H:-UnlockExperimentalVMOptions -H:+UnlockExperimentalVMOptions -H:+AllowFoldMethods -H:-UnlockExperimentalVMOptions -J-Djava.awt.headless=true --no-fallback -H:+UnlockExperimentalVMOptions -H:+ReportExceptionStackTraces -H:-UnlockExperimentalVMOptions -J-Xmx6g -H:-AddAllCharsets --enable-url-protocols=http -H:NativeLinkerOption=-no-pie -H:+UnlockExperimentalVMOptions -H:-UseServiceLoaderFeature -H:-UnlockExperimentalVMOptions -J--add-exports=org.graalvm.nativeimage/org.graalvm.nativeimage.impl=ALL-UNNAMED --exclude-config io\.netty\.netty-codec /META-INF/native-image/io\.netty/netty-codec/generated/handlers/reflect-config\.json --exclude-config io\.netty\.netty-handler /META-INF/native-image/io\.netty/netty-handler/generated/handlers/reflect-config\.json target/getting-started-1.0.0-SNAPSHOT-runner \
-    -cp ${source_jar_dir}/extracted-classes.jar \
-    -jar ${source_jar_dir}/getting-started-1.0.0-SNAPSHOT-runner-filtered.jar \
-    -o getting-started-1.0.0-SNAPSHOT-runner -H:Path=./target
+    "${BASE_ARGS[@]}" \
+    "${RUN_INIT_BASE_ARGS[@]}" \
+    "${RUN_INIT_FEATURE_ARGS[@]}" \
+    "${LAYER_ARGS[@]}"
