@@ -3,6 +3,10 @@ set -eux
 
 mkdir -p target
 
+BASE_ARGS=(
+    "--enable-monitoring=heapdump,threaddump"
+)
+
 TRACE_ARGS=(
 #    "--trace-object-instantiation=io.netty.buffer.EmptyByteBuf"
 #    "--trace-object-instantiation=io.netty.handler.codec.compression.BrotliOptions"
@@ -22,6 +26,7 @@ RUN_INIT_BASE_ARGS=(
     "--initialize-at-run-time=io.netty.internal.tcnative"
     "--initialize-at-run-time=io.netty.util.AbstractReferenceCounted"
     "--initialize-at-run-time=io.netty.util.NetUtil"
+    "--initialize-at-run-time=io.netty.util.internal.CleanerJava24Linker"
     "--initialize-at-run-time=io.netty.util.internal.PlatformDependent"
     "--initialize-at-run-time=io.netty.util.internal.PlatformDependent0"
     "--initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub"
@@ -47,6 +52,14 @@ RUN_INIT_BASE_ARGS=(
 )
 
 RUN_INIT_FEATURE_ARGS=(
+    # clustered eventbus
+    "--initialize-at-run-time=io.vertx.core.eventbus.impl.clustered"
+    # compression
+    "--initialize-at-run-time=io.netty.handler.codec.compression.BrotliOptions"
+    "--initialize-at-run-time=io.netty.handler.codec.compression.ZstdConstants"
+    "--initialize-at-run-time=io.netty.handler.codec.compression.ZstdOptions"
+    # file
+    "--initialize-at-run-time=io.vertx.core.file.FileSystemOptions"
     # http / http1
     "--initialize-at-run-time=io.netty.handler.codec.http.HttpContentCompressor"
     "--initialize-at-run-time=io.netty.handler.codec.http.HttpServerExpectContinueHandler"
@@ -58,29 +71,26 @@ RUN_INIT_FEATURE_ARGS=(
     "--initialize-at-run-time=io.vertx.core.http.impl.Http1xServerResponse"
     "--initialize-at-run-time=io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec"
     "--initialize-at-run-time=io.vertx.core.http.impl.http1.Http1ServerResponse"
+    "--initialize-at-run-time=io.vertx.core.http.impl.tcp.VertxHttp2ClientUpgradeCodec"
     # http2
     "--initialize-at-run-time=io.netty.handler.codec.http2"
     "--initialize-at-run-time=io.vertx.core.http.impl.http2"
     # http3
     "--initialize-at-run-time=io.vertx.core.http.impl.http3.Http3Stream"
+    # json
+    "--initialize-at-run-time=io.vertx.core.json.Json"
+    # jwt
+    "--initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT"
+    # pcap
+    "--initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
     # quick
     "--initialize-at-run-time=io.netty.handler.codec.quic"
     "--initialize-at-run-time=io.vertx.core.net.impl.quic"
-    # clustered eventbus
-    "--initialize-at-run-time=io.vertx.core.eventbus.impl.clustered"
+    # sockjs
+    "--initialize-at-run-time=io.vertx.ext.web.handler.sockjs.impl.XhrTransport"
     # ssl / tls
     "--initialize-at-run-time=io.netty.handler.ssl"
     "--initialize-at-run-time=io.vertx.core.internal.tls.SslContextManager"
-    # pcap
-    "--initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
-    # jwt
-    "--initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT"
-    # compression
-    "--initialize-at-run-time=io.netty.handler.codec.compression.BrotliOptions"
-    "--initialize-at-run-time=io.netty.handler.codec.compression.ZstdConstants"
-    "--initialize-at-run-time=io.netty.handler.codec.compression.ZstdOptions"
-    # sockjs
-    "--initialize-at-run-time=io.vertx.ext.web.handler.sockjs.impl.XhrTransport"
 )
 
 LAYER_ARGS=(
@@ -97,6 +107,7 @@ LAYER_ARGS=(
 )
 
 ${GRAALVM_HOME}/bin/native-image \
+    "${BASE_ARGS[@]}" \
     "${TRACE_ARGS[@]}" \
     "${RUN_INIT_BASE_ARGS[@]}" \
     "${RUN_INIT_FEATURE_ARGS[@]}" \

@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -eux
 
-native_image=$HOME/src/mandrel/sdk/latest_graalvm_home/bin/native-image
-
-source_jar_dir=getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar
-
 BASE_ARGS=(
     "-J-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
     "-J-Dsun.nio.ch.maxUpdateArraySize=100"
@@ -46,6 +42,7 @@ BASE_ARGS=(
 )
 
 RUN_INIT_BASE_ARGS=(
+    "--initialize-at-run-time=io.netty.buffer"
     "--initialize-at-run-time=io.netty.handler.timeout"
     "--initialize-at-run-time=io.netty.handler.traffic"
     "--initialize-at-run-time=io.netty.util.NetUtil"
@@ -63,19 +60,42 @@ RUN_INIT_BASE_ARGS=(
 )
 
 RUN_INIT_FEATURE_ARGS=(
-    "--initialize-at-run-time=io.netty.resolver.dns"
-    "--initialize-at-run-time=io.netty.handler.codec.http"
-    "--initialize-at-run-time=io.netty.handler.codec.http2"
-    "--initialize-at-run-time=io.netty.handler.proxy"
-    "--initialize-at-run-time=io.netty.handler.codec.rtsp"
-    "--initialize-at-run-time=io.netty.handler.ssl"
+    # clustered eventbus
+    "--initialize-at-run-time=io.vertx.core.eventbus.impl.clustered"
+    # compression
     "--initialize-at-run-time=io.netty.handler.codec.compression"
-    "--initialize-at-run-time=io.netty.handler.codec.socks"
-    "--initialize-at-run-time=io.netty.handler.codec.spdy"
+    # dns
+    "--initialize-at-run-time=io.netty.resolver.dns"
+    # http / http1
+    "--initialize-at-run-time=io.netty.handler.codec.http"
+    "--initialize-at-run-time=io.vertx.core.http.impl.ClientMultipartFormUpload"
+    "--initialize-at-run-time=io.vertx.core.http.impl.Http1xServerResponse"
+    "--initialize-at-run-time=io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec"
+    "--initialize-at-run-time=io.vertx.core.http.impl.http1.Http1ServerResponse"
+    "--initialize-at-run-time=io.vertx.core.http.impl.tcp.VertxHttp2ClientUpgradeCodec"
+    # http2
+    "--initialize-at-run-time=io.netty.handler.codec.http2"
+    "--initialize-at-run-time=io.vertx.core.http.impl.http2"
+    # http3
+    "--initialize-at-run-time=io.vertx.core.http.impl.http3.Http3Stream"
+    # marshalling
     "--initialize-at-run-time=io.netty.handler.codec.marshalling"
+    # proxy
+    "--initialize-at-run-time=io.netty.handler.proxy"
+    # quick
+    "--initialize-at-run-time=io.netty.handler.codec.quic"
+    "--initialize-at-run-time=io.vertx.core.net.impl.quic"
+    # rtsp
+    "--initialize-at-run-time=io.netty.handler.codec.rtsp"
+    # socks
+    "--initialize-at-run-time=io.netty.handler.codec.socks"
+    # spdy
+    "--initialize-at-run-time=io.netty.handler.codec.spdy"
     "--initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
+    # ssl / tls
+    "--initialize-at-run-time=io.netty.handler.ssl"
+    "--initialize-at-run-time=io.vertx.core.internal.tls.SslContextManager"
 )
-
 LAYER_ARGS=(
     "-H:LayerUse=target/libquarkusbaselayer.nil"
     "-H:LinkerRPath=."
@@ -84,7 +104,7 @@ LAYER_ARGS=(
     "-H:Path=./target"
 )
 
-${native_image} \
+${GRAALVM_HOME}/bin/native-image \
     "${BASE_ARGS[@]}" \
     "${RUN_INIT_BASE_ARGS[@]}" \
     "${RUN_INIT_FEATURE_ARGS[@]}" \
