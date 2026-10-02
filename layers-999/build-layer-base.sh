@@ -7,9 +7,9 @@ DEBUG_ARGS=()
 if [[ "$1" == "--with-debug=true" ]]; then
     DEBUG_ARGS+=(
         "-g"
-        "-H:+SourceLevelDebug"
-        "-H:+TrackNodeSourcePosition"
-        "-H:+DebugCodeInfoUseSourceMappings"
+#        "-H:+SourceLevelDebug"
+#        "-H:+TrackNodeSourcePosition"
+#        "-H:+DebugCodeInfoUseSourceMappings"
     )
 fi
 

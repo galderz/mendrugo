@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -eux
 
+DEBUG_ARGS=()
+if [[ "$1" == "--with-debug=true" ]]; then
+    DEBUG_ARGS+=(
+        "-g"
+#        "-H:+SourceLevelDebug"
+#        "-H:+TrackNodeSourcePosition"
+#        "-H:+DebugCodeInfoUseSourceMappings"
+    )
+fi
+
 BASE_ARGS=(
     "-J-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
     "-J-Dsun.nio.ch.maxUpdateArraySize=100"
@@ -108,4 +118,5 @@ ${GRAALVM_HOME}/bin/native-image \
     "${BASE_ARGS[@]}" \
     "${RUN_INIT_BASE_ARGS[@]}" \
     "${RUN_INIT_FEATURE_ARGS[@]}" \
+    "${DEBUG_ARGS[@]}" \
     "${LAYER_ARGS[@]}"
