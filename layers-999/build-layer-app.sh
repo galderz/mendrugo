@@ -114,6 +114,11 @@ LAYER_ARGS=(
     "-H:Path=./target"
 )
 
+# Copy original sources over
+if [[ "$1" == "--with-debug=true" ]]; then
+    cp -r ./getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/sources target
+fi
+
 ${GRAALVM_HOME}/bin/native-image \
     "${BASE_ARGS[@]}" \
     "${RUN_INIT_BASE_ARGS[@]}" \

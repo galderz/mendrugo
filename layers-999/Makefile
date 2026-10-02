@@ -33,7 +33,7 @@ $(base_nil): $(build_layer_base)
 > ./$(build_layer_base) $(build_args)
 
 $(runner_jar): $(app_pom)
-> ./$(build_non_layered)
+> ./$(build_non_layered) $(build_args)
 
 clean:
 > rm -drf target
