@@ -109,6 +109,7 @@ LAYER_ARGS=(
     "-H:ApplicationLayerInitializedClasses=io.quarkus.arc.Arc"
     "-H:ApplicationLayerInitializedClasses=io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder"
     "-H:ApplicationLayerInitializedClasses=io.quarkus.arc.runtime.ArcRecorder"
+    "-H:ApplicationLayerInitializedClasses=org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper"
     "-H:BuildOutputJSONFile=target/build-output-layer-base.json"
     "-H:LayerCreate=libquarkusbaselayer.nil,module=java.base,module=jdk.localedata,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jakarta.*"
     "-cp" "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/*"
