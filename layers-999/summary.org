@@ -1,3 +1,155 @@
+* 2.10.26
+Tested Sacha's PR and the crash is gone, but now get NPE accessing /greeting/alice endpoint:
+#+begin_src bash
+LD_LIBRARY_PATH=target target/getting-started-1.0.0-SNAPSHOT-runner
+__  ____  __  _____   ___  __ ____  ______
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/
+2026-10-02 04:39:19,769 INFO  [io.quarkus] (main) getting-started 1.0.0-SNAPSHOT native (powered by Quarkus 999-SNAPSHOT) started in 0.039s. Listening on: http://0.0.0.0:8080
+2026-10-02 04:39:19,769 INFO  [io.quarkus] (main) Profile prod activated.
+2026-10-02 04:39:19,769 INFO  [io.quarkus] (main) Installed features: [cdi, rest, smallrye-context-propagation, vertx]
+2026-10-02 04:40:11,272 ERROR [io.quarkus.vertx.http.runtime.QuarkusErrorHandler] (vert.x-eventloop-thread-2) HTTP Request to /greeting/alice failed, error id: 67a142bb-a7b3-4779-9e1f-9b7edc32bccf-1: java.lang.NullPointerException
+	at org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper.buildMapperEntryIfExists(RuntimeExceptionMapper.java:273)
+	at org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper.doGetExceptionMapper(RuntimeExceptionMapper.java:247)
+	at org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper.getExceptionMapper(RuntimeExceptionMapper.java:223)
+	at org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper.mapException(RuntimeExceptionMapper.java:86)
+	at org.jboss.resteasy.reactive.server.core.ResteasyReactiveRequestContext.mapExceptionIfPresent(ResteasyReactiveRequestContext.java:414)
+	at org.jboss.resteasy.reactive.server.handlers.ExceptionHandler.handle(ExceptionHandler.java:15)
+	at io.quarkus.resteasy.reactive.server.runtime.ServerRestHandlerDispatcher$Generated.dispatch(Unknown Source)
+	at io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:166)
+	at org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext.run(AbstractResteasyReactiveContext.java:166)
+	at org.jboss.resteasy.reactive.server.handlers.RestInitialHandler.beginProcessing(RestInitialHandler.java:50)
+	at org.jboss.resteasy.reactive.server.vertx.ResteasyReactiveVertxHandler.handle(ResteasyReactiveVertxHandler.java:23)
+	at org.jboss.resteasy.reactive.server.vertx.ResteasyReactiveVertxHandler.handle(ResteasyReactiveVertxHandler.java:10)
+	at io.vertx.ext.web.impl.RouteState.dispatch(RouteState.java:1349)
+	at io.vertx.ext.web.impl.RouteState.handleContext(RouteState.java:1364)
+	at io.vertx.ext.web.impl.RoutingContextImplBase.iterateNext(RoutingContextImplBase.java:221)
+	at io.vertx.ext.web.impl.RoutingContextImpl.next(RoutingContextImpl.java:150)
+	at io.quarkus.vertx.http.runtime.options.HttpServerCommonHandlers$1.handle(HttpServerCommonHandlers.java:60)
+	at io.quarkus.vertx.http.runtime.options.HttpServerCommonHandlers$1.handle(HttpServerCommonHandlers.java:38)
+	at io.vertx.ext.web.impl.RouteState.dispatch(RouteState.java:1349)
+	at io.vertx.ext.web.impl.RouteState.handleContext(RouteState.java:1364)
+	at io.vertx.ext.web.impl.RoutingContextImplBase.iterateNext(RoutingContextImplBase.java:221)
+	at io.vertx.ext.web.impl.RoutingContextImpl.next(RoutingContextImpl.java:150)
+	at io.quarkus.resteasy.reactive.server.runtime.ResteasyReactiveRecorder$13.handle(ResteasyReactiveRecorder.java:379)
+	at io.quarkus.resteasy.reactive.server.runtime.ResteasyReactiveRecorder$13.handle(ResteasyReactiveRecorder.java:368)
+	at io.vertx.ext.web.impl.RouteState.dispatch(RouteState.java:1349)
+	at io.vertx.ext.web.impl.RouteState.handleContext(RouteState.java:1364)
+	at io.vertx.ext.web.impl.RoutingContextImplBase.iterateNext(RoutingContextImplBase.java:221)
+	at io.vertx.ext.web.impl.RoutingContextImpl.next(RoutingContextImpl.java:150)
+	at io.vertx.ext.web.impl.RoutingContextImpl.route(RoutingContextImpl.java:99)
+	at io.vertx.ext.web.impl.RouterImpl.handle(RouterImpl.java:69)
+	at io.vertx.ext.web.impl.RouterImpl.handle(RouterImpl.java:37)
+	at io.quarkus.vertx.http.runtime.options.HttpServerCommonHandlers$2.handle(HttpServerCommonHandlers.java:85)
+	at io.quarkus.vertx.http.runtime.options.HttpServerCommonHandlers$2.handle(HttpServerCommonHandlers.java:68)
+	at io.quarkus.vertx.http.runtime.VertxHttpRecorder$1.handle(VertxHttpRecorder.java:205)
+	at io.quarkus.vertx.http.runtime.VertxHttpRecorder$1.handle(VertxHttpRecorder.java:179)
+	at io.vertx.core.http.impl.http1.Http1ServerRequestHandler.handle(Http1ServerRequestHandler.java:79)
+	at io.vertx.core.http.impl.http1.Http1ServerRequestHandler.handle(Http1ServerRequestHandler.java:36)
+	at io.vertx.core.impl.ContextBase.emit(ContextBase.java:82)
+	at io.vertx.core.http.impl.http1.Http1ServerConnection.handleMessage(Http1ServerConnection.java:227)
+	at io.vertx.core.net.impl.VertxConnection.read(VertxConnection.java:309)
+	at io.vertx.core.net.impl.VertxHandler.channelRead(VertxHandler.java:170)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:355)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelRead(ChannelInboundHandlerAdapter.java:93)
+	at io.netty.handler.codec.http.websocketx.extensions.WebSocketServerExtensionHandler.onHttpRequestChannelRead(WebSocketServerExtensionHandler.java:180)
+	at io.netty.handler.codec.http.websocketx.extensions.WebSocketServerExtensionHandler.channelRead(WebSocketServerExtensionHandler.java:97)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:355)
+	at io.netty.handler.timeout.IdleStateHandler.channelRead(IdleStateHandler.java:288)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:355)
+	at io.vertx.core.http.impl.http2.codec.Http1xUpgradeToH2CHandler.channelRead(Http1xUpgradeToH2CHandler.java:127)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:357)
+	at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:361)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:325)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:357)
+	at io.vertx.core.http.impl.tcp.Http1xOrH2CHandler.end(Http1xOrH2CHandler.java:61)
+	at io.vertx.core.http.impl.tcp.Http1xOrH2CHandler.channelRead(Http1xOrH2CHandler.java:38)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:357)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1429)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:918)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:176)
+	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe.handle(AbstractNioChannel.java:448)
+	at io.netty.channel.nio.NioIoHandler$DefaultNioRegistration.handle(NioIoHandler.java:388)
+	at io.netty.channel.nio.NioIoHandler.processSelectedKey(NioIoHandler.java:596)
+	at io.netty.channel.nio.NioIoHandler.processSelectedKeysPlain(NioIoHandler.java:541)
+	at io.netty.channel.nio.NioIoHandler.processSelectedKeys(NioIoHandler.java:514)
+	at io.netty.channel.nio.NioIoHandler.run(NioIoHandler.java:484)
+	at io.netty.channel.SingleThreadIoEventLoop.runIo(SingleThreadIoEventLoop.java:225)
+	at io.netty.channel.SingleThreadIoEventLoop.run(SingleThreadIoEventLoop.java:196)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:1204)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base@25.0.4.1.1/java.lang.Thread.run(Thread.java:1474)
+#+end_src
+* 24.9.26
+graal issue draft
+#+begin_src markdown
+Running a layered Quarkus app throws the following error:
+
+```bash
+$ LD_LIBRARY_PATH=target target/getting-started-1.0.0-SNAPSHOT-runner
+Exception in thread "main" java.lang.RuntimeException: Should never be hit
+	at io.quarkus.runtime.Quarkus.launchFromIDE(Quarkus.java:14)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:94)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:50)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:143)
+	at io.quarkus.runner.GeneratedMain.main(Unknown Source)
+```
+
+`Quarkus.run()` calls `Class.forName(Application.APP_CLASS_NAME, false, ...)` where `APP_CLASS_NAME = "io.quarkus.runner.ApplicationImpl"` is a compile-time constant:
+
+```java
+package io.quarkus.runtime;
+
+public abstract class Application implements Closeable {
+    public static final String APP_CLASS_NAME = "io.quarkus.runner.ApplicationImpl";
+...
+```
+
+When building the base layer, `ReflectionPlugins.processClassForName()` intercepts `Class.forName` calls with constant arguments and tries to resolve the class via `ImageClassLoader.findClass()`.
+Since `ApplicationImpl` is an app-layer-generaed class that doesn't exist on the base layer classpath, GraalVM synthesizes a `ClassNotFoundException` that gets permanently baked into the compiled `Quarkus.run()` method.
+
+At runtime the synthesized exception is caught by the `catch (ClassNotFoundException e)` block (which prints the stack trace), then execution falls through to `launchFromIDE()`
+at line 97 — the dev-mode path — which throws `RuntimeException: Should never be hit`:
+
+```
+public class Quarkus {
+  public static void run(Class<? extends QuarkusApplication> quarkusApplication, BiConsumer<Integer, Throwable> exitHandler,
+          String... args) {
+      try {
+          //we already have an application, run it directly
+          Class<? extends Application> appClass = (Class<? extends Application>) Class.forName(Application.APP_CLASS_NAME,
+                  false, Thread.currentThread().getContextClassLoader());
+          ...
+          return;
+      } catch (ClassNotFoundException e) {
+          //ignore, this happens when running in dev mode
+      }
+
+      //dev mode path, i.e. launching from the IDE
+      //this is not the quarkus:dev path as it will augment before
+      //calling this method
+      launchFromIDE(quarkusApplication, args);
+...
+```
+
+One way to fix this would be on the GraalVM side, such that `ReflectionPlugins.processClassForName` does not throw an exception but returns false if building a shared layer:
+
+```java
+if (!typeResult.isPresent()) {
+    if (RuntimeClassLoading.isSupported()) {
+        return false;
+    }
+    if (ImageLayerBuildingSupport.buildingSharedLayer()) {
+        /* The class might be present in an extension layer. */
+        return false;
+    }
+    Throwable e = typeResult.getException();
+    return throwException(b, targetMethod, null, arguments, e.getClass(), e.getMessage(), true);
+}
+```
+#+end_src
 * Netty Base
 In this experiment, we attempt to build a base layer that is only java.base + Netty (io.netty and required Quarkus Netty code)
 
