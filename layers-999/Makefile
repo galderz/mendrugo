@@ -1,6 +1,6 @@
 TOPDIR = ..
 
-default: run
+default: build
 
 include $(TOPDIR)/make/MakeBase.gmk
 
@@ -20,6 +20,8 @@ build_args =
 ifeq ($(DEBUG),true)
   build_args += --with-debug=true
 endif
+
+build: $(runner)
 
 run: $(runner)
 > LD_LIBRARY_PATH=target $<
