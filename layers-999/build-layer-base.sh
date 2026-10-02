@@ -3,6 +3,16 @@ set -eux
 
 mkdir -p target
 
+DEBUG_ARGS=()
+if [[ "$1" == "--with-debug=true" ]]; then
+    DEBUG_ARGS+=(
+        "-g"
+        "-H:+SourceLevelDebug"
+        "-H:+TrackNodeSourcePosition"
+        "-H:+DebugCodeInfoUseSourceMappings"
+    )
+fi
+
 BASE_ARGS=(
     "--enable-monitoring=heapdump,threaddump"
 )
@@ -111,4 +121,5 @@ ${GRAALVM_HOME}/bin/native-image \
     "${TRACE_ARGS[@]}" \
     "${RUN_INIT_BASE_ARGS[@]}" \
     "${RUN_INIT_FEATURE_ARGS[@]}" \
+    "${DEBUG_ARGS[@]}" \
     "${LAYER_ARGS[@]}"
