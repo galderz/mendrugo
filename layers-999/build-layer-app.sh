@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eux
 
+SRC_JAR_DIR="getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar"
+
 DEBUG_ARGS=()
 if [[ "$1" == "--with-debug=true" ]]; then
     DEBUG_ARGS+=(
@@ -51,72 +53,83 @@ BASE_ARGS=(
     "--exclude-config" 'io\.netty\.netty-handler' '/META-INF/native-image/io\.netty/netty-handler/generated/handlers/reflect-config\.json'
 )
 
-RUN_INIT_BASE_ARGS=(
-    "--initialize-at-run-time=io.netty.buffer"
-    "--initialize-at-run-time=io.netty.handler.timeout"
-    "--initialize-at-run-time=io.netty.handler.traffic"
-    "--initialize-at-run-time=io.netty.util.NetUtil"
-    "--initialize-at-run-time=io.netty.util.internal.PlatformDependent"
-    "--initialize-at-run-time=io.netty.util.internal.PlatformDependent0"
-    "--initialize-at-run-time=io.vertx.ext.web.handler.impl"
-    "--initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder"
-    "--initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler"
-    "--initialize-at-run-time=jakarta.el.ELManager"
-    "--initialize-at-run-time=java.rmi"
-    "--initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch"
-    "--initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch"
-    "--initialize-at-run-time=jdk.tools.jlink.internal.plugins"
-    "--initialize-at-run-time=sun.rmi"
+RUN_INIT_BASE=(
+    "io.netty.buffer"
+    "io.netty.handler.timeout"
+    "io.netty.handler.traffic"
+    "io.netty.util.NetUtil"
+    "io.netty.util.internal.PlatformDependent"
+    "io.netty.util.internal.PlatformDependent0"
+    "io.vertx.ext.web.handler.impl"
+    "org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder"
+    "org.jboss.logmanager.handlers.SyslogHandler"
+    "jakarta.el.ELManager"
+    "java.rmi"
+    "jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch"
+    "jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch"
+    "jdk.tools.jlink.internal.plugins"
+    "sun.rmi"
 )
 
-RUN_INIT_FEATURE_ARGS=(
+RUN_INIT_BASE_ARGS=()
+for arg in "${RUN_INIT_BASE[@]}"; do
+    RUN_INIT_BASE_ARGS+=("--initialize-at-run-time=$arg")
+done
+
+RUN_INIT_FEATURE=(
     # clustered eventbus
-    "--initialize-at-run-time=io.vertx.core.eventbus.impl.clustered"
+    "io.vertx.core.eventbus.impl.clustered"
     # compression
-    "--initialize-at-run-time=io.netty.handler.codec.compression"
+    "io.netty.handler.codec.compression"
     # dns
-    "--initialize-at-run-time=io.netty.resolver.dns"
+    "io.netty.resolver.dns"
     # http / http1
-    "--initialize-at-run-time=io.netty.handler.codec.http"
-    "--initialize-at-run-time=io.vertx.core.http.impl.ClientMultipartFormUpload"
-    "--initialize-at-run-time=io.vertx.core.http.impl.Http1xServerResponse"
-    "--initialize-at-run-time=io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec"
-    "--initialize-at-run-time=io.vertx.core.http.impl.http1.Http1ServerResponse"
-    "--initialize-at-run-time=io.vertx.core.http.impl.tcp.VertxHttp2ClientUpgradeCodec"
+    "io.netty.handler.codec.http"
+    "io.vertx.core.http.impl.ClientMultipartFormUpload"
+    "io.vertx.core.http.impl.Http1xServerResponse"
+    "io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec"
+    "io.vertx.core.http.impl.http1.Http1ServerResponse"
+    "io.vertx.core.http.impl.tcp.VertxHttp2ClientUpgradeCodec"
     # http2
-    "--initialize-at-run-time=io.netty.handler.codec.http2"
-    "--initialize-at-run-time=io.vertx.core.http.impl.http2"
+    "io.netty.handler.codec.http2"
+    "io.vertx.core.http.impl.http2"
     # http3
-    "--initialize-at-run-time=io.vertx.core.http.impl.http3.Http3Stream"
+    "io.vertx.core.http.impl.http3.Http3Stream"
     # marshalling
-    "--initialize-at-run-time=io.netty.handler.codec.marshalling"
+    "io.netty.handler.codec.marshalling"
     # proxy
-    "--initialize-at-run-time=io.netty.handler.proxy"
+    "io.netty.handler.proxy"
     # quick
-    "--initialize-at-run-time=io.netty.handler.codec.quic"
-    "--initialize-at-run-time=io.vertx.core.net.impl.quic"
+    "io.netty.handler.codec.quic"
+    "io.vertx.core.net.impl.quic"
     # rtsp
-    "--initialize-at-run-time=io.netty.handler.codec.rtsp"
+    "io.netty.handler.codec.rtsp"
     # socks
-    "--initialize-at-run-time=io.netty.handler.codec.socks"
+    "io.netty.handler.codec.socks"
     # spdy
-    "--initialize-at-run-time=io.netty.handler.codec.spdy"
-    "--initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
+    "io.netty.handler.codec.spdy"
+    "io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
     # ssl / tls
-    "--initialize-at-run-time=io.netty.handler.ssl"
-    "--initialize-at-run-time=io.vertx.core.internal.tls.SslContextManager"
+    "io.netty.handler.ssl"
+    "io.vertx.core.internal.tls.SslContextManager"
 )
+
+RUN_INIT_FEATURE_ARGS=()
+for arg in "${RUN_INIT_FEATURE[@]}"; do
+    RUN_INIT_FEATURE_ARGS+=("--initialize-at-run-time=$arg")
+done
+
 LAYER_ARGS=(
     "-H:LayerUse=target/libquarkusbaselayer.nil"
     "-H:LinkerRPath=."
-    "-jar" "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/getting-started-1.0.0-SNAPSHOT-runner.jar"
+    "-jar" "${SRC_JAR_DIR}/getting-started-1.0.0-SNAPSHOT-runner.jar"
     "-o" "getting-started-1.0.0-SNAPSHOT-runner"
     "-H:Path=./target"
 )
 
 # Copy original sources over
 if [[ "$1" == "--with-debug=true" ]]; then
-    cp -r ./getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/sources target
+    cp -r ./${SRC_JAR_DIR}/sources target
 fi
 
 ${GRAALVM_HOME}/bin/native-image \

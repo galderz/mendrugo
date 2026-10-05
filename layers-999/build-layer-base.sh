@@ -3,6 +3,8 @@ set -eux
 
 mkdir -p target
 
+SRC_JAR_DIR="getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar"
+
 DEBUG_ARGS=()
 if [[ "$1" == "--with-debug=true" ]]; then
     DEBUG_ARGS+=(
@@ -25,94 +27,129 @@ TRACE_ARGS=(
 #    "--trace-object-instantiation=io.netty.handler.ssl.ClientAuth"
 )
 
-RUN_INIT_BASE_ARGS=(
-    "--initialize-at-run-time=io.netty.buffer"
-    "--initialize-at-run-time=io.netty.channel.DefaultChannelId"
-    "--initialize-at-run-time=io.netty.channel.unix.Errors"
-    "--initialize-at-run-time=io.netty.channel.unix.FileDescriptor"
-    "--initialize-at-run-time=io.netty.channel.unix.IovArray"
-    "--initialize-at-run-time=io.netty.channel.unix.Limits"
-    "--initialize-at-run-time=io.netty.handler.codec.ReplayingDecoderByteBuf"
-    "--initialize-at-run-time=io.netty.internal.tcnative"
-    "--initialize-at-run-time=io.netty.util.AbstractReferenceCounted"
-    "--initialize-at-run-time=io.netty.util.NetUtil"
-    "--initialize-at-run-time=io.netty.util.internal.CleanerJava24Linker"
-    "--initialize-at-run-time=io.netty.util.internal.PlatformDependent"
-    "--initialize-at-run-time=io.netty.util.internal.PlatformDependent0"
-    "--initialize-at-run-time=io.quarkus.netty.runtime.EmptyByteBufStub"
-    "--initialize-at-run-time=io.quarkus.runtime.configuration.RuntimeConfigBuilder\$UuidConfigSource\$Holder"
-    "--initialize-at-run-time=io.quarkus.runtime.graal.InetRunTime"
-    "--initialize-at-run-time=io.quarkus.runtime.ExecutorRecorder"
-    "--initialize-at-run-time=io.smallrye.common.os.Process"
-    "--initialize-at-run-time=io.smallrye.common.net.HostName"
-    "--initialize-at-run-time=io.vertx.core.buffer.impl.PartialPooledByteBufAllocator"
-    "--initialize-at-run-time=io.vertx.core.buffer.impl.VertxByteBufAllocator"
-    "--initialize-at-run-time=io.vertx.core.parsetools.impl.RecordParserImpl"
-    "--initialize-at-run-time=jakarta.el.ELManager"
-    "--initialize-at-run-time=java.rmi"
-    "--initialize-at-run-time=java.util.logging.ConsoleHandler"
-    "--initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch"
-    "--initialize-at-run-time=jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch"
-    "--initialize-at-run-time=jdk.package"
-    "--initialize-at-run-time=jdk.tools.jlink.internal.plugins"
-    "--initialize-at-run-time=org.jboss.threads.JDKSpecific\$ThreadAccess"
-    "--initialize-at-run-time=org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder"
-    "--initialize-at-run-time=org.jboss.logmanager.handlers.SyslogHandler"
-    "--initialize-at-run-time=sun.rmi"
+RUN_INIT_BASE=(
+    "io.netty.buffer"
+    "io.netty.channel.DefaultChannelId"
+    "io.netty.channel.unix.Errors"
+    "io.netty.channel.unix.FileDescriptor"
+    "io.netty.channel.unix.IovArray"
+    "io.netty.channel.unix.Limits"
+    "io.netty.handler.codec.ReplayingDecoderByteBuf"
+    "io.netty.internal.tcnative"
+    "io.netty.util.AbstractReferenceCounted"
+    "io.netty.util.NetUtil"
+    "io.netty.util.internal.CleanerJava24Linker"
+    "io.netty.util.internal.PlatformDependent"
+    "io.netty.util.internal.PlatformDependent0"
+    "io.quarkus.netty.runtime.EmptyByteBufStub"
+    "io.quarkus.runtime.configuration.RuntimeConfigBuilder\$UuidConfigSource\$Holder"
+    "io.quarkus.runtime.graal.InetRunTime"
+    "io.quarkus.runtime.ExecutorRecorder"
+    "io.smallrye.common.os.Process"
+    "io.smallrye.common.net.HostName"
+    "io.vertx.core.buffer.impl.PartialPooledByteBufAllocator"
+    "io.vertx.core.buffer.impl.VertxByteBufAllocator"
+    "io.vertx.core.parsetools.impl.RecordParserImpl"
+    "jakarta.el.ELManager"
+    "java.rmi"
+    "java.util.logging.ConsoleHandler"
+    "jdk.jpackage.internal.LinuxPackageArch\$DebPackageArch"
+    "jdk.jpackage.internal.LinuxPackageArch\$RpmPackageArch"
+    "jdk.package"
+    "jdk.tools.jlink.internal.plugins"
+    "org.jboss.threads.JDKSpecific\$ThreadAccess"
+    "org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder"
+    "org.jboss.logmanager.handlers.SyslogHandler"
+    "sun.rmi"
 )
 
-RUN_INIT_FEATURE_ARGS=(
+RUN_INIT_BASE_ARGS=()
+for arg in "${RUN_INIT_BASE[@]}"; do
+    RUN_INIT_BASE_ARGS+=("--initialize-at-run-time=$arg")
+done
+
+RUN_INIT_FEATURE=(
     # clustered eventbus
-    "--initialize-at-run-time=io.vertx.core.eventbus.impl.clustered"
+    "io.vertx.core.eventbus.impl.clustered"
     # compression
-    "--initialize-at-run-time=io.netty.handler.codec.compression.BrotliOptions"
-    "--initialize-at-run-time=io.netty.handler.codec.compression.ZstdConstants"
-    "--initialize-at-run-time=io.netty.handler.codec.compression.ZstdOptions"
+    "io.netty.handler.codec.compression.BrotliOptions"
+    "io.netty.handler.codec.compression.ZstdConstants"
+    "io.netty.handler.codec.compression.ZstdOptions"
     # file
-    "--initialize-at-run-time=io.vertx.core.file.FileSystemOptions"
+    "io.vertx.core.file.FileSystemOptions"
     # http / http1
-    "--initialize-at-run-time=io.netty.handler.codec.http.HttpContentCompressor"
-    "--initialize-at-run-time=io.netty.handler.codec.http.HttpServerExpectContinueHandler"
-    "--initialize-at-run-time=io.netty.handler.codec.http.HttpObjectAggregator"
-    "--initialize-at-run-time=io.netty.handler.codec.http.HttpObjectEncoder"
-    "--initialize-at-run-time=io.netty.handler.codec.http.websocketx.extensions.compression.DeflateDecoder"
-    "--initialize-at-run-time=io.netty.handler.codec.http.websocketx.WebSocket00FrameEncoder"
-    "--initialize-at-run-time=io.vertx.core.http.impl.ClientMultipartFormUpload"
-    "--initialize-at-run-time=io.vertx.core.http.impl.Http1xServerResponse"
-    "--initialize-at-run-time=io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec"
-    "--initialize-at-run-time=io.vertx.core.http.impl.http1.Http1ServerResponse"
-    "--initialize-at-run-time=io.vertx.core.http.impl.tcp.VertxHttp2ClientUpgradeCodec"
+    "io.netty.handler.codec.http.HttpContentCompressor"
+    "io.netty.handler.codec.http.HttpServerExpectContinueHandler"
+    "io.netty.handler.codec.http.HttpObjectAggregator"
+    "io.netty.handler.codec.http.HttpObjectEncoder"
+    "io.netty.handler.codec.http.websocketx.extensions.compression.DeflateDecoder"
+    "io.netty.handler.codec.http.websocketx.WebSocket00FrameEncoder"
+    "io.vertx.core.http.impl.ClientMultipartFormUpload"
+    "io.vertx.core.http.impl.Http1xServerResponse"
+    "io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec"
+    "io.vertx.core.http.impl.http1.Http1ServerResponse"
+    "io.vertx.core.http.impl.tcp.VertxHttp2ClientUpgradeCodec"
     # http2
-    "--initialize-at-run-time=io.netty.handler.codec.http2"
-    "--initialize-at-run-time=io.vertx.core.http.impl.http2"
+    "io.netty.handler.codec.http2"
+    "io.vertx.core.http.impl.http2"
     # http3
-    "--initialize-at-run-time=io.vertx.core.http.impl.http3.Http3Stream"
+    "io.vertx.core.http.impl.http3.Http3Stream"
     # json
-    "--initialize-at-run-time=io.vertx.core.json.Json"
+    "io.vertx.core.json.Json"
     # jwt
-    "--initialize-at-run-time=io.vertx.ext.auth.impl.jose.JWT"
+    "io.vertx.ext.auth.impl.jose.JWT"
     # pcap
-    "--initialize-at-run-time=io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
+    "io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
     # quick
-    "--initialize-at-run-time=io.netty.handler.codec.quic"
-    "--initialize-at-run-time=io.vertx.core.net.impl.quic"
+    "io.netty.handler.codec.quic"
+    "io.vertx.core.net.impl.quic"
     # sockjs
-    "--initialize-at-run-time=io.vertx.ext.web.handler.sockjs.impl.XhrTransport"
+    "io.vertx.ext.web.handler.sockjs.impl.XhrTransport"
     # ssl / tls
-    "--initialize-at-run-time=io.netty.handler.ssl"
-    "--initialize-at-run-time=io.vertx.core.internal.tls.SslContextManager"
+    "io.netty.handler.ssl"
+    "io.vertx.core.internal.tls.SslContextManager"
 )
+
+RUN_INIT_FEATURE_ARGS=()
+for arg in "${RUN_INIT_FEATURE[@]}"; do
+    RUN_INIT_FEATURE_ARGS+=("--initialize-at-run-time=$arg")
+done
+
+APP_LAYER_INIT=(
+    "io.quarkus.arc.Arc"
+    "io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder"
+    "io.quarkus.arc.runtime.ArcRecorder"
+    "org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper"
+)
+
+APP_LAYER_INIT_ARGS=()
+for arg in "${APP_LAYER_INIT[@]}"; do
+    APP_LAYER_INIT_ARGS+=("-H:ApplicationLayerInitializedClasses=${arg}")
+done
+
+LAYER_PACKAGE=(
+    "package=io.quarkus.*"
+    "package=io.netty.*"
+    "package=io.vertx.*"
+    "package=jakarta.*"
+)
+
+LAYER_PACKAGE_ARGS=$(IFS=,; echo "${LAYER_PACKAGE[*]}")
+
+MODULE=(
+    "module=java.base"
+    "module=jdk.localedata"
+)
+
+MODULE_ARGS=$(IFS=,; echo "${MODULE[*]}")
 
 LAYER_ARGS=(
     "--initialize-at-build-time="
     "-H:+PrintClassInitialization"
-    "-H:ApplicationLayerInitializedClasses=io.quarkus.arc.Arc"
-    "-H:ApplicationLayerInitializedClasses=io.quarkus.smallrye.context.runtime.SmallRyeContextPropagationRecorder"
-    "-H:ApplicationLayerInitializedClasses=io.quarkus.arc.runtime.ArcRecorder"
-    "-H:ApplicationLayerInitializedClasses=org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper"
+    "${APP_LAYER_INIT_ARGS[@]}"
     "-H:BuildOutputJSONFile=target/build-output-layer-base.json"
-    "-H:LayerCreate=libquarkusbaselayer.nil,module=java.base,module=jdk.localedata,package=io.quarkus.*,package=io.netty.*,package=io.vertx.*,package=jakarta.*"
-    "-cp" "getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/*"
+    "-H:LayerCreate=libquarkusbaselayer.nil,${MODULE_ARGS},${LAYER_PACKAGE_ARGS}"
+    "-cp" "${SRC_JAR_DIR}/lib/*"
     "-o" "libquarkusbaselayer"
     "-H:Path=./target"
 )
