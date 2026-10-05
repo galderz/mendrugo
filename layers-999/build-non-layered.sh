@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eux
+set -ex
 
 pushd getting-started
 

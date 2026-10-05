@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eux
+set -ex
 
 SRC_JAR_DIR="getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar"
 
