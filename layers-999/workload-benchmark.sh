@@ -242,7 +242,7 @@ if [ -n "${CPU_AFFINITY}" ]; then
     if [ "${IS_NATIVE}" = true ]; then
       taskset -c ${CPU_AFFINITY} ${BINARY_PATH} &
     else
-      taskset -c ${CPU_AFFINITY} java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
+      taskset -c ${CPU_AFFINITY} ${JAVA_HOME}/bin/java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
     fi
     AFFINITY_DESC="pinned to CPUs ${CPU_AFFINITY}"
   else
@@ -265,14 +265,14 @@ if [ -n "${CPU_AFFINITY}" ]; then
     if [ "${IS_NATIVE}" = true ]; then
       LD_LIBRARY_PATH=target ${BINARY_PATH} &
     else
-      java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
+      ${JAVA_HOME}/bin/java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
     fi
   fi
 else
   if [ "${IS_NATIVE}" = true ]; then
     LD_LIBRARY_PATH=target ${BINARY_PATH} &
   else
-    java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
+    ${JAVA_HOME}/bin/java ${JVM_ARGS} ${JFR_ARGS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${BINARY_PATH} &
   fi
 fi
 
@@ -327,7 +327,7 @@ if [ "${PERF_STAT}" = "true" ]; then
 else
   if [ "${JFR}" = true ]
   then
-    jcmd $quarkus_pid JFR.start duration=${PROFILING}s filename=${NOW}.jfr dumponexit=true settings=profile
+    ${JAVA_HOME}/bin/jcmd $quarkus_pid JFR.start duration=${PROFILING}s filename=${NOW}.jfr dumponexit=true settings=profile
   else
     echo "----- Starting async-profiler on quarkus application ($quarkus_pid)"
     jbang ap-loader@jvm-profiling-tools/ap-loader profiler ${TOTAL_ARG} --total -e ${EVENT} -t -d ${PROFILING} -f ${NOW}_${EVENT}.${FORMAT} $quarkus_pid &

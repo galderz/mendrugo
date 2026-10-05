@@ -9,6 +9,7 @@ NUM_RUNS=${NUM_RUNS:-5}  # Number of runs per configuration (default: 5)
 RESULTS_DIR="benchmark-results"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RUN_DIR="${RESULTS_DIR}/${TIMESTAMP}"
+WORKLOAD_CPU_FREQ=${WORKLOAD_CPU_FREQ:-2200}
 
 # Paths
 GETTING_STARTED_DIR="getting-started"
@@ -61,22 +62,6 @@ run_non_layered_builds() {
             echo "WARNING: Expected output file not found!"
         fi
     done
-
-    # Run runtime performance benchmark for non-layered binary
-    echo ""
-    echo "=== Running Runtime Performance Benchmark for Non-Layered ==="
-    if [ -f "./workshop-benchmark.sh" ]; then
-        bash ./workshop-benchmark.sh -b non-layered -d 40
-        # Move profiling results to benchmark directory
-        if ls *_cpu.html 1> /dev/null 2>&1; then
-            mv *_cpu.html "./${RUN_DIR}/non-layered/" || true
-        fi
-        if ls *_perfstat.txt 1> /dev/null 2>&1; then
-            mv *_perfstat.txt "./${RUN_DIR}/non-layered/" || true
-        fi
-    else
-        echo "WARNING: workshop-benchmark.sh not found, skipping runtime benchmark"
-    fi
 }
 
 prepare_base_layer() {
@@ -119,7 +104,46 @@ run_layered_builds() {
             echo "WARNING: Expected output file not found!"
         fi
     done
+}
 
+run_jvm_workload() {
+    # Run runtime performance benchmark for non-layered binary
+    echo ""
+    echo "=== Running Runtime Performance Benchmark for JVM ==="
+    mkdir -p "./${RUN_DIR}/jvm/"
+    if [ -f "./workshop-benchmark.sh" ]; then
+        bash JAVA_HOME=/usr/lib/jvm/java-25 ./workshop-benchmark.sh -b jvm -d 40
+        # Move profiling results to benchmark directory
+        if ls *_cpu.html 1> /dev/null 2>&1; then
+            mv *_cpu.html "./${RUN_DIR}/jvm/" || true
+        fi
+        if ls *_perfstat.txt 1> /dev/null 2>&1; then
+            mv *_perfstat.txt "./${RUN_DIR}/jvm/" || true
+        fi
+    else
+        echo "WARNING: workshop-benchmark.sh not found, skipping runtime benchmark"
+    fi
+}
+
+run_non_layered_workload() {
+    # Run runtime performance benchmark for non-layered binary
+    echo ""
+    echo "=== Running Runtime Performance Benchmark for Non-Layered ==="
+    if [ -f "./workshop-benchmark.sh" ]; then
+        bash ./workshop-benchmark.sh -b non-layered -d 40
+        # Move profiling results to benchmark directory
+        if ls *_cpu.html 1> /dev/null 2>&1; then
+            mv *_cpu.html "./${RUN_DIR}/non-layered/" || true
+        fi
+        if ls *_perfstat.txt 1> /dev/null 2>&1; then
+            mv *_perfstat.txt "./${RUN_DIR}/non-layered/" || true
+        fi
+    else
+        echo "WARNING: workshop-benchmark.sh not found, skipping runtime benchmark"
+    fi
+}
+
+run_layered_workload() {
     # Run runtime performance benchmark for layered binary
     echo ""
     echo "=== Running Runtime Performance Benchmark for Layered ==="
@@ -128,7 +152,7 @@ run_layered_builds() {
         # Move profiling results to benchmark directory
         if ls *_cpu.html 1> /dev/null 2>&1; then
             mv *_cpu.html "./${RUN_DIR}/layered/" || true
-        fi
+    pppp    fi
         if ls *_perfstat.txt 1> /dev/null 2>&1; then
             mv *_perfstat.txt "./${RUN_DIR}/layered/" || true
         fi
@@ -144,6 +168,14 @@ START_TIME=$(date +%s)
 run_non_layered_builds
 prepare_base_layer
 run_layered_builds
+
+../make/set-cpu-freq.sh ${WORKLOAD_CPU_FREQ}
+
+run_jvm_workload
+run_non_layered_workload
+run_layered workload
+
+../make/reset-cpu-freq.sh
 
 END_TIME=$(date +%s)
 TOTAL_TIME=$((END_TIME - START_TIME))
