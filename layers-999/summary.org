@@ -3,6 +3,15 @@
 * Round trip tests
 Benchmark build time:
 #+begin_src bash
+./run-benchmark.sh
+# when asked, in a separate shell execute:
+~/src/colata/make/set-cpu-freq.sh 2200
+#+end_src
+
+Setup for performance:
+#+begin_src bash
+~/src/colata/make/benchmarking-nix.sh
+~/src/colata/make/benchmarking-nix.sh --dry-run=false
 #+end_src
 
 Smoke test

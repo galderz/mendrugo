@@ -152,7 +152,7 @@ run_layered_workload() {
         # Move profiling results to benchmark directory
         if ls *_cpu.html 1> /dev/null 2>&1; then
             mv *_cpu.html "./${RUN_DIR}/layered/" || true
-    pppp    fi
+        fi
         if ls *_perfstat.txt 1> /dev/null 2>&1; then
             mv *_perfstat.txt "./${RUN_DIR}/layered/" || true
         fi
