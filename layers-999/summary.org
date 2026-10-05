@@ -1,4 +1,246 @@
 * 2.10.26
+** NPE with debug info
+follow up 1:
+#+begin_src bash
+First, instead of running `gdb` straight, you rather use `gud-gdb` via Emacs. Adjust the skill instructions for it.
+
+Then, instead of needing to get emacs and gud-gdb to execute `LD_LIBRARY_PATH=target target/getting-started-1.0.0-SNAPSHOT-runner`,
+it's easier if you go to target directory and just call `getting-started-1.0.0-SNAPSHOT-runner` from there.
+So, instruct emacs to be run from that directory.
+
+I got a warning saying that source was not found. The user needs to make sure to run `mvn dependency:sources` before building the the native image. Update the skill to reflect this. This is the error:
+```
+Thread 6 "ntloop-thread-0" hit Breakpoint 1.2, org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext::handleException(java.lang.Throwable*, boolean) (this=io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext = {...},
+    t=java.lang.NullPointerException = {...}, keepSameTarget=true) at org/jboss/resteasy/reactive/common/core/AbstractResteasyReactiveContext.java:360
+⚠️ warning: 360	org/jboss/resteasy/reactive/common/core/AbstractResteasyReactiveContext.java: No such file or directory
+```
+
+In step 2,
+- In strategy A, t is the NPE
+
+- In strategy B, throwable is null, but the klass argument is:
+```
+klass = java.lang.Class = {name = "jakarta.ws.rs.NotFoundException", openTypeWorldTypeCheckSlots = int [7] = {...},
+  openTypeWorldInterfaceHashTable = int [1] = {...}, componentType = null,
+  companion = com.oracle.svm.core.hub.DynamicHubCompanion = {...}, layoutEncoding = 40, typeID = 38465, interfaceID = -1,
+  openTypeWorldInterfaceHashParam = 0, monitorOffset = 32, identityHashOffset = 36, referenceMapCompressedOffset = 11520062,
+  typeIDDepth = 6, numClassTypes = 7, numIterableInterfaceTypes = 0, flags = 512, hubType = 0, referenceType = 0, layerId = 0}
+```
+
+- In strategy C, locals have been optimized so cannot see throwable.
+
+In step 3, the static mappers is indeed null, and the constructor does not get invoked at runtime.
+
+In step 4, keepTarget is true.
+#+end_src
+
+initial prompt:
+#+begin_src markdown
+Running `LD_LIBRARY_PATH=target target/getting-started-1.0.0-SNAPSHOT-runner` and in another shell running `curl localhost:8080/greeting/alice` makes the runner process throw an NullPointerException.
+
+The runner binary has been built with GraalVM native image layers technology.
+`build-layer-base.sh` builds the base layer and `build-layer-app.sh` builds the app layer.
+
+You want to find out what is causing an NPE like this:
+```
+2026-10-02 04:40:11,272 ERROR [io.quarkus.vertx.http.runtime.QuarkusErrorHandler] (vert.x-eventloop-thread-2) HTTP Request to /greeting/alice failed, error id: 67a142bb-a7b3-4779-9e1f-9b7edc32bccf-1: java.lang.NullPointerException
+	at org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper.buildMapperEntryIfExists(RuntimeExceptionMapper.java:273)
+	at org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper.doGetExceptionMapper(RuntimeExceptionMapper.java:247)
+	at org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper.getExceptionMapper(RuntimeExceptionMapper.java:223)
+	at org.jboss.resteasy.reactive.server.core.RuntimeExceptionMapper.mapException(RuntimeExceptionMapper.java:86)
+	at org.jboss.resteasy.reactive.server.core.ResteasyReactiveRequestContext.mapExceptionIfPresent(ResteasyReactiveRequestContext.java:414)
+	at org.jboss.resteasy.reactive.server.handlers.ExceptionHandler.handle(ExceptionHandler.java:15)
+	at io.quarkus.resteasy.reactive.server.runtime.ServerRestHandlerDispatcher$Generated.dispatch(Unknown Source)
+	at io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:166)
+```
+
+Looking at the Quarkus source code (located in ~/src/quarkus),
+it would appear that `mappers` is null.
+
+The way this map can be null is if R.getClassExceptionMappers() finds that the `context.getTarget()` is null,
+in which case `mappers` ends up being null.
+
+The `runner` binary has been built with DWARF debug info (-g flag),
+See https://github.com/oracle/graal/blob/master/docs/reference-manual/native-image/DebugInfo.md as reference for how the debug info works with native image generated binaries.
+
+Your task is to help a developer find the root cause of this issue.
+The developer will run gdb sessions to find the root cause of this NPE.
+Note that there could be other exceptions being hidden because this NPE is thrown from an exceptional path, and it's probably hiding the actual exception encountered when trying to service the request.
+
+Make sure you create a reusable skill that can be used in future sessions to debug issues like this.
+#+end_src
+** OOME with source level debug
+Builds fine with just `-g` and default heap size (~30gb on my server).
+
+Still run out with 100gb heap size and `-g -H:+SourceLevelDebug -H:+TrackNodeSourcePosition -H:+DebugCodeInfoUseSourceMappings`:
+#+begin_src bash
+OpenJDK 64-Bit Server VM warning: Max heap size too large for Compressed Oops
+========================================================================================================================
+GraalVM Native Image: Generating 'libquarkusbaselayer.so' (image layer)...
+========================================================================================================================
+[1/8] Initializing...WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.aayushatharva.brotli4j.Brotli4jLoader in an unnamed module (file:/home/agentuser/src/mendrugo/layers-999/getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/com.aayushatharva.brotli4j.brotli4j-1.23.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess (file:/home/agentuser/src/mendrugo/layers-999/getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/modified-io.netty.netty-common-4.2.18.Final.jar)
+WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+                                                                                   (9.6s @ 0.68GiB)
+ Builder configuration:
+ - Java version: 25.0.4.1.1+1, vendor version: GraalVM CE 25.5.5-dev+1.1
+ - Graal compiler: optimization level: 2, target machine: x86-64-v3
+ - C compiler: gcc (redhat, x86_64, 16.2.1)
+ - Assertions: disabled, system assertions: disabled
+ Image configuration:
+ - Garbage collector: Serial GC (max heap size: 80% of RAM)
+ - Assertions: disabled (class-specific config may apply), system assertions: disabled
+------------------------------------------------------------------------------------------------------------------------
+ 8 experimental option(s) unlocked:
+ - '-H:+DebugCodeInfoUseSourceMappings' (origin(s): command line)
+ - '-H:+PrintClassInitialization' (origin(s): command line)
+ - '-H:LayerCreate' (origin(s): command line)
+ - '-H:BuildOutputJSONFile' (origin(s): command line)
+ - '-H:+TrackNodeSourcePosition' (origin(s): command line)
+ - '-H:Path': Use the '-o' option instead. (origin(s): command line)
+ - '-H:ApplicationLayerInitializedClasses' (origin(s): command line)
+ - '-H:+SourceLevelDebug' (origin(s): command line)
+------------------------------------------------------------------------------------------------------------------------
+Build resources:
+ - 100.00GiB of memory (79.5% of system memory, set via '-Xmx100g')
+ - 32 thread(s) (100.0% of 32 available processor(s), determined at start)
+# Printing class initialization configuration to: ./target/reports/class_initialization_configuration_20261002_073916.csv
+# Printing class initialization report to: ./target/reports/class_initialization_report_20261002_073939.csv
+[2/8] Performing analysis...  [******]                                                                (23.5s @ 14.05GiB)
+   34,659 types,  94,274 fields, and 186,103 methods found reachable
+      962 types,   3,622 fields, and   7,284 methods registered for reflection
+       64 types,      73 fields, and      56 methods registered for JNI access
+      204 resource accesses registered with 1.97MiB total size
+        5 native libraries: dl, m, pthread, rt, z
+[3/8] Building universe...                                                                             (7.6s @ 12.26GiB)
+[4/8] Parsing methods...      [**]                                                                     (3.8s @ 12.33GiB)
+[5/8] Inlining methods...     [***]                                                                    (1.3s @ 11.63GiB)
+[6/8] Compiling methods...    [******]                                                                (36.6s @ 19.32GiB)
+[7/8] Laying out methods...   [****]                                                                  (20.0s @ 24.63GiB)
+[8/8] Creating image...       [***********************The Native Image build process ran out of memory.
+Please make sure your build system has more memory available.
+make: *** [Makefile:33: target/libquarkusbaselayer.nil] Error 137
+#+end_src
+
+Tried with 64gb but still not enough with `-g -H:+SourceLevelDebug -H:+TrackNodeSourcePosition -H:+DebugCodeInfoUseSourceMappings`:
+#+begin_src bash
+OpenJDK 64-Bit Server VM warning: Max heap size too large for Compressed Oops
+========================================================================================================================
+GraalVM Native Image: Generating 'libquarkusbaselayer.so' (image layer)...
+========================================================================================================================
+[1/8] Initializing...WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.aayushatharva.brotli4j.Brotli4jLoader in an unnamed module (file:/home/agentuser/src/mendrugo/layers-999/getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/com.aayushatharva.brotli4j.brotli4j-1.23.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess (file:/home/agentuser/src/mendrugo/layers-999/getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/modified-io.netty.netty-common-4.2.18.Final.jar)
+WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+                                                                                   (9.5s @ 0.83GiB)
+ Builder configuration:
+ - Java version: 25.0.4.1.1+1, vendor version: GraalVM CE 25.5.5-dev+1.1
+ - Graal compiler: optimization level: 2, target machine: x86-64-v3
+ - C compiler: gcc (redhat, x86_64, 16.2.1)
+ - Assertions: disabled, system assertions: disabled
+ Image configuration:
+ - Garbage collector: Serial GC (max heap size: 80% of RAM)
+ - Assertions: disabled (class-specific config may apply), system assertions: disabled
+------------------------------------------------------------------------------------------------------------------------
+ 8 experimental option(s) unlocked:
+ - '-H:+DebugCodeInfoUseSourceMappings' (origin(s): command line)
+ - '-H:+PrintClassInitialization' (origin(s): command line)
+ - '-H:LayerCreate' (origin(s): command line)
+ - '-H:BuildOutputJSONFile' (origin(s): command line)
+ - '-H:+TrackNodeSourcePosition' (origin(s): command line)
+ - '-H:Path': Use the '-o' option instead. (origin(s): command line)
+ - '-H:ApplicationLayerInitializedClasses' (origin(s): command line)
+ - '-H:+SourceLevelDebug' (origin(s): command line)
+------------------------------------------------------------------------------------------------------------------------
+Build resources:
+ - 64.00GiB of memory (50.9% of system memory, set via '-Xmx64g')
+ - 32 thread(s) (100.0% of 32 available processor(s), determined at start)
+# Printing class initialization configuration to: ./target/reports/class_initialization_configuration_20261002_072123.csv
+# Printing class initialization report to: ./target/reports/class_initialization_report_20261002_072145.csv
+[2/8] Performing analysis...  [******]                                                                (22.1s @ 12.80GiB)
+   34,659 types,  94,274 fields, and 186,103 methods found reachable
+      962 types,   3,622 fields, and   7,282 methods registered for reflection
+       64 types,      73 fields, and      56 methods registered for JNI access
+      204 resource accesses registered with 1.97MiB total size
+        5 native libraries: dl, m, pthread, rt, z
+[3/8] Building universe...                                                                             (7.2s @ 12.35GiB)
+[4/8] Parsing methods...      [**]                                                                      (4.1s @ 9.62GiB)
+[5/8] Inlining methods...     [***]                                                                    (1.2s @ 10.41GiB)
+[6/8] Compiling methods...    [******]                                                                (37.0s @ 23.44GiB)
+[7/8] Laying out methods...   [****]                                                                  (19.6s @ 28.75GiB)
+[8/8] Creating image...       [***********************Terminating due to java.lang.OutOfMemoryError: Requested array size exceeds VM limit
+The Native Image build process ran out of memory.
+Please make sure your build system has more memory available.
+make: *** [Makefile:33: target/libquarkusbaselayer.nil] Error 3
+#+end_src
+
+Tried to enable debug info with `-g -H:+SourceLevelDebug -H:+TrackNodeSourcePosition -H:+DebugCodeInfoUseSourceMappings` but run out of memory:
+#+begin_src bash
+========================================================================================================================
+GraalVM Native Image: Generating 'libquarkusbaselayer.so' (image layer)...
+========================================================================================================================
+[1/8] Initializing...WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.aayushatharva.brotli4j.Brotli4jLoader in an unnamed module (file:/home/agentuser/src/mendrugo/layers-999/getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/com.aayushatharva.brotli4j.brotli4j-1.23.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess (file:/home/agentuser/src/mendrugo/layers-999/getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar/lib/modified-io.netty.netty-common-4.2.18.Final.jar)
+WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+                                                                                   (9.3s @ 0.39GiB)
+ Builder configuration:
+ - Java version: 25.0.4.1.1+1, vendor version: GraalVM CE 25.5.5-dev+1.1
+ - Graal compiler: optimization level: 2, target machine: x86-64-v3
+ - C compiler: gcc (redhat, x86_64, 16.2.1)
+ - Assertions: disabled, system assertions: disabled
+ Image configuration:
+ - Garbage collector: Serial GC (max heap size: 80% of RAM)
+ - Assertions: disabled (class-specific config may apply), system assertions: disabled
+------------------------------------------------------------------------------------------------------------------------
+ 8 experimental option(s) unlocked:
+ - '-H:+DebugCodeInfoUseSourceMappings' (origin(s): command line)
+ - '-H:+PrintClassInitialization' (origin(s): command line)
+ - '-H:LayerCreate' (origin(s): command line)
+ - '-H:BuildOutputJSONFile' (origin(s): command line)
+ - '-H:+TrackNodeSourcePosition' (origin(s): command line)
+ - '-H:Path': Use the '-o' option instead. (origin(s): command line)
+ - '-H:ApplicationLayerInitializedClasses' (origin(s): command line)
+ - '-H:+SourceLevelDebug' (origin(s): command line)
+------------------------------------------------------------------------------------------------------------------------
+Build resources:
+ - 30.00GiB of memory (23.9% of system memory, capped at 30GiB)
+ - 32 thread(s) (100.0% of 32 available processor(s), determined at start)
+# Printing class initialization configuration to: ./target/reports/class_initialization_configuration_20261002_071134.csv
+# Printing class initialization report to: ./target/reports/class_initialization_report_20261002_071157.csv
+[2/8] Performing analysis...  [******]                                                                 (23.3s @ 7.63GiB)
+   34,659 types,  94,274 fields, and 186,103 methods found reachable
+      962 types,   3,622 fields, and   7,282 methods registered for reflection
+       64 types,      73 fields, and      56 methods registered for JNI access
+      204 resource accesses registered with 1.97MiB total size
+        5 native libraries: dl, m, pthread, rt, z
+[3/8] Building universe...                                                                              (7.2s @ 6.33GiB)
+[4/8] Parsing methods...      [**]                                                                      (3.6s @ 7.86GiB)
+[5/8] Inlining methods...     [***]                                                                     (1.2s @ 7.41GiB)
+[6/8] Compiling methods...    [******]                                                                (38.0s @ 12.45GiB)
+[7/8] Laying out methods...   [****]                                                                  (18.0s @ 13.68GiB)
+[8/8] Creating image...       [*************Terminating due to java.lang.OutOfMemoryError: Java heap space
+The Native Image build process ran out of memory.
+Please make sure your build system has more memory available.
+make: *** [Makefile:33: target/libquarkusbaselayer.nil] Error 3
+#+end_src
+** NPE
 Tested Sacha's PR and the crash is gone, but now get NPE accessing /greeting/alice endpoint:
 #+begin_src bash
 LD_LIBRARY_PATH=target target/getting-started-1.0.0-SNAPSHOT-runner
