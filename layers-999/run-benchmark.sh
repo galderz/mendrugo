@@ -169,13 +169,11 @@ run_non_layered_builds
 prepare_base_layer
 run_layered_builds
 
-../make/set-cpu-freq.sh ${WORKLOAD_CPU_FREQ}
+../make/wait-cpu-freq.sh ${WORKLOAD_CPU_FREQ}
 
 run_jvm_workload
 run_non_layered_workload
 run_layered workload
-
-../make/reset-cpu-freq.sh
 
 END_TIME=$(date +%s)
 TOTAL_TIME=$((END_TIME - START_TIME))
