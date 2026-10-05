@@ -1,3 +1,18 @@
+#+STARTUP: overview
+
+* Round trip tests
+Benchmark build time:
+#+begin_src bash
+#+end_src
+
+Smoke test
+#+begin_src bash
+make clean
+make
+make run
+# then in separate shell
+curl localhost:8080/hello
+#+end_src
 * 2.10.26
 ** NPE with debug info
 follow up 1:
