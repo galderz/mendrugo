@@ -4,7 +4,7 @@ default: build
 
 include $(TOPDIR)/make/MakeBase.gmk
 
-app_dir = getting-started
+app_dir = native/getting-started
 app_pom = $(app_dir)/pom.xml
 base_nil = target/libquarkusbaselayer.nil
 base_so = target/libquarkusbaselayer.so

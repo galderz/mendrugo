@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
-SRC_JAR_DIR="getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar"
+SRC_JAR_DIR="native/getting-started/target/getting-started-1.0.0-SNAPSHOT-native-image-source-jar"
 
 DEBUG_ARGS=()
 if [[ "$1" == "--with-debug=true" ]]; then

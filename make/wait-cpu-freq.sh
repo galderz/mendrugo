@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
+set -e
 
 TARGET_FREQ_MHZ=$1
-TARGET_FREQ=$((FREQ_MHZ * 1000))  # convert to kHz
-TIMEOUT=60
+TARGET_FREQ=$((TARGET_FREQ_MHZ * 1000))  # convert to kHz
+TIMEOUT=180
 
 deadline=$((SECONDS + TIMEOUT))
 
@@ -24,7 +25,7 @@ while (( SECONDS < deadline )); do
 
     $all_set && break
 
-    sleep 1
+    sleep 5
 done
 
 if $all_set; then

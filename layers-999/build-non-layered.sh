@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
-pushd getting-started
+pushd native/getting-started
 
 DEBUG_ARGS=()
 if [[ "$1" == "--with-debug=true" ]]; then
