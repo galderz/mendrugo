@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # Source https://github.com/franz1981/quarkus-reactive-beer/blob/master/scripts/benchmark.sh
 
-HYPERFOIL_HOME=./hyperfoil
-
 URL=greeting
 
 DURATION=40
@@ -105,6 +103,12 @@ PROFILING=$((${DURATION}/2))
 
 FULL_URL=http://localhost:8080/${URL}
 
+echo "----- Install Hyperfoil -----"
+
+jbang app install wrk@hyperfoil
+
+jbang app install wrk@hyperfoil || true
+
 echo "----- Benchmarking endpoint ${FULL_URL}"
 
 # set sysctl kernel variables only if necessary
@@ -137,7 +141,7 @@ sleep 2
 echo "----- Quarkus running at pid $quarkus_pid using ${THREADS} I/O threads"
 
 echo "----- Start all-out test and profiling"
-${HYPERFOIL_HOME}/bin/wrk.sh -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
+jbang wrk@hyperfoil -c ${CONNECTIONS} -t ${THREADS} -d ${DURATION}s ${FULL_URL} &
 
 wrk_pid=$!
 
