@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Source https://github.com/franz1981/quarkus-reactive-beer/blob/master/scripts/benchmark.sh
 
 HYPERFOIL_HOME=./hyperfoil
 
