@@ -109,7 +109,7 @@ run_jvm_workload() {
     echo "=== Running Runtime Performance Benchmark for JVM ==="
     mkdir -p "./${RUN_DIR}/jvm/"
     if [ -f "${WL_SCRIPT}" ]; then
-        bash ${WL_SCRIPT} -b jvm -d 40
+        ${WL_SCRIPT} -u hello -b jvm
         # Move profiling results to benchmark directory
         if ls *_cpu.html 1> /dev/null 2>&1; then
             mv *_cpu.html "./${RUN_DIR}/jvm/" || true
@@ -127,7 +127,7 @@ run_non_layered_workload() {
     echo ""
     echo "=== Running Runtime Performance Benchmark for Non-Layered ==="
     if [ -f "${WL_SCRIPT}" ]; then
-        bash ${WL_SCRIPT} -b non-layered -d 40
+        ${WL_SCRIPT} -u hello -b non-layered
         # Move profiling results to benchmark directory
         if ls *_cpu.html 1> /dev/null 2>&1; then
             mv *_cpu.html "./${RUN_DIR}/non-layered/" || true
@@ -145,7 +145,7 @@ run_layered_workload() {
     echo ""
     echo "=== Running Runtime Performance Benchmark for Layered ==="
     if [ -f "${WL_SCRIPT}" ]; then
-        bash ${WL_SCRIPT} -b layered -d 40
+        ${WL_SCRIPT} -u hello -b layered
         # Move profiling results to benchmark directory
         if ls *_cpu.html 1> /dev/null 2>&1; then
             mv *_cpu.html "./${RUN_DIR}/layered/" || true

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Source https://github.com/franz1981/quarkus-reactive-beer/blob/master/scripts/benchmark.sh
 
+set -x
+
 URL=greeting
 
 DURATION=40
@@ -69,7 +71,7 @@ Help()
    echo "      disabled by default"
 }
 
-while getopts "hu:e:f:d:t:c:prnas" option; do
+while getopts "hu:e:f:d:t:c:prb:nas" option; do
    case $option in
       h) Help
          exit;;
@@ -113,6 +115,12 @@ PROFILING=$((${DURATION}/2))
 
 FULL_URL=http://localhost:8080/${URL}
 
+LAYERED_RUNNER=target/getting-started-1.0.0-SNAPSHOT-runner
+
+NON_LAYERED_RUNNER=native/getting-started/target/getting-started-1.0.0-SNAPSHOT-runner
+
+JAR=jvm/getting-started/target/quarkus-app/quarkus-run.jar
+
 echo "----- Install Hyperfoil -----"
 
 jbang app install wrk@hyperfoil
@@ -134,17 +142,19 @@ fi
 
 trap 'echo "cleaning up quarkus process";kill ${quarkus_pid}' SIGINT SIGTERM SIGKILL
 
+echo "----- Benchmark type: ${TYPE}"
+
 if [ "${TYPE}" == "non-layered" ]; then
-  getting-started/target/getting-started-1.0.0-SNAPSHOT-runner -Dquarkus.vertx.event-loops-pool-size=${THREADS} &
+  ${NON_LAYERED_RUNNER} -Dquarkus.vertx.event-loops-pool-size=${THREADS} &
 elif [ "${TYPE}" == "layered" ]; then
-  LD_LIBRARY_PATH=target target/getting-started-1.0.0-SNAPSHOT-runner -Dquarkus.vertx.event-loops-pool-size=${THREADS} &
+  LD_LIBRARY_PATH=target ${LAYERED_RUNNER} -Dquarkus.vertx.event-loops-pool-size=${THREADS} &
 elif [ "${STARTUP}" = true ]; then
-  timeout 3s perf record -e cycles -F 10000 --call-graph dwarf ../target/quarkus-reactive-beer-1.0.0-SNAPSHOT-runner -Dquarkus.vertx.event-loops-pool-size=${THREADS}
+  timeout 3s perf record -e cycles -F 10000 --call-graph dwarf ${NON_LAYERED_RUNNER} -Dquarkus.vertx.event-loops-pool-size=${THREADS}
   perf script -F +pid > ./startup_firefox.perf
   # exit this script
   exit 0
 else
-  java ${JFR_ARGS} -Dquarkus.vertx.event-loops-pool-size=${THREADS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ../target/quarkus-app/quarkus-run.jar &
+  java ${JFR_ARGS} -Dquarkus.vertx.event-loops-pool-size=${THREADS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${JAR} &
 fi
 quarkus_pid=$!
 
