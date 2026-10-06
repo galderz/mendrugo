@@ -109,7 +109,7 @@ run_jvm_workload() {
     echo "=== Running Runtime Performance Benchmark for JVM ==="
     mkdir -p "./${RUN_DIR}/jvm/"
     if [ -f "${WL_SCRIPT}" ]; then
-        JAVA_HOME=/usr/lib/jvm/java-25 bash ${WL_SCRIPT} -b jvm -d 40
+        bash ${WL_SCRIPT} -b jvm -d 40
         # Move profiling results to benchmark directory
         if ls *_cpu.html 1> /dev/null 2>&1; then
             mv *_cpu.html "./${RUN_DIR}/jvm/" || true
