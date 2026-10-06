@@ -38,7 +38,7 @@ clean_build() {
     if [ -d "target" ]; then
         rm -rf target
     fi
-    cd ..
+    cd ../..
 }
 
 # Function to run non-layered builds
