@@ -20,7 +20,8 @@ PERF=false
 
 AP=false
 
-NATIVE=false
+# Benchmark type: jvm, non-layered, or layered
+TYPE=jvm
 
 STARTUP=false
 
@@ -36,8 +37,8 @@ Help()
    echo "      e.g. benchmark -u abc would benchmark http://localhost:8080/abc"
    echo "      default is ${URL}"
    echo ""
-   echo "-n    Execute the load generation test using native image located in the default path"
-   echo "      default is disabled"
+   echo "-b    Benchmark type to benchmark: jvm, non-layered, or layered"
+   echo "      default is jvm"
    echo ""
    echo "-e    event to profile, if supported e.g. -e cpu "
    echo "      check https://github.com/jvm-profiling-tools/async-profiler#profiler-options for the complete list"
@@ -88,7 +89,7 @@ while getopts "hu:e:f:d:t:c:prnas" option; do
          ;;
       r) RECORD=true
          ;;
-      n) NATIVE=true
+      b) TYPE=${OPTARG}
          ;;
       a) AP=true
          ;;
@@ -96,6 +97,15 @@ while getopts "hu:e:f:d:t:c:prnas" option; do
          ;;
    esac
 done
+
+# Validate binary type
+case "${TYPE}" in
+    jvm|non-layered|layered)
+        ;;
+    *)
+        die "Invalid benchmark type: ${TYPE}. Must be one of: jvm, non-layered, layered"
+        ;;
+esac
 
 WARMUP=$((${DURATION}*2/5))
 
@@ -124,8 +134,10 @@ fi
 
 trap 'echo "cleaning up quarkus process";kill ${quarkus_pid}' SIGINT SIGTERM SIGKILL
 
-if [ "${NATIVE}" = true ]; then
-  ../target/quarkus-reactive-beer-1.0.0-SNAPSHOT-runner -Dquarkus.vertx.event-loops-pool-size=${THREADS} &
+if [ "${TYPE}" == "non-layered" ]; then
+  getting-started/target/getting-started-1.0.0-SNAPSHOT-runner -Dquarkus.vertx.event-loops-pool-size=${THREADS} &
+elif [ "${TYPE}" == "layered" ]; then
+  LD_LIBRARY_PATH=target target/getting-started-1.0.0-SNAPSHOT-runner -Dquarkus.vertx.event-loops-pool-size=${THREADS} &
 elif [ "${STARTUP}" = true ]; then
   timeout 3s perf record -e cycles -F 10000 --call-graph dwarf ../target/quarkus-reactive-beer-1.0.0-SNAPSHOT-runner -Dquarkus.vertx.event-loops-pool-size=${THREADS}
   perf script -F +pid > ./startup_firefox.perf
