@@ -166,14 +166,11 @@ run_non_layered_builds
 prepare_base_layer
 run_layered_builds
 
-# Nees https://github.com/oracle/graal/issues/14608 fixed
-# to be able run load tests on layered images.
-#
-#../make/wait-cpu-freq.sh ${WORKLOAD_CPU_FREQ}
-#
-#run_jvm_workload
-#run_non_layered_workload
-#run_layered workload
+../make/wait-cpu-freq.sh ${WORKLOAD_CPU_FREQ}
+
+run_jvm_workload
+run_non_layered_workload
+run_layered_workload
 
 END_TIME=$(date +%s)
 TOTAL_TIME=$((END_TIME - START_TIME))

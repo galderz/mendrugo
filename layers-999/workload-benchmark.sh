@@ -16,7 +16,7 @@ THREADS=2
 
 RATE=0
 
-CONNECTIONS=10
+CONNECTIONS=20
 
 PERF=false
 
@@ -154,7 +154,10 @@ elif [ "${STARTUP}" = true ]; then
   # exit this script
   exit 0
 else
-  java ${JFR_ARGS} -Dquarkus.vertx.event-loops-pool-size=${THREADS} -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -jar ${JAR} &
+  java ${JFR_ARGS} -Dquarkus.vertx.event-loops-pool-size=${THREADS} \
+    -Xmx512m -Xms10m \
+    -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 \
+    -jar ${JAR} &
 fi
 quarkus_pid=$!
 
@@ -195,7 +198,7 @@ fi
 echo "----- Showing stats for $WARMUP seconds"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-  pidstat -p $quarkus_pid 1 &
+  pidstat -u -h -r -p $quarkus_pid 1 &
   pidstat_pid=$!
   sleep $WARMUP
   kill -SIGTERM $pidstat_pid
