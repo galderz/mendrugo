@@ -23,13 +23,14 @@ BOOT_DIR="getting-started/target/quarkus-app/lib/boot"
 PRESERVED_JARS=(
     "$BOOT_DIR/io.smallrye.common.smallrye-common-cpu-2.20.0.jar"
     "$BOOT_DIR/io.smallrye.common.smallrye-common-os-2.20.0.jar"
-    # NOTE: ref needs constraint, constraint needs jboss-logging,
+    "$BOOT_DIR/io.smallrye.common.smallrye-common-ref-2.20.0.jar"
+    # NOTE: constraint needs jboss-logging,
     # jboss-logging needs log4j/slf4j (not available) for Preserve.
     # So ref and everything downstream is excluded.
-    #"$BOOT_DIR/io.smallrye.common.smallrye-common-ref-2.20.0.jar"
     #"$BOOT_DIR/io.smallrye.common.smallrye-common-constraint-2.20.0.jar"
     #"$BOOT_DIR/io.smallrye.common.smallrye-common-function-2.20.0.jar"
     #"$BOOT_DIR/io.smallrye.common.smallrye-common-expression-2.20.0.jar"
+    #"$BOOT_DIR/org.jboss.logging.jboss-logging-3.6.3.Final.jar"
 )
 
 # ──────────────────────────────────────────────────────────────────────
