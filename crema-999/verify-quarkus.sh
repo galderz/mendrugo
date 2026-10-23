@@ -18,12 +18,14 @@ EXPECTED="hello"
 LOG_FILE=$(mktemp /tmp/quarkus-verify-XXXXXX.log)
 
 echo "=== Starting Quarkus under Crema ==="
-$GRAALVM_HOME/bin/java -svm -jar "$QUARKUS_JAR" > "$LOG_FILE" 2>&1 &
-PID=$!
+$GRAALVM_HOME/bin/java -svm -jar "$QUARKUS_JAR" 2>&1 | tee "$LOG_FILE" &
+TEE_PID=$!
+JAVA_PID=$(jobs -p | head -1)
 
 cleanup() {
-    kill -9 "$PID" 2>/dev/null || true
-    wait "$PID" 2>/dev/null || true
+    kill -9 $JAVA_PID 2>/dev/null || true
+    kill -9 $TEE_PID 2>/dev/null || true
+    wait 2>/dev/null || true
     rm -f "$LOG_FILE"
 }
 trap cleanup EXIT
