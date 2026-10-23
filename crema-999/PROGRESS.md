@@ -32,230 +32,213 @@ Verified via `curl http://localhost:8080/hello` → `"hello"`.
 
 See [`build-libjvm.sh`](build-libjvm.sh) for the full script.
 
-### Preserved Jars (2 jars, AOT compiled into libjvm.so)
+### Preserved Jars (18 jars, AOT compiled into libjvm.so)
 
-| Jar | Package |
-|-----|---------|
-| `smallrye-common-cpu-2.20.0.jar` | `io.smallrye.common.cpu` |
-| `smallrye-common-os-2.20.0.jar` | `io.smallrye.common.os` |
+**Boot jars (15 of 16):**
+
+| Jar | Status |
+|-----|--------|
+| `jboss-logging-3.6.3.Final.jar` | ✅ Preserved |
+| `jboss-logmanager-3.2.2.Final.jar` | ✅ Preserved |
+| `smallrye-common-constraint-2.20.0.jar` | ✅ Preserved |
+| `smallrye-common-cpu-2.20.0.jar` | ✅ Preserved |
+| `smallrye-common-expression-2.20.0.jar` | ✅ Preserved |
+| `smallrye-common-function-2.20.0.jar` | ✅ Preserved |
+| `smallrye-common-io-2.20.0.jar` | ✅ Preserved |
+| `smallrye-common-net-2.20.0.jar` | ✅ Preserved |
+| `smallrye-common-os-2.20.0.jar` | ✅ Preserved |
+| `smallrye-common-ref-2.20.0.jar` | ✅ Preserved |
+| `crac-1.5.0.jar` | ✅ Preserved |
+| `quarkus-classloader-commons-999-SNAPSHOT.jar` | ✅ Preserved |
+| `quarkus-development-mode-spi-999-SNAPSHOT.jar` | ✅ Preserved |
+| `quarkus-value-registry-999-SNAPSHOT.jar` | ✅ Preserved |
+| `quarkus-vertx-latebound-mdc-provider-999-SNAPSHOT.jar` | ✅ Preserved |
+| `quarkus-bootstrap-runner-999-SNAPSHOT.jar` | ❌ Excluded (see below) |
+
+**Main jars (3, as transitive deps):**
+
+| Jar | Why needed |
+|-----|-----------|
+| `jakarta.json-api-2.1.3.jar` | Required by `jboss-logmanager` (`JsonFormatter`) |
+| `slf4j-api-2.0.19.jar` | Required by `jboss-logging` (`Slf4jLogger`) |
+| `smallrye-common-search-2.20.0.jar` | Required by `smallrye-common-io` (`Archive`) |
+
+### CP-Only Jars (3 optional deps, NOT Preserved)
+
+These are downloaded by the build script and placed on the classpath to satisfy
+`--link-at-build-time` linking requirements. They are never called at runtime
+(Quarkus uses jboss-logmanager, not log4j).
+
+| Jar | Why needed |
+|-----|-----------|
+| `log4j-1.2.17.jar` | `jboss-logging` → `Log4jLogger` references `org.apache.log4j.Logger` |
+| `log4j-api-2.24.3.jar` | `jboss-logging` → `Log4j2Logger` references `org.apache.logging.log4j.spi.AbstractLogger` |
+| `jboss-modules-2.1.5.Final.jar` | `jboss-logmanager` → `ObjectBuilder$ModuleFinder$Holder` references `org.jboss.modules.ModuleLoader` |
+
+### Excluded: `quarkus-bootstrap-runner`
+
+This jar uses `getProtectionDomain().getCodeSource().getLocation()` in
+`QuarkusEntryPoint.resolveJarPath()` to locate `quarkus-application.dat`
+at runtime. When the class is AOT-compiled into `libjvm.so`, the code source
+points to the native-image build directory instead of the jar location,
+causing `NoSuchFileException`.
 
 ### Init Flags
 
-**Build-time init:**
-- `io.smallrye.common.cpu`
-- `io.smallrye.common.os`
+**Build-time init (packages):**
+- `io.smallrye.common` — smallrye utility classes
+- `io.quarkus` — quarkus bootstrap/logging classes
+- `org.crac` — checkpoint/restore API
+- `org.jboss.logging` — logging facade
+- `org.jboss.logmanager` — JBoss log manager
+- `org.jboss.modules` — module system (optional dep)
+- `org.apache.log4j` — log4j 1.x (optional dep)
+- `org.apache.logging.log4j` — log4j 2.x API (optional dep)
+- `org.slf4j` — SLF4J API
+- `jakarta.json` — Jakarta JSON API
 
 **Run-time init (deferred):**
 - `io.smallrye.common.os.Process` — calls native Process APIs
+- `io.smallrye.common.net` — `CidrAddress` creates `Inet6Address` objects (JDK run-time init conflict)
+- `io.smallrye.common.io.Files2` — bakes CWD path into image heap
+- `io.smallrye.common.io.Files2$PrivateAttrs` — bakes user info into image heap
+- `io.smallrye.common.function.FunctionsLogging` — creates a jboss Logger at `<clinit>`
+- `org.jboss.logmanager.handlers.ConsoleHandler$ConsoleHolder` — console native access
+- `org.jboss.logmanager.handlers.SyslogHandler` — syslog native access
+- `org.jboss.logmanager.configuration.ObjectBuilder$ModuleFinder$Holder` — references `org.jboss.modules`
+- `org.jboss.logmanager.formatters.JsonFormatter` — references `jakarta.json.stream`
+- `org.apache.log4j.net` — networking (sockets)
+- `org.apache.log4j.jdbc` — JDBC
+- `org.apache.log4j.nt` — Windows NT native (`NTEventLogAppender`)
+- `org.apache.log4j.or.jms` — JMS (`javax.jms.JMSException` not on CP)
+- `org.apache.log4j.chainsaw` — Swing GUI
+- `org.apache.log4j.lf5` — Swing GUI
+- `org.apache.log4j.jmx` — JMX
 
 ### Startup Time
 
-**~1.156s** (within measurement variance of baseline)
-
-### Important Discovery: CP-Only Jars Crash at Runtime
-
-Putting jars on the classpath WITHOUT Preserve causes runtime crashes:
-```
-Fatal error: Unable to call AOT method ... org/jboss/logging/Logger
-Consider using '-H:Preserve=package=org.jboss.logging'
-```
-This means **every jar on `-cp` MUST also be in `-H:Preserve`**. Jars cannot
-be added as "compile-time only" dependencies.
+**1.032s – 1.143s** across measurements (within variance of baseline 1.023s).
 
 ---
 
-## Boot Jars Not Yet Added
+## Key Technical Discoveries
 
-### `org.jboss.logging.jboss-logging-3.6.3.Final.jar`
+### 1. CP-Only Jars Crash at Runtime
 
-**Status: On classpath only, cannot be Preserved**
-
-**Blocker:** The jar contains `Log4jLogger`, `Log4j2Logger`, and `Slf4jLocationAwareLogger`
-which reference optional logging backends (`org.apache.log4j`, `org.apache.logging.log4j`,
-`org.slf4j`) that are not on the classpath. The `--link-at-build-time` flag from
-the `jvm-library` macro requires ALL types in Preserved jars to be fully linkable.
-Setting `--initialize-at-run-time` for these classes does NOT prevent the linker from
-resolving their type references.
-
-When we tried adding it to Preserve without also having log4j on the CP, the app
-crashed at runtime with:
+Jars placed on `-cp` without `-H:Preserve` cause **runtime crashes**:
 ```
-Fatal error: Unable to call AOT method ... org/jboss/logging/Logger; name=getMessageLogger
+Fatal error: Unable to call AOT method: ... name=getMessageLogger
 Consider using '-H:Preserve=package=org.jboss.logging'
 ```
 
-### `org.jboss.logmanager.jboss-logmanager-3.2.2.Final.jar`
+The `jvm-library` macro's `--link-at-build-time` registers all CP classes for
+AOT compilation. If a class is registered but NOT compiled (no Preserve), the
+runtime aborts when that method is called.
 
-**Status: Not on classpath or Preserve**
+**Rule: Every jar on `-cp` MUST also be in `-H:Preserve=path=`**
 
-**Blocker:** Contains `ObjectBuilder$ModuleFinder$Holder` which extends
-`org.jboss.modules.ModuleClassLoader` (not available). Also needs:
-- `io.smallrye.common.expression` (from boot)
-- `io.smallrye.common.net` (from boot)
-- `io.smallrye.common.os` (from boot)
-- `jakarta.json` (from main)
-- `io.smallrye.common.search` (from main)
+**Exception:** Jars whose classes are never actually invoked at runtime can be
+on CP without Preserve. This is how we handle the optional deps (log4j,
+jboss-modules) — they satisfy linking but are never called because Quarkus
+uses jboss-logmanager, not log4j.
 
-Even when all these are provided, the `ModuleClassLoader` reference causes
-linking failure with no workaround found.
+### 2. Optional Dependencies Solved with Real Jars
 
-Additionally, the logmanager is registered as the system `java.util.logging.LogManager`
-via SPI, so it gets pulled into the image heap automatically, requiring
-`--initialize-at-build-time` for `LogManager`, `Level`, `JBossLoggerFinder`, etc.
+The main blocker was `jboss-logging` referencing `log4j`, `log4j2`, and `slf4j`,
+and `jboss-logmanager` referencing `org.jboss.modules`. These are optional
+dependencies — the classes exist in jboss-logging/logmanager but are only used
+if the corresponding logging backend is present at runtime.
 
-### `io.smallrye.common.smallrye-common-net-2.20.0.jar`
+**Solution:** Download the actual dependency jars and place them on the classpath
+(without Preserve). This satisfies the linker without bloating `libjvm.so`.
+Since Quarkus never calls log4j at runtime, the "CP without Preserve crashes"
+issue doesn't apply.
 
-**Status: Not added**
+### 3. `getCodeSource()` Breaks Under Preserve
 
-**Blocker:** `CidrAddress` static initializer creates `Inet4Address` and `Inet6Address`
-objects. The image builder demands `--initialize-at-build-time=java.net.Inet6Address`
-which is a JDK class and may conflict with other expectations. Setting
-`--initialize-at-run-time=io.smallrye.common.net.CidrAddress` was tried but the
-static initializer is still parsed and the embedded constants are discovered.
+`QuarkusEntryPoint.resolveJarPath()` uses `getProtectionDomain().getCodeSource().getLocation()`
+to find its own jar location at runtime. When the class is AOT-compiled into
+`libjvm.so`, the code source points to the native-image build directory, not
+the original jar. This is a fundamental incompatibility — classes that locate
+resources relative to their own jar path cannot be Preserved.
 
-### `io.smallrye.common.smallrye-common-io-2.20.0.jar`
+### 4. `--link-at-build-time` (from `jvm-library` macro)
 
-**Status: Not added**
-
-**Blocker:** 
-- `Files2.CWD` bakes the current working directory path into the image heap, triggering
-  `-H:+DetectUserDirectoriesInImageHeap` error
-- `Files2$PrivateAttrs.MY_USER` embeds user info
-- Even with `-H:-DetectUserDirectoriesInImageHeap`, `Files2$PrivateAttrs` needs
-  `--initialize-at-build-time=sun.nio.fs.UnixUserPrincipals$User`
-- Needs `smallrye-common-search` from main lib
-
-### Remaining boot jars (not yet attempted)
-
-| Jar | Expected Dependencies |
-|-----|----------------------|
-| `quarkus-bootstrap-runner-999-SNAPSHOT.jar` | `jboss-logging`, `jboss-logmanager` |
-| `quarkus-classloader-commons-999-SNAPSHOT.jar` | Unknown |
-| `quarkus-development-mode-spi-999-SNAPSHOT.jar` | `jboss-logging` |
-| `quarkus-value-registry-999-SNAPSHOT.jar` | Unknown |
-| `quarkus-vertx-latebound-mdc-provider-999-SNAPSHOT.jar` | Unknown |
-| `org.crac.crac-1.5.0.jar` | Unknown (likely self-contained) |
-
-### Main jars (not yet started)
-
-~100 jars in `lib/main/` covering netty, vert.x, quarkus-core, Jakarta APIs,
-smallrye-config, Jackson, etc. The `../layers-999/build-layer-base.sh` script has
-extensive `--initialize-at-run-time` flags for many of these.
-
----
-
-## Key Technical Challenges
-
-### 1. `--link-at-build-time` (from `jvm-library` macro)
-
-The `jvm-library` macro includes `--link-at-build-time` which requires ALL classes
-in Preserved jars to be fully linkable. If any class references a type not on the
-classpath, the build fails — even if that class is set for `--initialize-at-run-time`.
+The `jvm-library` macro (`$GRAALVM_HOME/lib/svm/macros/jvm-library/native-image.properties`)
+includes `--link-at-build-time` which requires ALL classes on the classpath to be
+fully linkable. If any class references a type not on the classpath, the build
+fails — even if that class is set for `--initialize-at-run-time`.
 
 The macro also sets:
 - `-H:+AssertInitializationSpecifiedForAllClasses` — every class on CP needs explicit init policy
 - `-H:+GuaranteeSubstrateTypesLinked` — all substrate types must be linkable
 
-These can be overridden with `-H:+UnlockExperimentalVMOptions` but doing so
-didn't resolve the fundamental linking issues.
+### 5. `-H:-DetectUserDirectoriesInImageHeap` Not Needed
 
-### 2. Optional dependencies in logging jars
+Earlier iterations used this flag to work around `Files2.CWD` baking the build-time
+working directory into the image heap. The proper fix is
+`--initialize-at-run-time=io.smallrye.common.io.Files2` which defers the class
+init (including `CWD` capture) to runtime. The detection flag is then unnecessary.
 
-`jboss-logging` is a logging facade with optional backends (log4j, log4j2, slf4j).
-`jboss-logmanager` has an optional dependency on `org.jboss.modules`. These optional
-deps are loaded via class references in concrete classes, not just reflection, so
-the linker tries to resolve them.
+### 6. `Inet6Address` Cannot Be Build-Time Initialized
 
-### 3. Static initializers with host-specific data
+`CidrAddress` static initializer creates `Inet6Address` objects. The image builder
+demands `--initialize-at-build-time=java.net.Inet6Address` but this conflicts with
+JDK requirements (`InetAddress` must be run-time initialized for JNI native code
+support). The solution is `--initialize-at-run-time=io.smallrye.common.net` to
+defer the entire net package.
 
-Several classes (`Files2`, `CidrAddress`, `HostName`, `Process`) capture
-host-specific data (CWD, IP addresses, hostname, PID) in static fields. These
-need `--initialize-at-run-time` to avoid baking build-time values into the image,
-but some also create objects of types that themselves need init policy specified.
+### 7. log4j 1.x Has Many Problematic Subpackages
 
-### 4. Circular dependency chains
-
-Boot jars have significant interdependencies:
-```
-constraint → jboss-logging → logmanager → constraint, ref, net, os, expression
-function   → jboss-logging → logmanager → ...
-```
+The full `log4j-1.2.17.jar` contains classes with native deps (`nt`), external
+deps (`jms`, `jdbc`), and Swing GUI components (`chainsaw`, `lf5`). Since we
+init `org.apache.log4j` at build time for linking, each problematic subpackage
+must be explicitly deferred with `--initialize-at-run-time`.
 
 ---
 
-## Next Steps to Try
+## Next Steps
 
-### 1. Try remaining self-contained boot jars
+### 1. Start adding main jars
 
-Try `org.crac.crac-1.5.0.jar` and the quarkus utility jars that may not
-have deep dependency chains:
-- `quarkus-value-registry`
-- `quarkus-classloader-commons`
-- `quarkus-development-mode-spi`
-- `quarkus-vertx-latebound-mdc-provider`
+With the boot jar dependency chain resolved, the next step is adding the ~100
+main jars. Good candidates to start with (likely self-contained):
+- Jakarta API jars (`jakarta.inject`, `jakarta.annotation`, `jakarta.ws.rs`, etc.)
+- `org.reactivestreams.reactive-streams`
+- `org.jspecify.jspecify`
 
-### 2. Try `smallrye-common-net` with Inet address init
+### 2. Add netty/vert.x jars using layers script init flags
 
-The blocker was `--initialize-at-build-time=java.net.Inet6Address`. This might
-actually work — try it and test if the app still functions correctly.
+The `../layers-999/build-layer-base.sh` script has proven `--initialize-at-run-time`
+flags for netty and vert.x. These should be used when adding:
+- `io.netty.netty-*` jars
+- `io.vertx.vertx-*` jars
 
-### 3. Start adding main jars
-
-Many main jars (Jakarta API jars, smallrye jars) are likely self-contained or
-have resolvable deps. Good candidates to try first:
-- `jakarta.inject.jakarta.inject-api-2.0.1.jar` (likely self-contained)
-- `jakarta.annotation.jakarta.annotation-api-3.0.0.jar`
-- `jakarta.json.jakarta.json-api-2.1.3.jar`
-- `org.reactivestreams.reactive-streams-1.0.4.jar`
-- `org.jspecify.jspecify-1.0.0.jar`
-
-### 4. Use init flags from `layers-999/build-layer-base.sh`
-
-The layers script has proven `--initialize-at-run-time` flags for netty, vert.x,
-and other frameworks. Use those when adding the corresponding main jars:
+Key run-time init flags from the layers script:
 ```
-io.netty.buffer, io.netty.util.*, io.netty.handler.ssl, ...
+io.netty.buffer, io.netty.channel.DefaultChannelId,
+io.netty.handler.ssl, io.netty.handler.codec.http2,
 io.vertx.core.buffer.impl.*, io.vertx.core.json.Json, ...
 ```
 
-### 5. Investigate providing stub jars for log4j (HIGH PRIORITY)
+### 3. Investigate `quarkus-bootstrap-runner` workaround
 
-Create minimal stub jars containing just the classes referenced by jboss-logging
-(`org.apache.log4j.Priority`, `org.apache.logging.log4j.message.Message`,
-`org.slf4j.LoggerFactory`, `org.slf4j.spi.LocationAwareLogger`, etc.)
-so that linking succeeds. This would unblock the ENTIRE dependency chain:
-jboss-logging → constraint → ref → function → expression → logmanager →
-bootstrap-runner → and most main jars.
-
-This is likely the single highest-impact next step.
-
-### 6. Investigate Crema-specific Preserve options
-
-Check if there are finer-grained Preserve options (e.g., exclude specific classes)
-or if the `--link-at-build-time` requirement can be relaxed per-jar rather than
-globally.
+The only excluded boot jar. Possible approaches:
+- Patch `QuarkusEntryPoint.resolveJarPath()` to fall back to a system property
+  or environment variable when `getCodeSource()` returns a non-jar path
+- Use a GraalVM substitution to override the path resolution
 
 ---
 
 ## Startup Time Tracking
 
-| Configuration | Startup Time | Delta |
-|--------------|-------------|-------|
-| Baseline (no extra jars) | 1.023s | — |
-| +cpu | 1.166s | +0.143s (likely variance) |
-| +cpu,os,ref,constraint (broken — crashed at runtime) | 1.082s | N/A |
-| +cpu,os (current working) | 1.156s | +0.133s (variance) |
+| Configuration | Startup Time | Jars Preserved |
+|--------------|-------------|----------------|
+| Baseline (no extra jars) | 1.023s | 0 |
+| +cpu,os only | 1.156s | 2 |
+| All boot jars + 3 main deps | 1.032s – 1.143s | 18 |
 
-Note: Startup time differences at this stage are within measurement variance.
-The benefit should become more visible as more jars are added, especially
-the larger framework jars (netty, vert.x, quarkus-core).
-
-### Key Discovery
-
-Jars placed on `-cp` without `-H:Preserve` cause **runtime crashes** because
-the jvm-library macro's `--link-at-build-time` registers them for AOT but
-they are not compiled. When the app calls a method from such a jar, the
-runtime aborts with "Unable to call AOT method". This means:
-- Every jar on `-cp` **must** also be in `-H:Preserve=path=`
-- A jar's entire transitive dependency chain must be resolvable at link time
-- The `jboss-logging` → `log4j` dependency chain is the main blocker
+Note: Startup time differences are within measurement variance at this stage.
+With only boot jars (~small utility classes), the impact is minimal. Significant
+improvement is expected when adding the larger framework jars (netty, vert.x,
+quarkus-core) which have much more code to JIT compile.
