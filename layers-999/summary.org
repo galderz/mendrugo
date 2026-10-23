@@ -22,6 +22,79 @@ make run
 # then in separate shell
 curl localhost:8080/hello
 #+end_src
+* 19.10.26
+#+begin_src bash
+You are software engineer working on getting Quarkus to run as layered GraalVM native image.
+
+The base and app layers build fine with `make`.
+
+But when you run it fails with segmentation fault.
+Using gdb you found out:
+
+```bash
+Program received signal SIGSEGV, Segmentation fault.
+0x0000000000677c98 in io.smallrye.config.ConfigMappingContext$ObjectCreator::boolValue(io.smallrye.config.ConfigMappingContext*, boolean, java.lang.String*) (context=0x1, applyNamingStrategy=true, propertyName=0x23ef838) at io/smallrye/config/ConfigMappingContext.java:633
+warning: 633    io/smallrye/config/ConfigMappingContext.java: No such file or directory
+```
+
+And the backtrace is:
+```bash
+(gdb) bt
+#0  0x0000000000677a18 in io.smallrye.config.ConfigMappingContext$ObjectCreator::boolValue(io.smallrye.config.ConfigMappingContext*, boolean, java.lang.String*) (context=0x1, applyNamingStrategy=true, propertyName=0x23ec7f0)
+    at io/smallrye/config/ConfigMappingContext.java:633
+#1  0x00000000004f9fb8 in io.quarkus.vertx.http.runtime.cors.CORSConfig$$CMImpl::CORSConfig$$CMImpl(io.smallrye.config.ConfigMappingContext*) (this=<optimized out>, mc=0x1) at com/oracle/svm/core/code/FactoryMethodHolder.java:1
+#2  com.oracle.svm.core.code.FactoryMethodHolder::CORSConfig$$CMImpl_ZidGiaknFjHk8t9uVJ4FvE(io.smallrye.config.ConfigMappingContext*) (
+    __Object0=<optimized out>) at com/oracle/svm/core/code/FactoryMethodHolder.java:1
+#3  0x00000001f7fcd0cc in ?? ()
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+```
+
+Use the /home/agentuser/private/skills/native-image-debug/.agents/skills/debug-runtime-graalvm-native/SKILL.md to debug this issue and understand the cause of the seg fault.
+Enhance the skill with any learnings that would be useful in the future.
+#+end_src
+
+isx/aarch64:
+#+begin_src gdb
+Program received signal SIGSEGV, Segmentation fault.
+0x0000000000677c98 in io.smallrye.config.ConfigMappingContext$ObjectCreator::boolValue(io.smallrye.config.ConfigMappingContext*, boolean, java.lang.String*) (context=0x1, applyNamingStrategy=true, propertyName=0x23ef838) at io/smallrye/config/ConfigMappingContext.java:633
+warning: 633    io/smallrye/config/ConfigMappingContext.java: No such file or directory
+#+end_src
+
+backtrace:
+#+begin_src gdb
+(gdb) bt
+#0  0x0000000000677a18 in io.smallrye.config.ConfigMappingContext$ObjectCreator::boolValue(io.smallrye.config.ConfigMappingContext*, boolean, java.lang.String*) (context=0x1, applyNamingStrategy=true, propertyName=0x23ec7f0)
+    at io/smallrye/config/ConfigMappingContext.java:633
+#1  0x00000000004f9fb8 in io.quarkus.vertx.http.runtime.cors.CORSConfig$$CMImpl::CORSConfig$$CMImpl(io.smallrye.config.ConfigMappingContext*) (this=<optimized out>, mc=0x1) at com/oracle/svm/core/code/FactoryMethodHolder.java:1
+#2  com.oracle.svm.core.code.FactoryMethodHolder::CORSConfig$$CMImpl_ZidGiaknFjHk8t9uVJ4FvE(io.smallrye.config.ConfigMappingContext*) (
+    __Object0=<optimized out>) at com/oracle/svm/core/code/FactoryMethodHolder.java:1
+#3  0x00000001f7fcd0cc in ?? ()
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+#+end_src
+* 15.10.26
+
+* 6.10.26
+non-layered build time: 54s
+non-layered peak RSS: 3.60GiB
+non-layered image size: 47M
+
+layered base build time: 3m 8s
+layered base peak RSS: 15.19GiB
+layered base shared library size (libquarkusbaselayer.so): 267M
+
+layered app build time: 45s (-17%)
+layered app peak RSS: 5.29GiB (+47%)
+layered app image size: 7M
+
+layered combined size: 274M (~6 non-layered images)
+
+#+begin_src bash
+Metric                     Non-Layered      Layered       Change
+----------------------------------------------------------------
+total_types                     16,958       37,068    +118.59%
+total_fields                    44,997       93,478    +107.74%
+total_methods                  134,410      207,358     +54.27%
+#+end_src
 * 2.10.26
 ** NPE with debug info
 follow up 1:
