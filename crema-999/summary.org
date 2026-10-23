@@ -1,0 +1,28 @@
+* Design
+add boot jars one at the time with `-cp example.jar -H:Preserve=path=example.jar`
+plan as per chat with sanne:
+start adding jars one at the time: jboss-threads, jboss-logging...etc
+add a source launcher (see micronaut src launcher - see command line tools in quarkus too - quarkus cli already does the same!)
+get live reload working with source code
+* 22.10.26
+first demo running!
+build latest graalvm master then:
+#+begin_src bash
+$GRAALVM_HOME/bin/native-image --macro:jvm-library -H:Preserve=package=sun.misc
+#+end_src
+then run quarkus as:
+#+begin_src bash
+$GRAALVM_HOME/bin/java -svm -jar ~/src/mendrugo/layers-999/jvm/getting-started/target/quarkus-app/quarkus-run.jar
+#+end_src
+
+sanne's experiments:
+https://github.com/Sanne/jlink-fun
+extract all the modules,
+add the as Preseve=module... in
+https://github.com/thomaswue/crema-demo/blob/main/building/build-crema-srclauncher.sh
+
+```quote
+get a list of modules using jlink-fun, and then modify crema-demo/building/build-crema-srclauncher.sh
+to add an -H:Preseve=module... with that list and remove com.sun.tools.javac.launcher.SourceLauncher,
+ and try to make things work to run ~/src/mendrugo/layers-999/jvm/getting-started/target/quarkus-app/quarkus-run.jar
+```
