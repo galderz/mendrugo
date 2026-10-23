@@ -63,20 +63,14 @@ fi
 # ──────────────────────────────────────────────────────────────────────
 # Jars added to BOTH classpath and Preserve (AOT compiled into libjvm.so)
 #
-# NOTE: quarkus-bootstrap-runner is excluded because it uses
-# getProtectionDomain().getCodeSource().getLocation() to find
-# quarkus-application.dat at runtime. When baked into libjvm.so,
-# the code source points to the native-image build dir instead.
+# All 16 boot jars are now included. The quarkus-bootstrap-runner was
+# previously excluded because getCodeSource() returned the java binary
+# path when AOT-compiled. Fixed in Quarkus by adding a .jar suffix check
+# in resolveJarPath() and falling through to getResource() fallback.
 # ──────────────────────────────────────────────────────────────────────
 PRESERVED_JARS=()
-SKIP_PRESERVE="io.quarkus.quarkus-bootstrap-runner"
 
 for jar in "$BOOT_DIR"/*.jar; do
-    bn=$(basename "$jar")
-    if echo "$bn" | grep -q "$SKIP_PRESERVE"; then
-        echo "Skipping Preserve (uses getCodeSource path): $bn"
-        continue
-    fi
     PRESERVED_JARS+=("$jar")
 done
 
