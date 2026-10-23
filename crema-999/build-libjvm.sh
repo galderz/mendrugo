@@ -41,6 +41,25 @@ if [ ! -f "$OPT_DIR/jboss-modules-2.1.5.Final.jar" ]; then
         -o "$OPT_DIR/jboss-modules-2.1.5.Final.jar"
 fi
 
+# Additional optional deps needed when adding main jars (not yet used):
+# javax.jms-api-2.0.1.jar       - log4j -> or.jms.MessageRenderer
+# javax.mail-api-1.6.2.jar       - log4j -> net.SMTPAppender
+# jboss-marshalling-osgi-2.1.4.Final.jar - netty -> codec-marshalling
+# protobuf-java-4.29.3.jar       - netty -> codec-protobuf
+# protobuf-javanano-3.1.0.jar    - netty -> codec-protobuf (nano)
+# lz4-java-1.8.0.jar             - netty -> codec-compression (Lz4)
+# zstd-jni-1.5.6-8.jar           - netty -> codec-compression (Zstd)
+# compress-lzf-1.1.2.jar         - netty -> codec-compression (LZF)
+# lzma-java-1.3.jar              - netty -> codec-compression (LZMA)
+# asm-9.7.1.jar                  - smallrye-config -> ConfigMappingGenerator
+# jackson-core-2.18.3.jar        - vertx-core -> json.jackson (Jackson 2.x compat)
+# jackson-databind-2.18.3.jar    - vertx-core -> json.jackson
+# conscrypt-openjdk-uber-2.5.2.jar - netty -> handler.ssl
+# bcpkix-jdk18on-1.80.jar        - smallrye-certs -> X509 cert builder
+# bcprov-jdk18on-1.80.jar        - BouncyCastle provider
+# bcutil-jdk18on-1.80.jar        - BouncyCastle util
+# jzlib-1.1.3.jar                - netty -> codec-compression (JZlib)
+
 # ──────────────────────────────────────────────────────────────────────
 # Jars added to BOTH classpath and Preserve (AOT compiled into libjvm.so)
 #

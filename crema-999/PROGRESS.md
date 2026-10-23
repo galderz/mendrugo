@@ -197,36 +197,92 @@ must be explicitly deferred with `--initialize-at-run-time`.
 
 ---
 
+## Main Jars Experiment (In Progress)
+
+Attempted adding ALL main jars (100 jars) at once with ALL boot jars.
+This required downloading many additional optional dependency jars.
+
+### Optional Dependencies Discovered
+
+When adding main jars (especially netty, vertx, smallrye-config), many
+additional optional dependencies surface that need to be on the classpath
+for linking:
+
+| Optional Dep | Needed By | Reason |
+|-------------|-----------|--------|
+| `javax.jms-api` | log4j | `or.jms.MessageRenderer` |
+| `javax.mail-api` | log4j | `net.SMTPAppender` |
+| `jboss-marshalling-osgi` | netty | `codec-marshalling.LimitingByteInput` |
+| `protobuf-java` | netty | `codec-protobuf` |
+| `protobuf-javanano` | netty | `codec-protobuf` (nano) |
+| `lz4-java` | netty | `codec-compression.Lz4FrameEncoder` |
+| `zstd-jni` | netty | `codec-compression.ZstdConstants` |
+| `compress-lzf` | netty | `codec-compression.LzfDecompressor` |
+| `lzma-java` | netty | `codec-compression` (LZMA) |
+| `jzlib` | netty | `codec-compression` (JZlib) |
+| `asm` | smallrye-config | `ConfigMappingGenerator` |
+| `jackson-core-2.x` | vertx-core | `json.jackson.JacksonCodec` (backward compat) |
+| `jackson-databind-2.x` | vertx-core | `json.jackson` |
+| `conscrypt-openjdk-uber` | netty | `handler.ssl` |
+| `bcpkix-jdk18on` | smallrye-certs | X509 cert builder |
+| `bcprov-jdk18on` | BouncyCastle | provider |
+| `bcutil-jdk18on` | BouncyCastle | utility |
+
+### Additional Run-Time Init Classes Discovered
+
+- `org.eclipse.parsson.JsonMessages` — loads `PropertyResourceBundle` at `<clinit>`
+- `jakarta.activation.MailcapCommandMap` — bakes user home dir into image heap
+- `jakarta.activation.MimetypesFileTypeMap` — similar path issue
+
+### Current Blocker for Full Main Jar Build
+
+`io.smallrye.common.net.CidrAddress.<clinit>` creates `Inet6Address` objects.
+`java.net.Inet6Address` cannot be build-time initialized (conflicts with JDK's
+`InetAddress` run-time init requirement for JNI). With all main jars on CP,
+more code paths reach `CidrAddress`, and deferring it to run-time doesn't prevent
+the `<clinit>` from being parsed by the analysis.
+
+Possible solutions:
+1. GraalVM substitution to replace `CidrAddress` static fields
+2. Exclude `smallrye-common-net` from Preserve (but other jars reference it)
+3. Patch `CidrAddress` to lazy-init the `Inet6Address` objects
+
+### `quarkus-bootstrap-runner` Must Be Included
+
+When adding main jars, `quarkus-bootstrap-runner` MUST be on CP + Preserve
+because other jars reference its classes (e.g., `InitialConfigurator`,
+`QuarkusDelayedHandler`). Without it, the build fails:
+```
+java.lang.IllegalArgumentException: io.quarkus.bootstrap.logging.InitialConfigurator.class
+/* Warning: type not present! */
+```
+
+The `getCodeSource()` path issue from `QuarkusEntryPoint.resolveJarPath()`
+caused `NoSuchFileException` when we Preserved it. This needs a workaround
+(GraalVM substitution or Quarkus patch).
+
+---
+
 ## Next Steps
 
-### 1. Start adding main jars
+### 1. Resolve `CidrAddress` / `Inet6Address` blocker
 
-With the boot jar dependency chain resolved, the next step is adding the ~100
-main jars. Good candidates to start with (likely self-contained):
-- Jakarta API jars (`jakarta.inject`, `jakarta.annotation`, `jakarta.ws.rs`, etc.)
-- `org.reactivestreams.reactive-streams`
-- `org.jspecify.jspecify`
+This is the main blocker for adding all main jars. Options:
+- Create a GraalVM substitution for `CidrAddress` static fields
+- Patch `CidrAddress` upstream to lazy-init
+- Exclude `smallrye-common-net` from Preserve and handle downstream
 
-### 2. Add netty/vert.x jars using layers script init flags
+### 2. Resolve `quarkus-bootstrap-runner` `getCodeSource()` issue
 
-The `../layers-999/build-layer-base.sh` script has proven `--initialize-at-run-time`
-flags for netty and vert.x. These should be used when adding:
-- `io.netty.netty-*` jars
-- `io.vertx.vertx-*` jars
+Needed to include all boot + main jars. Options:
+- GraalVM substitution for `QuarkusEntryPoint.resolveJarPath()`
+- Quarkus patch to support system property fallback
 
-Key run-time init flags from the layers script:
-```
-io.netty.buffer, io.netty.channel.DefaultChannelId,
-io.netty.handler.ssl, io.netty.handler.codec.http2,
-io.vertx.core.buffer.impl.*, io.vertx.core.json.Json, ...
-```
+### 3. Add main jars incrementally
 
-### 3. Investigate `quarkus-bootstrap-runner` workaround
-
-The only excluded boot jar. Possible approaches:
-- Patch `QuarkusEntryPoint.resolveJarPath()` to fall back to a system property
-  or environment variable when `getCodeSource()` returns a non-jar path
-- Use a GraalVM substitution to override the path resolution
+Once blockers are resolved, add main jars in dependency order.
+The dependency tree analysis showed 25 leaf jars that can be added first,
+then work up through the dependency layers.
 
 ---
 
