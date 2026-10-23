@@ -4,6 +4,43 @@ plan as per chat with sanne:
 start adding jars one at the time: jboss-threads, jboss-logging...etc
 add a source launcher (see micronaut src launcher - see command line tools in quarkus too - quarkus cli already does the same!)
 get live reload working with source code
+* 23.10.26
+#+begin_src markdown
+You are a Quarkus and GraalVM software engineer.
+
+You are exploring how to improve the startup performance of Quarkus when running inside Crema.
+
+The getting-started folder contains a Quarkus application that can already run with Crema via the following command:
+
+```bash
+$GRAALVM_HOME/bin/java -svm -jar getting-started/target/quarkus-app/quarkus-run.jar
+```
+
+And you can make sure it works by checking the output of `localhost:8080/hello` which should return "hello".
+
+Making the GraalVM distribution pointed by the `GRAALVM_HOME` environment variable Crema ready
+requires generating the `$GRAALVM_HOME/lib/svm/libjvm.so` and related files.
+For this initial test this was achieved via:
+
+```bash
+$GRAALVM_HOME/bin/native-image --macro:jvm-library -H:Preserve=package=sun.misc
+```
+
+You want to add more of the `quarkus-run.jar` dependencies to the `libjvm.so` file,
+which should improve the startup time of Quarkus.
+
+To do that you need to going through the `quarkus-run.jar` dependencies one at the time,
+and add them as `-cp dependency.jar -H:Preserve=path=dependency.jar` to the `native-image` command above.
+As you add more jars you will need to see how to append them to each of those parameters.
+
+After adding each jar you should verify that the quarkus app starts and the /hello endpoint works and then shutdown Quarkus.
+You should also keep track of the start time displayed by the Quarkus log.
+
+You should start by adding the jars in the `getting-started/target/quarkus-app/lib/boot` folder first,
+and then add the jars in the `getting-started/target/quarkus-app/lib/main` folder.
+
+Keep iterating working through any errors until, if possible, all the jars have been added to the livjvm.so file.
+#+end_src
 * 22.10.26
 first demo running!
 build latest graalvm master then:
