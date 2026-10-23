@@ -32,9 +32,9 @@ Verified via `curl http://localhost:8080/hello` → `"hello"`.
 
 See [`build-libjvm.sh`](build-libjvm.sh) for the full script.
 
-### Preserved Jars (18 jars, AOT compiled into libjvm.so)
+### Preserved Jars (19 jars, AOT compiled into libjvm.so)
 
-**Boot jars (15 of 16):**
+**All 16 boot jars:**
 
 | Jar | Status |
 |-----|--------|
@@ -49,13 +49,13 @@ See [`build-libjvm.sh`](build-libjvm.sh) for the full script.
 | `smallrye-common-os-2.20.0.jar` | ✅ Preserved |
 | `smallrye-common-ref-2.20.0.jar` | ✅ Preserved |
 | `crac-1.5.0.jar` | ✅ Preserved |
+| `quarkus-bootstrap-runner-999-SNAPSHOT.jar` | ✅ Preserved (fixed) |
 | `quarkus-classloader-commons-999-SNAPSHOT.jar` | ✅ Preserved |
 | `quarkus-development-mode-spi-999-SNAPSHOT.jar` | ✅ Preserved |
 | `quarkus-value-registry-999-SNAPSHOT.jar` | ✅ Preserved |
 | `quarkus-vertx-latebound-mdc-provider-999-SNAPSHOT.jar` | ✅ Preserved |
-| `quarkus-bootstrap-runner-999-SNAPSHOT.jar` | ❌ Excluded (see below) |
 
-**Main jars (3, as transitive deps):**
+**3 main jars (transitive deps):**
 
 | Jar | Why needed |
 |-----|-----------|
@@ -65,9 +65,8 @@ See [`build-libjvm.sh`](build-libjvm.sh) for the full script.
 
 ### CP-Only Jars (3 optional deps, NOT Preserved)
 
-These are downloaded by the build script and placed on the classpath to satisfy
-`--link-at-build-time` linking requirements. They are never called at runtime
-(Quarkus uses jboss-logmanager, not log4j).
+Downloaded by the build script. On classpath to satisfy `--link-at-build-time`
+linking requirements. Never called at runtime.
 
 | Jar | Why needed |
 |-----|-----------|
@@ -75,138 +74,71 @@ These are downloaded by the build script and placed on the classpath to satisfy
 | `log4j-api-2.24.3.jar` | `jboss-logging` → `Log4j2Logger` references `org.apache.logging.log4j.spi.AbstractLogger` |
 | `jboss-modules-2.1.5.Final.jar` | `jboss-logmanager` → `ObjectBuilder$ModuleFinder$Holder` references `org.jboss.modules.ModuleLoader` |
 
-### Excluded: `quarkus-bootstrap-runner`
-
-This jar uses `getProtectionDomain().getCodeSource().getLocation()` in
-`QuarkusEntryPoint.resolveJarPath()` to locate `quarkus-application.dat`
-at runtime. When the class is AOT-compiled into `libjvm.so`, the code source
-points to the native-image build directory instead of the jar location,
-causing `NoSuchFileException`.
-
 ### Init Flags
 
 **Build-time init (packages):**
-- `io.smallrye.common` — smallrye utility classes
-- `io.quarkus` — quarkus bootstrap/logging classes
-- `org.crac` — checkpoint/restore API
-- `org.jboss.logging` — logging facade
-- `org.jboss.logmanager` — JBoss log manager
-- `org.jboss.modules` — module system (optional dep)
-- `org.apache.log4j` — log4j 1.x (optional dep)
-- `org.apache.logging.log4j` — log4j 2.x API (optional dep)
-- `org.slf4j` — SLF4J API
-- `jakarta.json` — Jakarta JSON API
+`io.smallrye.common`, `io.quarkus`, `org.crac`, `org.jboss.logging`,
+`org.jboss.logmanager`, `org.jboss.modules`, `org.apache.log4j`,
+`org.apache.logging.log4j`, `org.slf4j`, `jakarta.json`
 
 **Run-time init (deferred):**
-- `io.smallrye.common.os.Process` — calls native Process APIs
-- `io.smallrye.common.net` — `CidrAddress` creates `Inet6Address` objects (JDK run-time init conflict)
-- `io.smallrye.common.io.Files2` — bakes CWD path into image heap
-- `io.smallrye.common.io.Files2$PrivateAttrs` — bakes user info into image heap
-- `io.smallrye.common.function.FunctionsLogging` — creates a jboss Logger at `<clinit>`
-- `org.jboss.logmanager.handlers.ConsoleHandler$ConsoleHolder` — console native access
-- `org.jboss.logmanager.handlers.SyslogHandler` — syslog native access
-- `org.jboss.logmanager.configuration.ObjectBuilder$ModuleFinder$Holder` — references `org.jboss.modules`
-- `org.jboss.logmanager.formatters.JsonFormatter` — references `jakarta.json.stream`
-- `org.apache.log4j.net` — networking (sockets)
-- `org.apache.log4j.jdbc` — JDBC
-- `org.apache.log4j.nt` — Windows NT native (`NTEventLogAppender`)
-- `org.apache.log4j.or.jms` — JMS (`javax.jms.JMSException` not on CP)
-- `org.apache.log4j.chainsaw` — Swing GUI
-- `org.apache.log4j.lf5` — Swing GUI
-- `org.apache.log4j.jmx` — JMX
+- `io.smallrye.common.os.Process` — native Process APIs
+- `io.smallrye.common.net.HostName` — captures hostname
+- `io.smallrye.common.net.CidrAddress` — creates `Inet6Address` (JDK init conflict)
+- `io.smallrye.common.net.CidrAddressTable` — depends on `CidrAddress`
+- `io.smallrye.common.io.Files2` — bakes CWD path
+- `io.smallrye.common.io.Files2$PrivateAttrs` — bakes user info
+- `io.smallrye.common.function.FunctionsLogging` — creates Logger at `<clinit>`
+- `org.jboss.logmanager.handlers.ConsoleHandler$ConsoleHolder` — console native
+- `org.jboss.logmanager.handlers.SyslogHandler` — syslog native
+- `org.jboss.logmanager.configuration.ObjectBuilder$ModuleFinder$Holder` — jboss.modules ref
+- `org.jboss.logmanager.formatters.JsonFormatter` — jakarta.json.stream ref
+- `org.apache.log4j.{net,jdbc,nt,or.jms,chainsaw,lf5,jmx}` — log4j subpackages with native/external deps
 
 ### Startup Time
 
-**1.032s – 1.143s** across measurements (within variance of baseline 1.023s).
+**0.984s** — first sub-1s result, **3.8% improvement** over baseline.
 
 ---
 
-## Key Technical Discoveries
+## Quarkus Fix: `resolveJarPath` for AOT/Crema
 
-### 1. CP-Only Jars Crash at Runtime
+**Problem:** `QuarkusEntryPoint.resolveJarPath()` uses
+`getProtectionDomain().getCodeSource().getLocation()` to find the jar path.
+When AOT-compiled into `libjvm.so`, `getCodeSource()` returns the `java`
+binary path (via `ProcessProperties.getExecutableName()`), not the jar.
+The method returned a non-null path, so the `getResource()` fallback was
+never reached.
 
-Jars placed on `-cp` without `-H:Preserve` cause **runtime crashes**:
+**Fix:** Added a `.jar` suffix check before returning the code source path:
+```java
+if (location != null) {
+    Path path = Path.of(location.toURI());
+    if (path.toString().endsWith(".jar")) {
+        return path;
+    }
+}
+// fallback: find class resource in jar on classpath
+return resolveJarPathFromClassResource(
+        entryPointClass.getResource(entryPointClass.getSimpleName() + ".class"));
 ```
-Fatal error: Unable to call AOT method: ... name=getMessageLogger
-Consider using '-H:Preserve=package=org.jboss.logging'
-```
 
-The `jvm-library` macro's `--link-at-build-time` registers all CP classes for
-AOT compilation. If a class is registered but NOT compiled (no Preserve), the
-runtime aborts when that method is called.
+When the path is not a `.jar` (AOT case), it falls through to `getResource()`
+which finds the `.class` file in the boot jar on the classpath and extracts
+the jar path from the `jar:file:///...!/...` URL.
 
-**Rule: Every jar on `-cp` MUST also be in `-H:Preserve=path=`**
-
-**Exception:** Jars whose classes are never actually invoked at runtime can be
-on CP without Preserve. This is how we handle the optional deps (log4j,
-jboss-modules) — they satisfy linking but are never called because Quarkus
-uses jboss-logmanager, not log4j.
-
-### 2. Optional Dependencies Solved with Real Jars
-
-The main blocker was `jboss-logging` referencing `log4j`, `log4j2`, and `slf4j`,
-and `jboss-logmanager` referencing `org.jboss.modules`. These are optional
-dependencies — the classes exist in jboss-logging/logmanager but are only used
-if the corresponding logging backend is present at runtime.
-
-**Solution:** Download the actual dependency jars and place them on the classpath
-(without Preserve). This satisfies the linker without bloating `libjvm.so`.
-Since Quarkus never calls log4j at runtime, the "CP without Preserve crashes"
-issue doesn't apply.
-
-### 3. `getCodeSource()` Breaks Under Preserve
-
-`QuarkusEntryPoint.resolveJarPath()` uses `getProtectionDomain().getCodeSource().getLocation()`
-to find its own jar location at runtime. When the class is AOT-compiled into
-`libjvm.so`, the code source points to the native-image build directory, not
-the original jar. This is a fundamental incompatibility — classes that locate
-resources relative to their own jar path cannot be Preserved.
-
-### 4. `--link-at-build-time` (from `jvm-library` macro)
-
-The `jvm-library` macro (`$GRAALVM_HOME/lib/svm/macros/jvm-library/native-image.properties`)
-includes `--link-at-build-time` which requires ALL classes on the classpath to be
-fully linkable. If any class references a type not on the classpath, the build
-fails — even if that class is set for `--initialize-at-run-time`.
-
-The macro also sets:
-- `-H:+AssertInitializationSpecifiedForAllClasses` — every class on CP needs explicit init policy
-- `-H:+GuaranteeSubstrateTypesLinked` — all substrate types must be linkable
-
-### 5. `-H:-DetectUserDirectoriesInImageHeap` Not Needed
-
-Earlier iterations used this flag to work around `Files2.CWD` baking the build-time
-working directory into the image heap. The proper fix is
-`--initialize-at-run-time=io.smallrye.common.io.Files2` which defers the class
-init (including `CWD` capture) to runtime. The detection flag is then unnecessary.
-
-### 6. `Inet6Address` Cannot Be Build-Time Initialized
-
-`CidrAddress` static initializer creates `Inet6Address` objects. The image builder
-demands `--initialize-at-build-time=java.net.Inet6Address` but this conflicts with
-JDK requirements (`InetAddress` must be run-time initialized for JNI native code
-support). The solution is `--initialize-at-run-time=io.smallrye.common.net` to
-defer the entire net package.
-
-### 7. log4j 1.x Has Many Problematic Subpackages
-
-The full `log4j-1.2.17.jar` contains classes with native deps (`nt`), external
-deps (`jms`, `jdbc`), and Swing GUI components (`chainsaw`, `lf5`). Since we
-init `org.apache.log4j` at build time for linking, each problematic subpackage
-must be explicitly deferred with `--initialize-at-run-time`.
+**Committed in:** `~/src/quarkus` on branch `topic.layers.oct26`
 
 ---
 
 ## Main Jars Experiment (In Progress)
 
-Attempted adding ALL main jars (100 jars) at once with ALL boot jars.
-This required downloading many additional optional dependency jars.
+Attempted adding ALL 100 main jars at once with all boot jars.
 
 ### Optional Dependencies Discovered
 
-When adding main jars (especially netty, vertx, smallrye-config), many
-additional optional dependencies surface that need to be on the classpath
-for linking:
+When adding main jars, many additional optional dependencies surface that
+need to be on the classpath for linking:
 
 | Optional Dep | Needed By | Reason |
 |-------------|-----------|--------|
@@ -234,55 +166,79 @@ for linking:
 - `jakarta.activation.MailcapCommandMap` — bakes user home dir into image heap
 - `jakarta.activation.MimetypesFileTypeMap` — similar path issue
 
-### Current Blocker for Full Main Jar Build
+### Current Blocker: `CidrAddress` / `Inet6Address`
 
 `io.smallrye.common.net.CidrAddress.<clinit>` creates `Inet6Address` objects.
-`java.net.Inet6Address` cannot be build-time initialized (conflicts with JDK's
-`InetAddress` run-time init requirement for JNI). With all main jars on CP,
-more code paths reach `CidrAddress`, and deferring it to run-time doesn't prevent
-the `<clinit>` from being parsed by the analysis.
+`java.net.Inet6Address` cannot be build-time initialized because it conflicts
+with JDK requirements — `InetAddress` must be run-time initialized for JNI
+native code support:
+
+```
+Error: Incompatible change of initialization policy for java.net.InetAddress:
+trying to change BUILD_TIME super type of java.net.Inet6Address to RUN_TIME
+for JDK native code support via JNI
+```
+
+Setting `--initialize-at-run-time=io.smallrye.common.net.CidrAddress` defers
+the class init, but with all main jars on the classpath, more code paths reach
+`CidrAddress` and the analysis still parses its `<clinit>`, discovering the
+`Inet6Address` constants.
+
+**This is the sole remaining blocker for adding all main jars.**
 
 Possible solutions:
-1. GraalVM substitution to replace `CidrAddress` static fields
-2. Exclude `smallrye-common-net` from Preserve (but other jars reference it)
-3. Patch `CidrAddress` to lazy-init the `Inet6Address` objects
-
-### `quarkus-bootstrap-runner` Must Be Included
-
-When adding main jars, `quarkus-bootstrap-runner` MUST be on CP + Preserve
-because other jars reference its classes (e.g., `InitialConfigurator`,
-`QuarkusDelayedHandler`). Without it, the build fails:
-```
-java.lang.IllegalArgumentException: io.quarkus.bootstrap.logging.InitialConfigurator.class
-/* Warning: type not present! */
-```
-
-The `getCodeSource()` path issue from `QuarkusEntryPoint.resolveJarPath()`
-caused `NoSuchFileException` when we Preserved it. This needs a workaround
-(GraalVM substitution or Quarkus patch).
+1. **Patch `CidrAddress`** upstream to lazy-init the `Inet6Address` objects
+   (move them out of `<clinit>` into a holder class or lazy field)
+2. **GraalVM substitution** to replace `CidrAddress` static fields
+3. **Exclude `smallrye-common-net` from Preserve** and handle downstream
+   (but other boot/main jars reference it)
 
 ---
 
-## Next Steps
+## Key Technical Discoveries
 
-### 1. Resolve `CidrAddress` / `Inet6Address` blocker
+### 1. CP-Only Jars Crash at Runtime (with exceptions)
 
-This is the main blocker for adding all main jars. Options:
-- Create a GraalVM substitution for `CidrAddress` static fields
-- Patch `CidrAddress` upstream to lazy-init
-- Exclude `smallrye-common-net` from Preserve and handle downstream
+Jars on `-cp` without `-H:Preserve` cause runtime crashes IF their classes
+are actually called. The `--link-at-build-time` macro registers them for AOT
+but they're not compiled.
 
-### 2. Resolve `quarkus-bootstrap-runner` `getCodeSource()` issue
+**Exception:** Jars whose classes are never invoked at runtime can be on CP
+without Preserve. This is how we handle optional deps (log4j, jboss-modules).
 
-Needed to include all boot + main jars. Options:
-- GraalVM substitution for `QuarkusEntryPoint.resolveJarPath()`
-- Quarkus patch to support system property fallback
+### 2. Optional Dependencies Solved with Real Jars
 
-### 3. Add main jars incrementally
+The main blocker was `jboss-logging` referencing `log4j`/`log4j2`/`slf4j`,
+and `jboss-logmanager` referencing `org.jboss.modules`. These are optional
+deps — classes exist but are only used if the backend is present.
 
-Once blockers are resolved, add main jars in dependency order.
-The dependency tree analysis showed 25 leaf jars that can be added first,
-then work up through the dependency layers.
+**Solution:** Download the actual dependency jars and place them on the
+classpath without Preserve. This satisfies the linker without bloating
+`libjvm.so`.
+
+### 3. `getCodeSource()` Returns Executable Path in Crema
+
+For AOT-compiled classes in `libjvm.so`, `getCodeSource().getLocation()`
+returns the executable path (via `ProcessProperties.getExecutableName()`),
+not the original jar path. Fixed in Quarkus by checking for `.jar` suffix
+and falling back to `getResource()`.
+
+### 4. `--link-at-build-time` from `jvm-library` Macro
+
+The macro includes blanket `--link-at-build-time` requiring ALL classes to
+be fully linkable. Also sets `-H:+AssertInitializationSpecifiedForAllClasses`
+and `-H:+GuaranteeSubstrateTypesLinked`.
+
+### 5. `Inet6Address` Cannot Be Build-Time Initialized
+
+JDK constraint: `InetAddress` (superclass) must be run-time initialized for
+JNI. Any class whose `<clinit>` creates `Inet*Address` objects forces the
+image builder to request build-time init for `Inet6Address`, which conflicts.
+
+### 6. log4j 1.x Has Many Problematic Subpackages
+
+The full jar contains classes with native deps (`nt`), external deps (`jms`,
+`jdbc`), and Swing GUI (`chainsaw`, `lf5`). Each must be explicitly deferred.
 
 ---
 
@@ -292,9 +248,35 @@ then work up through the dependency layers.
 |--------------|-------------|----------------|
 | Baseline (no extra jars) | 1.023s | 0 |
 | +cpu,os only | 1.156s | 2 |
-| All boot jars + 3 main deps | 1.032s – 1.143s | 18 |
+| 15 boot jars + 3 main deps | 1.032s – 1.143s | 18 |
+| **All 16 boot jars + 3 main deps** | **0.984s** | **19** |
 
-Note: Startup time differences are within measurement variance at this stage.
-With only boot jars (~small utility classes), the impact is minimal. Significant
-improvement is expected when adding the larger framework jars (netty, vert.x,
-quarkus-core) which have much more code to JIT compile.
+---
+
+## Next Steps
+
+### 1. Resolve `CidrAddress` / `Inet6Address` blocker (MAIN BLOCKER)
+
+This is the sole remaining blocker for adding all ~100 main jars.
+`CidrAddress.<clinit>` creates `Inet6Address` objects which can't be
+build-time initialized. With all main jars on CP, more analysis paths
+reach this class.
+
+Options:
+- Patch `CidrAddress` to lazy-init (move `Inet6Address` fields to a
+  holder class initialized on first access)
+- GraalVM substitution for the static fields
+- Investigate if `-H:+UnlockExperimentalVMOptions` can relax the
+  `InetAddress` JNI constraint
+
+### 2. Add main jars incrementally after blocker is resolved
+
+Dependency tree analysis identified 25 leaf jars (no deps on other main
+jars). Add those first, then work up through the dependency layers.
+Use `--initialize-at-run-time` flags from `layers-999/build-layer-base.sh`
+for netty and vert.x.
+
+### 3. Update `build-libjvm.sh` for main jars
+
+The build script lists all needed optional deps in comments. Once the
+blocker is resolved, uncomment and enable them.
