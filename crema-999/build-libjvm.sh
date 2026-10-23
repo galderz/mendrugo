@@ -148,7 +148,6 @@ INIT_RUN_ARG=$(IFS=,; echo "${INIT_RUN[*]}")
 # ──────────────────────────────────────────────────────────────────────
 ${GRAALVM_HOME}/bin/native-image --macro:jvm-library \
     -H:Preserve=package=sun.misc \
-    -H:-DetectUserDirectoriesInImageHeap \
     -cp "$CP_ARGS" \
     "${PRESERVE_ARGS[@]}" \
     "--initialize-at-build-time=${INIT_BUILD_ARG}" \
