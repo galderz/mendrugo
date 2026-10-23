@@ -13,12 +13,12 @@ mvn clean package -Ddebug=true && java -Dnetty.use-new-code=true -jar target/ben
 
 aot
 #+begin_src bash
-mvn clean package && java -jar target/benchmarks.jar ByteArrays
+mvn clean package && java -jar target/benchmarks.jar NettyByteArrays
 #+end_src
 
 jvm
 #+begin_src bash
-mvn clean package -f jmh.xml && java -jar target/benchmarks.jar ByteArrays
+mvn clean package -f jmh.xml && java -jar target/benchmarks.jar NettyByteArrays
 #+end_src
 * 21.9.26
 ** netty issue draft

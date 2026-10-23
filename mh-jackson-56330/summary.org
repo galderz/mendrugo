@@ -1,6 +1,11 @@
 #+STARTUP: overview
 
 * Bookmarks
+plain run:
+#+begin_src bash
+mvn clean package && java -jar target/benchmarks.jar -v EXTRA Invokes
+#+end_src
+
 native async profiler:
 #+begin_src bash
 mvn clean package -Ddebug=true && LD_PRELOAD=$HOME/opt/async-profiler/lib/libasyncProfiler.so java -jar target/benchmarks.jar -prof org.mendrugo.fibula.NativeAsyncProfiler:verbose=true -v EXTRA mhandle
