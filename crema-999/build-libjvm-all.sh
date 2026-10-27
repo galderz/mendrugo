@@ -74,6 +74,10 @@ declare -A DEPS=(
     ["blockhound-1.0.10.RELEASE.jar"]="https://repo1.maven.org/maven2/io/projectreactor/tools/blockhound/1.0.10.RELEASE/blockhound-1.0.10.RELEASE.jar"
     # XZ compression (netty)
     ["xz-1.10.jar"]="https://repo1.maven.org/maven2/org/tukaani/xz/1.10/xz-1.10.jar"
+    # netty platform-specific transport classes
+    ["netty-transport-classes-kqueue-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-kqueue/4.2.18.Final/netty-transport-classes-kqueue-4.2.18.Final.jar"
+    ["netty-transport-classes-io_uring-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-io_uring/4.2.18.Final/netty-transport-classes-io_uring-4.2.18.Final.jar"
+    ["netty-transport-classes-epoll-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-epoll/4.2.18.Final/netty-transport-classes-epoll-4.2.18.Final.jar"
 )
 
 for name in "${!DEPS[@]}"; do
@@ -212,11 +216,12 @@ INIT_RUN=(
     "io.netty.handler.ssl"
     "io.netty.handler.pcap.PcapWriteHandler\$WildcardAddressHolder"
     "io.netty.pkitesting"
+    "io.netty.channel.kqueue"
+    "io.netty.channel.uring"
     # quarkus netty
     "io.quarkus.netty.runtime.EmptyByteBufStub"
     # vertx (from layers-999/build-layer-base.sh)
-    "io.vertx.core.buffer.impl.PartialPooledByteBufAllocator"
-    "io.vertx.core.buffer.impl.VertxByteBufAllocator"
+    "io.vertx.core.impl.buffer.VertxByteBufAllocator"
     "io.vertx.core.parsetools.impl.RecordParserImpl"
     "io.vertx.core.json.Json"
     "io.vertx.core.internal.tls.SslContextManager"
