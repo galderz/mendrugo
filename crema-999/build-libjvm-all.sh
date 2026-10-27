@@ -78,6 +78,17 @@ declare -A DEPS=(
     ["netty-transport-classes-kqueue-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-kqueue/4.2.18.Final/netty-transport-classes-kqueue-4.2.18.Final.jar"
     ["netty-transport-classes-io_uring-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-io_uring/4.2.18.Final/netty-transport-classes-io_uring-4.2.18.Final.jar"
     ["netty-transport-classes-epoll-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-epoll/4.2.18.Final/netty-transport-classes-epoll-4.2.18.Final.jar"
+    # smallrye-mutiny wrapped vertx auth providers
+    ["smallrye-mutiny-vertx-auth-htdigest-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-htdigest/4.0.2/smallrye-mutiny-vertx-auth-htdigest-4.0.2.jar"
+    ["smallrye-mutiny-vertx-auth-htpasswd-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-htpasswd/4.0.2/smallrye-mutiny-vertx-auth-htpasswd-4.0.2.jar"
+    ["smallrye-mutiny-vertx-auth-jwt-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-jwt/4.0.2/smallrye-mutiny-vertx-auth-jwt-4.0.2.jar"
+    ["smallrye-mutiny-vertx-auth-oauth2-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-oauth2/4.0.2/smallrye-mutiny-vertx-auth-oauth2-4.0.2.jar"
+    ["smallrye-mutiny-vertx-auth-otp-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-otp/4.0.2/smallrye-mutiny-vertx-auth-otp-4.0.2.jar"
+    ["smallrye-mutiny-vertx-auth-ldap-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-ldap/4.0.2/smallrye-mutiny-vertx-auth-ldap-4.0.2.jar"
+    ["smallrye-mutiny-vertx-auth-properties-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-properties/4.0.2/smallrye-mutiny-vertx-auth-properties-4.0.2.jar"
+    ["smallrye-mutiny-vertx-auth-sql-client-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-sql-client/4.0.2/smallrye-mutiny-vertx-auth-sql-client-4.0.2.jar"
+    ["smallrye-mutiny-vertx-auth-webauthn4j-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-webauthn4j/4.0.2/smallrye-mutiny-vertx-auth-webauthn4j-4.0.2.jar"
+    ["smallrye-mutiny-vertx-sql-client-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-sql-client/4.0.2/smallrye-mutiny-vertx-sql-client-4.0.2.jar"
 )
 
 for name in "${!DEPS[@]}"; do
