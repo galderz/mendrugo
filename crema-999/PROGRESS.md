@@ -159,6 +159,22 @@ need to be on the classpath for linking:
 | `bcpkix-jdk18on` | smallrye-certs | X509 cert builder |
 | `bcprov-jdk18on` | BouncyCastle | provider |
 | `bcutil-jdk18on` | BouncyCastle | utility |
+| `netty-pkitesting` | netty | `SelfSignedCertificate` (`SecureRandom` in heap) |
+| `netty-transport-classes-kqueue` | vertx-core | `KQueueTransport` (macOS) |
+| `netty-transport-classes-io_uring` | vertx-core | `IoUringTransport` (Linux) |
+| `netty-transport-classes-epoll` | vertx-core | `EpollTransport` (Linux) |
+| `vertx-auth-jwt` | vertx-web | `JWTAuth` |
+| `vertx-auth-htdigest` | vertx-web | `HtdigestAuth` |
+| `vertx-auth-oauth2` | vertx-web | `OAuth2Auth` |
+| `vertx-auth-webauthn4j` | vertx-web | `WebAuthn4J` |
+| `vertx-auth-{htpasswd,ldap,otp,properties,sql-client}` | vertx-web | various auth providers |
+| `vertx-sql-client` | vertx-auth-sql-client | SQL client API |
+| `webauthn4j-core{,-async}` | vertx-auth-webauthn4j | WebAuthn impl |
+| `webauthn4j-metadata{,-async}` | vertx-auth-webauthn4j | FIDO metadata |
+| `blockhound` | vertx-core | `BlockHoundIntegration` |
+| `jackson-annotations-2.x` | jackson-databind-2.x | annotations |
+| `smallrye-mutiny-vertx-auth-*` | vertx-web | mutiny auth wrappers (**SPLIT PACKAGE**) |
+| `smallrye-mutiny-vertx-sql-client` | vertx-auth-sql | mutiny SQL wrapper (**SPLIT PACKAGE**) |
 
 ### Additional Run-Time Init Classes Discovered
 
@@ -175,29 +191,46 @@ and `INET6_ANY_CIDR` static fields with lazy accessors. This avoids creating
 `Inet6Address` objects during `<clinit>` while still allowing `CidrAddress`
 to be build-time initialized.
 
-### Current Blocker: Netty Buffer Allocator Conflicts
+### Resolved: Netty Buffer Allocator Conflicts
 
-When adding all main jars, many Quarkus/Vert.x/RESTEasy classes reference
-`io.netty.buffer.AdaptiveByteBufAllocator` as constants in their methods.
-Netty's own `native-image.properties` forces this class to run-time init:
+**Root cause was a wrong package name** in the run-time init list:
+- Was: `io.vertx.core.buffer.impl.VertxByteBufAllocator`
+- Fix: `io.vertx.core.impl.buffer.VertxByteBufAllocator`
+
+`VertxByteBufAllocator.<clinit>` creates an `AdaptiveByteBufAllocator` and
+stores it in `POOLED_ALLOCATOR`. With the correct package deferred to run-time,
+the allocator instance is never created at build time and doesn't end up in
+the image heap.
+
+Also added `io.netty.channel.kqueue` and `io.netty.channel.uring` to run-time
+init (platform-specific transports with native deps).
+
+### Current Blocker: Split Package Filtering in NativeImageClassLoader
+
+Native-image's `NativeImageClassLoader` **silently drops jars** that create
+split packages. The `smallrye-mutiny-vertx-auth-*` optional jars share the
+`io.vertx.mutiny.ext.auth` package hierarchy with
+`smallrye-mutiny-vertx-auth-common` from `lib/main/`.
+
+When both are on the classpath, native-image only loads the main jar and
+ignores the optional ones. This causes:
 ```
-Args = --initialize-at-run-time=io.netty.buffer.AdaptiveByteBufAllocator,...
+java.lang.NoClassDefFoundError: io/vertx/mutiny/ext/auth/htdigest/HtdigestAuth
 ```
 
-But when those Quarkus/Vert.x classes are build-time initialized (via package-level
-`--initialize-at-build-time=io.quarkus,io.vertx`), their code embeds the allocator
-object into the image heap, which conflicts with netty's run-time init requirement.
+The class IS in the optional jar, the jar IS on the `-cp` argument, but the
+`NativeImageClassLoader` silently excludes it.
 
-Deferring individual classes to run-time doesn't help because the Preserve
-mechanism still parses all methods, discovering the constants.
+**Evidence:** The native-image error report lists 49 of 51 optional jars on
+the classpath — the 10 `smallrye-mutiny-vertx-auth-*` and
+`smallrye-mutiny-vertx-sql-client` jars are absent.
 
-Classes that embed `AdaptiveByteBufAllocator`:
-- `io.quarkus.vertx.utils.AppendBuffer`
-- `org.jboss.resteasy.reactive.server.vertx.VertxResteasyReactiveRequestContext`
-- Likely more through the codebase
+**Workarounds attempted:**
+- Merging jars: failed (same ClassNotFoundException even after merge)
+- Wildcard classpath (`lib/optional/*`): failed (same filtering)
+- Explicit jar paths: failed (same filtering)
 
-**This is a systemic conflict between Preserve (parses all methods) and
-netty's run-time init requirements.**
+**This is a native-image limitation, not a configuration issue.**
 
 ---
 
@@ -235,11 +268,21 @@ The macro includes blanket `--link-at-build-time` requiring ALL classes to
 be fully linkable. Also sets `-H:+AssertInitializationSpecifiedForAllClasses`
 and `-H:+GuaranteeSubstrateTypesLinked`.
 
-### 5. `Inet6Address` Cannot Be Build-Time Initialized
+### 5. `Inet6Address` Cannot Be Build-Time Initialized (RESOLVED)
 
 JDK constraint: `InetAddress` (superclass) must be run-time initialized for
 JNI. Any class whose `<clinit>` creates `Inet*Address` objects forces the
 image builder to request build-time init for `Inet6Address`, which conflicts.
+**Resolved** by including `quarkus-core` which provides a GraalVM substitution
+that uses `@InjectAccessors` for lazy initialization.
+
+### 8. NativeImageClassLoader Drops Split Package Jars
+
+When multiple jars on the classpath define classes in the same package
+hierarchy, `NativeImageClassLoader` silently drops the "extra" jars.
+This prevents optional dependency jars from being loaded when they share
+package prefixes with jars already on the classpath. There is no warning
+or error — the jars simply don't appear in the classpath.
 
 ### 6. log4j 1.x Has Many Problematic Subpackages
 
@@ -256,35 +299,40 @@ The full jar contains classes with native deps (`nt`), external deps (`jms`,
 | +cpu,os only | 1.156s | 2 |
 | 15 boot jars + 3 main deps | 1.032s – 1.143s | 18 |
 | **All 16 boot jars + 3 main deps** | **0.984s** | **19** |
+| All boot + all main jars | ❌ build fails | 119 (attempted) |
 
 ---
 
 ## Next Steps
 
-### 1. Resolve netty buffer allocator conflict (MAIN BLOCKER)
+### 1. Resolve split package filtering (MAIN BLOCKER)
 
-The systemic conflict between Preserve + build-time init and netty's
-run-time init requirements for buffer allocators. Options:
+Native-image's `NativeImageClassLoader` silently drops jars that create
+split packages. The `smallrye-mutiny-vertx-auth-*` jars are affected.
 
-- **GraalVM substitution** for `AdaptiveByteBufAllocator` to allow it
-  in the image heap (similar to CidrAddress approach)
-- **Quarkus substitutions** for the specific classes that embed allocators
-  (`AppendBuffer`, `VertxResteasyReactiveRequestContext`, etc.)
-- **Different init strategy**: don't use package-level `--initialize-at-build-time`
-  for `io.quarkus`/`io.vertx`/`org.jboss.resteasy`. Instead, only init
-  specific safe classes and leave the rest at run-time.
+Options:
+- **GraalVM fix**: Allow split packages on the classpath, or add a flag
+  to disable this filtering for specific jars
+- **Upstream fix**: Merge auth provider classes into `smallrye-mutiny-vertx-auth-common`
+  so they're all in one jar
+- **Build workaround**: Create a fat jar with all auth provider classes
+  and replace the individual jars
+- **Skip these jars**: Exclude `vertx-web` and `smallrye-mutiny-vertx-web`
+  from Preserve since they trigger the auth provider reflection. This
+  would sacrifice AOT compilation of vertx-web but allow the rest to work.
 
-### 2. Add main jars incrementally
+### 2. Try incremental main jar addition
 
-Instead of adding all 100 main jars at once, add them in groups:
-1. Jakarta API jars (pure interfaces, no netty deps)
-2. smallrye-config, smallrye-context-propagation
-3. mutiny, reactive-streams
-4. netty jars (with careful init flags)
-5. vertx jars (after netty is stable)
-6. quarkus-core and rest of quarkus jars
+Instead of adding all 100 main jars at once, add them in groups to
+isolate which jars trigger the split package issue:
+1. Jakarta API jars (pure interfaces)
+2. smallrye-config, smallrye-context-propagation, mutiny
+3. netty jars
+4. vertx-core (without vertx-web)
+5. quarkus-core
+6. vertx-web and rest-reactive (these trigger the auth split package issue)
 
 ### 3. Update `build-libjvm.sh` for main jars
 
-The build script lists all needed optional deps in comments. Once the
-blocker is resolved, uncomment and enable them.
+Once the blocker is resolved, update the working build script to include
+all main jars with the resolved init flags and optional deps.

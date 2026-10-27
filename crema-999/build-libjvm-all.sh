@@ -3,8 +3,9 @@
 # Build libjvm.so with ALL boot + main jar dependencies pre-compiled.
 #
 # This is the experimental "full build" script that attempts to include
-# all main jars. It currently FAILS due to netty buffer allocator conflicts
-# (see PROGRESS.md for details).
+# all main jars. It currently FAILS due to a split package issue where
+# native-image's NativeImageClassLoader silently drops jars that create
+# split packages (see PROGRESS.md for details).
 #
 # The working boot-only build is in build-libjvm.sh.
 #
@@ -274,13 +275,17 @@ INIT_RUN_ARG=$(IFS=,; echo "${INIT_RUN[*]}")
 # Build libjvm.so
 #
 # KNOWN ISSUE: This build currently FAILS with:
-#   An object of type 'io.netty.buffer.AdaptiveByteBufAllocator' was
-#   found in the image heap. This type, however, is marked for
-#   initialization at image run time.
+#   java.lang.NoClassDefFoundError: io/vertx/mutiny/ext/auth/htdigest/HtdigestAuth
 #
-# The conflict is between:
-# - Netty's native-image.properties: --initialize-at-run-time=io.netty.buffer.AdaptiveByteBufAllocator
-# - Preserve parsing methods that embed AdaptiveByteBufAllocator constants
+# Root cause: native-image's NativeImageClassLoader silently drops jars
+# that create split packages. The smallrye-mutiny-vertx-auth-* optional
+# jars share the io.vertx.mutiny.ext.auth package hierarchy with
+# smallrye-mutiny-vertx-auth-common from main/, and get filtered out.
+#
+# Previous blockers resolved:
+# - CidrAddress/Inet6Address: solved by quarkus-core GraalVM substitution
+# - AdaptiveByteBufAllocator: solved by fixing wrong package name
+#   (io.vertx.core.buffer.impl -> io.vertx.core.impl.buffer)
 #
 # See PROGRESS.md for details and possible solutions.
 # ──────────────────────────────────────────────────────────────────────
