@@ -166,32 +166,38 @@ need to be on the classpath for linking:
 - `jakarta.activation.MailcapCommandMap` — bakes user home dir into image heap
 - `jakarta.activation.MimetypesFileTypeMap` — similar path issue
 
-### Current Blocker: `CidrAddress` / `Inet6Address`
+### Resolved: `CidrAddress` / `Inet6Address`
 
-`io.smallrye.common.net.CidrAddress.<clinit>` creates `Inet6Address` objects.
-`java.net.Inet6Address` cannot be build-time initialized because it conflicts
-with JDK requirements — `InetAddress` must be run-time initialized for JNI
-native code support:
+**Fixed by including `quarkus-core` jar** which contains
+`Target_io_smallrye_common_net_CidrAddress` — a GraalVM `@TargetClass`
+substitution that uses `@InjectAccessors` to replace the `INET4_ANY_CIDR`
+and `INET6_ANY_CIDR` static fields with lazy accessors. This avoids creating
+`Inet6Address` objects during `<clinit>` while still allowing `CidrAddress`
+to be build-time initialized.
 
+### Current Blocker: Netty Buffer Allocator Conflicts
+
+When adding all main jars, many Quarkus/Vert.x/RESTEasy classes reference
+`io.netty.buffer.AdaptiveByteBufAllocator` as constants in their methods.
+Netty's own `native-image.properties` forces this class to run-time init:
 ```
-Error: Incompatible change of initialization policy for java.net.InetAddress:
-trying to change BUILD_TIME super type of java.net.Inet6Address to RUN_TIME
-for JDK native code support via JNI
+Args = --initialize-at-run-time=io.netty.buffer.AdaptiveByteBufAllocator,...
 ```
 
-Setting `--initialize-at-run-time=io.smallrye.common.net.CidrAddress` defers
-the class init, but with all main jars on the classpath, more code paths reach
-`CidrAddress` and the analysis still parses its `<clinit>`, discovering the
-`Inet6Address` constants.
+But when those Quarkus/Vert.x classes are build-time initialized (via package-level
+`--initialize-at-build-time=io.quarkus,io.vertx`), their code embeds the allocator
+object into the image heap, which conflicts with netty's run-time init requirement.
 
-**This is the sole remaining blocker for adding all main jars.**
+Deferring individual classes to run-time doesn't help because the Preserve
+mechanism still parses all methods, discovering the constants.
 
-Possible solutions:
-1. **Patch `CidrAddress`** upstream to lazy-init the `Inet6Address` objects
-   (move them out of `<clinit>` into a holder class or lazy field)
-2. **GraalVM substitution** to replace `CidrAddress` static fields
-3. **Exclude `smallrye-common-net` from Preserve** and handle downstream
-   (but other boot/main jars reference it)
+Classes that embed `AdaptiveByteBufAllocator`:
+- `io.quarkus.vertx.utils.AppendBuffer`
+- `org.jboss.resteasy.reactive.server.vertx.VertxResteasyReactiveRequestContext`
+- Likely more through the codebase
+
+**This is a systemic conflict between Preserve (parses all methods) and
+netty's run-time init requirements.**
 
 ---
 
@@ -255,26 +261,28 @@ The full jar contains classes with native deps (`nt`), external deps (`jms`,
 
 ## Next Steps
 
-### 1. Resolve `CidrAddress` / `Inet6Address` blocker (MAIN BLOCKER)
+### 1. Resolve netty buffer allocator conflict (MAIN BLOCKER)
 
-This is the sole remaining blocker for adding all ~100 main jars.
-`CidrAddress.<clinit>` creates `Inet6Address` objects which can't be
-build-time initialized. With all main jars on CP, more analysis paths
-reach this class.
+The systemic conflict between Preserve + build-time init and netty's
+run-time init requirements for buffer allocators. Options:
 
-Options:
-- Patch `CidrAddress` to lazy-init (move `Inet6Address` fields to a
-  holder class initialized on first access)
-- GraalVM substitution for the static fields
-- Investigate if `-H:+UnlockExperimentalVMOptions` can relax the
-  `InetAddress` JNI constraint
+- **GraalVM substitution** for `AdaptiveByteBufAllocator` to allow it
+  in the image heap (similar to CidrAddress approach)
+- **Quarkus substitutions** for the specific classes that embed allocators
+  (`AppendBuffer`, `VertxResteasyReactiveRequestContext`, etc.)
+- **Different init strategy**: don't use package-level `--initialize-at-build-time`
+  for `io.quarkus`/`io.vertx`/`org.jboss.resteasy`. Instead, only init
+  specific safe classes and leave the rest at run-time.
 
-### 2. Add main jars incrementally after blocker is resolved
+### 2. Add main jars incrementally
 
-Dependency tree analysis identified 25 leaf jars (no deps on other main
-jars). Add those first, then work up through the dependency layers.
-Use `--initialize-at-run-time` flags from `layers-999/build-layer-base.sh`
-for netty and vert.x.
+Instead of adding all 100 main jars at once, add them in groups:
+1. Jakarta API jars (pure interfaces, no netty deps)
+2. smallrye-config, smallrye-context-propagation
+3. mutiny, reactive-streams
+4. netty jars (with careful init flags)
+5. vertx jars (after netty is stable)
+6. quarkus-core and rest of quarkus jars
 
 ### 3. Update `build-libjvm.sh` for main jars
 
