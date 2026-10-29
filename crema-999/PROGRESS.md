@@ -374,3 +374,48 @@ isolate which jars trigger the split package issue:
 
 Once the blocker is resolved, update the working build script to include
 all main jars with the resolved init flags and optional deps.
+
+---
+
+## Side Experiment: Why JBoss LogManager Can't Be Runtime Initialized
+
+### Root Cause Found
+
+When jboss-logmanager is on the native-image classpath, it registers itself
+as the system `System.LoggerFinder` via:
+```
+META-INF/services/java.lang.System$LoggerFinder → org.jboss.logmanager.JBossLoggerFinder
+```
+
+During `TrustStoreManagerFeature.afterRegistration()`, GraalVM loads the
+trust store certificates. This triggers a chain:
+```
+TrustStoreManagerFeature.afterRegistration()
+  → TrustStoreManager.getTrustedCerts() (via reflection)
+    → KeyStore.load() → PKCS12KeyStore.engineLoad()
+      → CertificateFactory.generateCertificate()
+        → JCAUtil.tryCommitCertEvent()
+          → EventHelper.isLoggingSecurity()
+            → LazyLoggers → BootstrapLogger
+              → System.LoggerFinder.getLoggerFinder()
+                → JBossLoggerFinder (via SPI)
+                  → JBossLoggerFinder.getLogger()
+                    → JBossSystemLogger.<init>
+```
+
+The `JBossSystemLogger` instance is created at build time and ends up in
+the image heap. Since `org.jboss.logmanager` classes are marked for run-time
+init, this creates a conflict.
+
+**Confirmed with debug tracing** (`-Dsvm.debug.trustStoreInit=true`):
+```
+TRUST_STORE_DEBUG: System.LoggerFinder = org.jboss.logmanager.JBossLoggerFinder
+```
+
+### Awaiting Next Steps
+
+The fix needs to prevent JBossLoggerFinder from being used during
+native-image build. Options:
+1. Temporarily override System.LoggerFinder before TrustStoreManager loads
+2. Filter out jboss-logmanager's System$LoggerFinder service file from CP
+3. Have native-image ignore non-JDK LoggerFinder implementations during build
