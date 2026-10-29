@@ -99,7 +99,7 @@ response:
    # offset 0x505c6: xor %eax,%eax            ← return 0 (failure)
  ```
 
- ### How I debugged this
+v ### How I debugged this
 
  I added a print statement to ProfilerFactory.getProfilerOrNull() to print the exception instead of silently returning null:
 
