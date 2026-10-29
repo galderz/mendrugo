@@ -264,8 +264,21 @@ including `Log4jLoggerProvider` which has methods referencing `org.apache.log4j.
 The linker tries to resolve `Priority`, can't find it, and since `--link-at-build-time`
 is set, the build fails.
 
+**Confirmed by debug tracing** (with `-Dsvm.debug.reflectTrace=Log4j`):
+```
+REFLECT_REG: register(org.jboss.logging.Log4j2Logger, preserved=true)
+  at ReflectionDataBuilder.register(ReflectionDataBuilder.java:254)
+  at PreserveOptionsSupport.registerType(PreserveOptionsSupport.java:341)
+  at PreserveOptionsSupport.registerPreservedClass(PreserveOptionsSupport.java:277)
+  at PreserveOptionsSupport.registerPreservedClasses(PreserveOptionsSupport.java:229)
+  at NativeImageGenerator.setupNativeImage(NativeImageGenerator.java:1269)
+```
+
 **Source:** `PreserveOptionsSupport.java` lines 228-270 in
 `~/src/graal/substratevm/src/com.oracle.svm.hosted/src/com/oracle/svm/hosted/image/`
+
+**Debug tracing committed** to `~/src/graal` — enable with
+`-Dsvm.debug.reflectTrace=<substring>` on the native-image command.
 
 **This explains why optional dependency jars (log4j, jboss-modules) must be on
 the classpath even though they're never called at runtime.**
