@@ -245,6 +245,31 @@ but they're not compiled.
 **Exception:** Jars whose classes are never invoked at runtime can be on CP
 without Preserve. This is how we handle optional deps (log4j, jboss-modules).
 
+### 9. Preserve Triggers Reflection Registration for ALL Classes
+
+**Root cause of why optional deps are needed in the boot-only build.**
+
+The `-H:Preserve=path=` mechanism calls `PreserveOptionsSupport.registerPreservedClass()`
+for EVERY class in the jar. This registers each class for reflection via
+`RuntimeReflectionSupport.register()`, which triggers:
+
+1. `ReflectionDataBuilder.registerClass()` → `registerTypesForTypeQuery()`
+2. `registerAllMethodsQuery()` → `Class.getDeclaredMethods()` / `getMethods()`
+3. The JVM resolves all method parameter/return types
+4. `linkType()` → `type.link()` resolves all referenced classes
+5. With `--link-at-build-time` (from jvm-library macro), any unresolvable class is fatal
+
+So when `jboss-logging.jar` is Preserved, ALL its classes get reflected,
+including `Log4jLoggerProvider` which has methods referencing `org.apache.log4j.Priority`.
+The linker tries to resolve `Priority`, can't find it, and since `--link-at-build-time`
+is set, the build fails.
+
+**Source:** `PreserveOptionsSupport.java` lines 228-270 in
+`~/src/graal/substratevm/src/com.oracle.svm.hosted/src/com/oracle/svm/hosted/image/`
+
+**This explains why optional dependency jars (log4j, jboss-modules) must be on
+the classpath even though they're never called at runtime.**
+
 ### 2. Optional Dependencies Solved with Real Jars
 
 The main blocker was `jboss-logging` referencing `log4j`/`log4j2`/`slf4j`,
