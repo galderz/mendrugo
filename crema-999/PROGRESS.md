@@ -419,3 +419,113 @@ native-image build. Options:
 1. Temporarily override System.LoggerFinder before TrustStoreManager loads
 2. Filter out jboss-logmanager's System$LoggerFinder service file from CP
 3. Have native-image ignore non-JDK LoggerFinder implementations during build
+
+### Detailed Analysis of JBoss LogManager Runtime Init Options
+
+#### Option 1: Reset `manager` field on ALL `Logger` instances
+
+**How it would work:** After `TrustStoreManagerFeature` runs, iterate all
+`Logger` instances via `LogManager.loggerContext.namedLoggers` (a
+`ConcurrentHashMap<String, LoggerWeakRef>`) and reset each `Logger.manager`
+field to a JDK default `LogManager`.
+
+**Feasibility:** Technically possible but fragile:
+- `LogManager` has `systemContext` and `userContext`, each with `namedLoggers`
+- `Logger.manager` is a volatile field, accessible via reflection
+- Would also need to replace the `LogManager.manager` static field
+- Risk: JDK code might have cached Logger references elsewhere (thread-locals,
+  static fields in JDK classes like `XmlAttrStack`)
+- The XML security class `XmlAttrStack.printStep()` embeds a `Logger` as a
+  method constant — these constants are embedded in bytecode and can't be
+  reset via reflection
+
+**Conclusion:** Impractical — too many places hold `Logger` references.
+
+#### Option 2: Prevent JBoss LogManager from being selected
+
+**How `LogManager` selection works:**
+1. `LogManager.<clinit>` calls `initLogManager()`
+2. `initLogManager()` checks `System.getProperty("java.util.logging.manager")`
+3. If set, it instantiates that class via `Class.newInstance()`
+4. If not set (or fails), creates default `java.util.logging.LogManager`
+5. The result is cached in `LogManager.manager` static field (final after init)
+
+**At build time:** Quarkus's `QuarkusEntryPoint.main()` sets
+`java.util.logging.manager=org.jboss.logmanager.LogManager`, but this
+runs at RUNTIME, not during build. At build time, the property might
+not be set. However, the jboss-logmanager jar has:
+```
+META-INF/services/java.util.logging.LogManager → org.jboss.logmanager.LogManager
+```
+This SPI registration is NOT used by `initLogManager()` — that method
+only checks the system property. The SPI is for module-mode discovery.
+
+**But:** The `LogManager` gets instantiated because `java.util.logging.LogManager`
+class initialization is triggered by `TrustStoreManagerFeature` → trust store
+loading → JDK internal logging. Since the system property IS set (by whom?),
+the JBoss LogManager is selected.
+
+**Investigation:** The system property `java.util.logging.manager` might be
+set by the native-image launcher or by one of GraalVM's own features.
+Preventing this property from being set during build would make the JDK
+default LogManager be used instead.
+
+**How to implement:** In the `ResetLoggerFinderFeature.afterRegistration()`,
+BEFORE any other feature runs:
+1. Save the current value of `java.util.logging.manager`
+2. Clear it: `System.clearProperty("java.util.logging.manager")`
+3. This would prevent `initLogManager()` from finding JBoss LogManager
+4. Restore it in `afterAnalysis()`
+
+**Problem:** `LogManager.<clinit>` might have already run before our Feature.
+Feature ordering is not guaranteed.
+
+#### Option 3: Exclude jboss-logmanager from libjvm.so
+
+**Tested:** Excluded `jboss-logmanager-3.2.2.Final.jar` from both CP and
+Preserve. Result: **still fails** with the same `LogManager` error.
+
+**Why:** The build JVM's `java.util.logging.LogManager` class is initialized
+once per JVM process. Even if the jar is not on our `-cp`, the native-image
+launcher process may have already loaded it (from a previous analysis
+iteration, or from the builder's own classpath). Once
+`LogManager.manager = org.jboss.logmanager.LogManager`, it persists for the
+entire JVM lifetime.
+
+**The `Logger` instances** created during `TrustStoreManagerFeature` (loading
+trust store certificates) hold references to the cached `LogManager` via
+their `manager` field. These `Logger` instances are constants embedded in
+JDK classes (e.g., `XmlAttrStack.printStep()`) and cannot be removed from
+the image heap.
+
+**Conclusion:** Simply excluding the jar from `-cp` is NOT sufficient.
+The build JVM itself uses the JBoss LogManager, and its state leaks into
+the image heap via cached `Logger` instances.
+
+#### Summary: What We Know
+
+1. **The root trigger** is `TrustStoreManagerFeature.afterRegistration()` which
+   loads trust store certificates, triggering JDK internal logging
+2. **Two SPI mechanisms** are involved:
+   - `System.LoggerFinder` (via `META-INF/services/java.lang.System$LoggerFinder`)
+   - `java.util.logging.LogManager` (via system property or `META-INF/services`)
+3. **The `ResetLoggerFinderFeature`** successfully handles `System.LoggerFinder`
+   but cannot fully handle `java.util.logging.LogManager` because:
+   - `Logger` instances are embedded as constants in JDK class bytecode
+   - These constants hold references to the `LogManager` via `Logger.manager`
+   - Constants embedded in method bytecode cannot be reset via reflection
+4. **Excluding the jar** doesn't help because the build JVM has already cached
+   the `LogManager`
+
+#### Most Promising Approach
+
+The most effective fix would be at the GraalVM level:
+- A `@RecomputeFieldValue(kind=Reset)` substitution on `Logger.manager` to
+  null out the field in the image, forcing re-initialization at runtime
+- Or a substitution on `LogManager.manager` to replace the JBoss instance
+  with the JDK default in the image
+
+This would need to be a GraalVM-level change (not JBoss-specific) that
+resets the `LogManager` singleton and all `Logger.manager` fields to allow
+re-initialization at runtime when the `java.util.logging.manager` system
+property is set.
