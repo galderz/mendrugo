@@ -205,32 +205,16 @@ the image heap.
 Also added `io.netty.channel.kqueue` and `io.netty.channel.uring` to run-time
 init (platform-specific transports with native deps).
 
-### Current Blocker: Split Package Filtering in NativeImageClassLoader
+### Resolved: Split Package / Init Policy Issues
 
-Native-image's `NativeImageClassLoader` **silently drops jars** that create
-split packages. The `smallrye-mutiny-vertx-auth-*` optional jars share the
-`io.vertx.mutiny.ext.auth` package hierarchy with
-`smallrye-mutiny-vertx-auth-common` from `lib/main/`.
+The previous split package error (`NoClassDefFoundError: HtdigestAuth`) turned
+out to be caused by `-H:-AssertInitializationSpecifiedForAllClasses` masking
+the real init policy errors. Once this flag was removed and proper build-time
+init flags were added (from the logmanager build-init experiment), the build
+succeeded with ALL boot + ALL main jars.
 
-When both are on the classpath, native-image only loads the main jar and
-ignores the optional ones. This causes:
-```
-java.lang.NoClassDefFoundError: io/vertx/mutiny/ext/auth/htdigest/HtdigestAuth
-```
-
-The class IS in the optional jar, the jar IS on the `-cp` argument, but the
-`NativeImageClassLoader` silently excludes it.
-
-**Evidence:** The native-image error report lists 49 of 51 optional jars on
-the classpath — the 10 `smallrye-mutiny-vertx-auth-*` and
-`smallrye-mutiny-vertx-sql-client` jars are absent.
-
-**Workarounds attempted:**
-- Merging jars: failed (same ClassNotFoundException even after merge)
-- Wildcard classpath (`lib/optional/*`): failed (same filtering)
-- Explicit jar paths: failed (same filtering)
-
-**This is a native-image limitation, not a configuration issue.**
+**The build now succeeds** — see `build-libjvm-all.sh` for the working config.
+**Quarkus starts at 1.066s** with all jars preserved.
 
 ---
 
@@ -337,7 +321,8 @@ The full jar contains classes with native deps (`nt`), external deps (`jms`,
 | +cpu,os only | 1.156s | 2 |
 | 15 boot jars + 3 main deps | 1.032s – 1.143s | 18 |
 | **All 16 boot jars + 3 main deps** | **0.984s** | **19** |
-| All boot + all main jars | ❌ build fails | 119 (attempted) |
+| All boot + all main jars (previous) | ❌ build fails | 119 (attempted) |
+| **All boot + all main jars (current)** | **1.066s** | **119** |
 
 ---
 
