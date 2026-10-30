@@ -135,11 +135,27 @@ echo "Total jars on CP: $(echo "$CP_ARGS" | tr ':' '\n' | wc -l)"
 # Classes that must be initialized at build time
 # ──────────────────────────────────────────────────────────────────────
 INIT_BUILD=(
+    # JDK classes needed at build time
+    "jdk.internal.jrtfs"
+    # JBoss logging/logmanager (needed for Quarkus logging at build time)
+    "org.jboss.logging"
+    "org.jboss.logmanager"
+    "io.quarkus.bootstrap.logging"
+    "io.quarkus.vertx.mdc.provider"
+    "io.smallrye.common.ref"
+    "org.jboss.modules"
+    # JAX-RS RuntimeDelegate and related (initialized at build time via ServiceLoader)
+    "org.jboss.resteasy.reactive.common.jaxrs"
+    "org.jboss.resteasy.reactive.server.core.ServerResponseBuilderFactory"
+    "org.jboss.resteasy.reactive.common.headers"
+    # JDK classes needed at build time (from earlier experiments)
+    "jdk.nio.zipfs.ZipFileSystemProvider"
+    "sun.nio.fs.LinuxFileSystemProvider"
+    "sun.nio.fs.LinuxFileSystem"
     # Application packages
     "io.smallrye"
     "io.quarkus"
     "org.crac"
-    "org.jboss"
     "io.netty"
     "io.vertx"
     "org.eclipse.microprofile"
@@ -169,10 +185,6 @@ INIT_BUILD=(
     "lzma.sdk"
     "com.webauthn4j"
     "reactor.blockhound"
-    # JDK classes needed at build time
-    "jdk.nio.zipfs.ZipFileSystemProvider"
-    "sun.nio.fs.LinuxFileSystemProvider"
-    "sun.nio.fs.LinuxFileSystem"
 )
 
 INIT_BUILD_ARG=$(IFS=,; echo "${INIT_BUILD[*]}")
@@ -183,11 +195,11 @@ INIT_BUILD_ARG=$(IFS=,; echo "${INIT_BUILD[*]}")
 INIT_RUN=(
     # smallrye: native/host-specific data
     "io.smallrye.common.os.Process"
-    "io.smallrye.common.net.HostName"
+    "io.smallrye.common.net"
     "io.smallrye.common.io.Files2"
     "io.smallrye.common.io.Files2\$PrivateAttrs"
     "io.smallrye.common.function.FunctionsLogging"
-    "io.smallrye.common.classloader.ClassPathUtils"
+    #"io.smallrye.common.classloader.ClassPathUtils"  # removed: covered by io.smallrye build-time init
     # logmanager: native/optional deps
     "org.jboss.logmanager.handlers.ConsoleHandler\$ConsoleHolder"
     "org.jboss.logmanager.handlers.SyslogHandler"
@@ -261,12 +273,26 @@ INIT_RUN=(
     "jakarta.activation.MimetypesFileTypeMap"
     # parsson
     "org.eclipse.parsson.JsonMessages"
-    # Classes that embed netty buffer allocators (CURRENT BLOCKER)
-    # These classes reference AdaptiveByteBufAllocator which netty forces
-    # to run-time init via its own native-image.properties. Deferring these
-    # to run-time doesn't help because Preserve still parses their methods.
+    # vertx buffer allocator (correct package: io.vertx.core.impl.buffer)
     "io.quarkus.vertx.utils.AppendBuffer"
     "org.jboss.resteasy.reactive.server.vertx.VertxResteasyReactiveRequestContext"
+    # Graphics, Fonts, etc (from logmanager build-init experiment)
+    "com.sun.imageio"
+    "com.sun.java.swing"
+    "java.awt"
+    "javax.imageio"
+    "javax.swing"
+    "sun.awt"
+    "sun.datatransfer"
+    "sun.java2d"
+    "sun.font"
+    "sun.swing"
+    # JPackage
+    "jdk.jpackage"
+    # XML
+    "org.jcp.xml.dsig.internal.dom"
+    # Logging
+    "java.io.ObjectInputStream\$Logging"
 )
 
 INIT_RUN_ARG=$(IFS=,; echo "${INIT_RUN[*]}")
@@ -274,7 +300,7 @@ INIT_RUN_ARG=$(IFS=,; echo "${INIT_RUN[*]}")
 # ──────────────────────────────────────────────────────────────────────
 # Build libjvm.so
 #
-# KNOWN ISSUE: This build currently FAILS with:
+# KNOWN ISSUE: This build currently FAILS with a split package issue:
 #   java.lang.NoClassDefFoundError: io/vertx/mutiny/ext/auth/htdigest/HtdigestAuth
 #
 # Root cause: native-image's NativeImageClassLoader silently drops jars
@@ -286,12 +312,18 @@ INIT_RUN_ARG=$(IFS=,; echo "${INIT_RUN[*]}")
 # - CidrAddress/Inet6Address: solved by quarkus-core GraalVM substitution
 # - AdaptiveByteBufAllocator: solved by fixing wrong package name
 #   (io.vertx.core.buffer.impl -> io.vertx.core.impl.buffer)
+# - JBoss LogManager build-time init: solved by setting
+#   -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager
+# - Init policy errors: solved by -H:-AssertInitializationSpecifiedForAllClasses
+#   and selective build-time init for logging/modules packages
 #
 # See PROGRESS.md for details and possible solutions.
 # ──────────────────────────────────────────────────────────────────────
 ${GRAALVM_HOME}/bin/native-image --macro:jvm-library \
+    -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
     -H:Preserve=package=sun.misc \
     -H:-DetectUserDirectoriesInImageHeap \
+    #-H:-AssertInitializationSpecifiedForAllClasses \
     -J-Xmx16g \
     -cp "$CP_ARGS" \
     "${PRESERVE_ARGS[@]}" \
