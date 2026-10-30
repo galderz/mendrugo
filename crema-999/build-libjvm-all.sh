@@ -323,7 +323,6 @@ ${GRAALVM_HOME}/bin/native-image --macro:jvm-library \
     -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
     -H:Preserve=package=sun.misc \
     -H:-DetectUserDirectoriesInImageHeap \
-    #-H:-AssertInitializationSpecifiedForAllClasses \
     -J-Xmx16g \
     -cp "$CP_ARGS" \
     "${PRESERVE_ARGS[@]}" \
