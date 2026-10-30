@@ -205,16 +205,39 @@ the image heap.
 Also added `io.netty.channel.kqueue` and `io.netty.channel.uring` to run-time
 init (platform-specific transports with native deps).
 
-### Resolved: Split Package / Init Policy Issues
+### False Success Retracted: Broken Line Continuation
 
-The previous split package error (`NoClassDefFoundError: HtdigestAuth`) turned
-out to be caused by `-H:-AssertInitializationSpecifiedForAllClasses` masking
-the real init policy errors. Once this flag was removed and proper build-time
-init flags were added (from the logmanager build-init experiment), the build
-succeeded with ALL boot + ALL main jars.
+A previous claim that "all boot + main jars build succeeds at 1.066s" was
+incorrect. The build script (`build-libjvm-all.sh` at commit `0d09495`) had
+a commented-out line `#-H:-AssertInitializationSpecifiedForAllClasses \`
+after a `\` continuation. This broke the shell command in two, causing
+native-image to run WITHOUT `-cp`, `--initialize-at-build-time`, or
+`--initialize-at-run-time` flags — essentially building a minimal libjvm.so
+with no Quarkus jars. The "success" was a build of the wrong thing.
 
-**The build now succeeds** — see `build-libjvm-all.sh` for the working config.
-**Quarkus starts at 1.066s** with all jars preserved.
+A reference copy of the broken script is saved as
+`build-libjvm-all-false-success-reference.sh`.
+
+### Current Blocker: Multi-Release JAR Jackson 2.x References
+
+`vertx-core-5.1.8.jar` is a Multi-Release JAR:
+- **Root-level** `io.vertx.core.json.jackson.*` and `io.vertx.core.parsetools.impl.*`
+  reference `com.fasterxml.jackson.core` (Jackson 2.x)
+- **`META-INF/versions/21/`** has Jackson 3.x (`tools.jackson.core`) variants
+
+On JDK 25, the versions/21 classes should be used. But GraalVM's
+`--link-at-build-time` (from the `jvm-library` macro) processes ALL classes
+in the jar including root-level, causing:
+```
+NoClassDefFoundError: com/fasterxml/jackson/core/JsonFactory
+```
+
+Jackson 2.x core/databind jars should NOT be on the classpath (they are
+not Quarkus dependencies). The `jackson-annotations-2.21.jar` in main/
+is used by Jackson 3.x for backward compat but the core/databind are not.
+
+**This is a GraalVM Multi-Release JAR handling issue** — root-level classes
+are being linked even when JDK 21+ variants exist.
 
 ---
 
@@ -321,8 +344,8 @@ The full jar contains classes with native deps (`nt`), external deps (`jms`,
 | +cpu,os only | 1.156s | 2 |
 | 15 boot jars + 3 main deps | 1.032s – 1.143s | 18 |
 | **All 16 boot jars + 3 main deps** | **0.984s** | **19** |
-| All boot + all main jars (previous) | ❌ build fails | 119 (attempted) |
-| **All boot + all main jars (current)** | **1.066s** | **119** |
+| All boot + all main jars | ❌ build fails (MR-JAR Jackson 2.x) | 119 (attempted) |
+| All boot + all main jars (false success) | 1.066s (broken script) | N/A |
 
 ---
 
