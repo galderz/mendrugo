@@ -132,11 +132,17 @@ INIT_BUILD=(
 #    "org.slf4j"
 #    "jakarta.json"
     "jdk.internal.jrtfs"
-    # JBoss System Logger initialized by Native Image itself
-    "org.jboss.logmanager.JBossLoggerFinder"
-    "org.jboss.logmanager.JBossLoggerFinder\$JBossSystemLogger"
-    "org.jboss.logmanager.Level"
-    "org.jboss.logmanager.LogManager"
+    # JBoss logging provider discovery + logmanager (needed for Quarkus logging)
+    "org.jboss.logging"
+    "org.jboss.logmanager"
+    # Quarkus initial logging configurator (referenced by LogContext)
+    "io.quarkus.bootstrap.logging"
+    # MDC provider (referenced by org.jboss.logmanager.MDC)
+    "io.quarkus.vertx.mdc.provider"
+    # smallrye ref types (referenced via logmanager LoggerNode)
+    "io.smallrye.common.ref"
+    # jboss-modules (ContentHandlerFactory set by LogManager init)
+    "org.jboss.modules"
 )
 
 INIT_BUILD_ARG=$(IFS=,; echo "${INIT_BUILD[*]}")
@@ -193,6 +199,7 @@ INIT_RUN_ARG=$(IFS=,; echo "${INIT_RUN[*]}")
 # Build libjvm.so
 # ──────────────────────────────────────────────────────────────────────
 ${GRAALVM_HOME}/bin/native-image --macro:jvm-library \
+    -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
     -H:Preserve=package=sun.misc \
     -H:-AssertInitializationSpecifiedForAllClasses \
     -cp "$CP_ARGS" \

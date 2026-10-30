@@ -584,3 +584,218 @@ This would need to be a GraalVM-level change (not JBoss-specific) that
 resets the `LogManager` singleton and all `Logger.manager` fields to allow
 re-initialization at runtime when the `java.util.logging.manager` system
 property is set.
+
+---
+
+## Side Experiment: Logging and modules build time init
+
+### Context
+
+The `build-libjvm-logmanager-build-init.sh` script attempts a **minimal build-time
+initialization** approach — unlike `build-libjvm.sh` which initializes entire packages
+(`io.smallrye.common`, `io.quarkus`, `org.crac`, `org.jboss.logging`,
+`org.jboss.logmanager`, `org.jboss.modules`, `org.apache.log4j`,
+`org.apache.logging.log4j`, `org.slf4j`, `jakarta.json`), this script uses
+`-H:-AssertInitializationSpecifiedForAllClasses` and only lists specific classes for
+build-time init. With this flag, unspecified classes default to **run-time initialization**.
+
+The script previously listed only four JBoss logmanager classes:
+- `org.jboss.logmanager.JBossLoggerFinder`
+- `org.jboss.logmanager.JBossLoggerFinder$JBossSystemLogger`
+- `org.jboss.logmanager.Level`
+- `org.jboss.logmanager.LogManager`
+
+The build succeeded (`libjvm.so` was produced), but at runtime the Quarkus
+process produced **no log output** — only:
+```
+Log4j API could not find a logging provider.
+```
+The `/hello` endpoint worked correctly, meaning the application was functional
+but silent.
+
+### Root Cause Analysis
+
+During the native-image build, this warning appeared:
+```
+org.jboss.logmanager.JBossLoggerFinder getLogger
+ERROR: The LogManager accessed before the "java.util.logging.manager" system property
+was set to "org.jboss.logmanager.LogManager". Results may be unexpected.
+```
+
+**What happened at build time:**
+
+1. `java.util.logging.LogManager` was initialized during the native-image build
+   (triggered by `TrustStoreManagerFeature` → certificate loading → JDK internal logging).
+2. At that point, the `java.util.logging.manager` system property was **not yet set**.
+3. The JDK's `LogManager.initLogManager()` created the **default JDK LogManager** singleton.
+4. Later, `JBossLoggerFinder.getLogger()` ran (build-time init of `JBossLoggerFinder`),
+   set the property, and called `java.util.logging.Logger.getLogger()` — but the LogManager
+   singleton was already the JDK default.
+5. `tryJBossLogManager()` in `org.jboss.logging.LoggerProviders` checks
+   `LogManager.getLogManager().getClass()` against `org.jboss.logmanager.LogManager` —
+   they didn't match, so it fell through to Log4j 2.
+6. Log4j 2 API jar was on the classpath but had no implementation, yielding
+   "could not find a logging provider."
+7. This broken state (`PROPERTY_SET = true`, wrong LogManager singleton,
+   `LoggerProviders.PROVIDER` = failed Log4j 2) was **baked into the image heap**.
+
+**At runtime:** The baked-in state meant JBoss LogManager was never used.
+Quarkus logging was completely silent.
+
+### Fix 1: `-J-Djava.util.logging.manager=org.jboss.logmanager.LogManager`
+
+Added to the `native-image` command:
+```bash
+-J-Djava.util.logging.manager=org.jboss.logmanager.LogManager
+```
+
+This sets the system property in the **native-image tool's JVM** before any class
+initialization occurs. When `java.util.logging.LogManager.<clinit>` runs, it reads
+the property and instantiates `org.jboss.logmanager.LogManager` instead of the JDK
+default. The build-time warning disappeared, confirming proper initialization.
+
+### Fix 2: Additional build-time initialized packages/classes
+
+With the JBoss LogManager properly initializing at build time, several additional
+types ended up in the image heap (created transitively during LogManager/LogContext
+initialization). Since `-H:-AssertInitializationSpecifiedForAllClasses` defaults
+unspecified classes to **run-time init**, each of these needed explicit build-time
+registration.
+
+The additions were made iteratively, each resolving one build failure:
+
+#### Addition 1: `org.jboss.logging` (package)
+
+**Error without it:**
+```
+An object of type 'org.jboss.logmanager.Logger' was found in the image heap.
+This type, however, is marked for initialization at image run time by default.
+```
+The JBoss LogManager creates `org.jboss.logmanager.Logger` instances during
+initialization (via `LogContext.getLogger()`). These loggers are referenced by
+`JBossLoggerFinder$JBossSystemLogger.delegate` and baked into the image heap.
+
+Adding `org.jboss.logmanager.Logger` alone resolved that error but immediately
+hit `org.jboss.logmanager.Logger$1` (anonymous inner class in `Logger.getResourceBundle`).
+Rather than chasing individual inner classes, the entire `org.jboss.logmanager`
+package was already listed. The `org.jboss.logging` package was also needed because
+`LoggerProviders.PROVIDER` (a static final set during `<clinit>`) discovers and
+caches the JBoss LogManager provider — this cached provider object ends up in the
+image heap.
+
+Replaced the four individual logmanager classes with two package-level entries:
+```
+org.jboss.logging
+org.jboss.logmanager
+```
+
+#### Addition 2: `io.quarkus.bootstrap.logging` (package)
+
+**Error without it:**
+```
+An object of type 'io.quarkus.bootstrap.logging.InitialConfigurator' was found in the
+image heap. This type, however, is marked for initialization at image run time by default.
+```
+`org.jboss.logmanager.LogContext` holds a reference to `InitialConfigurator` in its
+`initializer` field. The LogContext is embedded as a constant in
+`LogContext$1.getLogContext()`. `QuarkusDelayedHandler` (also in this package) is
+referenced by `InitialConfigurator.getInitialHandlers()`.
+
+Used the package prefix to cover both classes and any inner classes:
+```
+io.quarkus.bootstrap.logging
+```
+
+#### Addition 3: `io.quarkus.vertx.mdc.provider` (package)
+
+**Error without it:**
+```
+An object of type 'io.quarkus.vertx.mdc.provider.LateBoundMDCProvider' was found in
+the image heap. This type, however, is marked for initialization at image run time by default.
+```
+The `org.jboss.logmanager.MDC` class discovers the MDC provider via ServiceLoader.
+`LateBoundMDCProvider` is found and cached in `MDC.getMDCProvider()`. Its inner class
+`LateBoundMDCProvider$1` (a `ThreadLocal` subclass in field `threadLocalMap`) also
+ended up in the heap.
+
+Used the package prefix:
+```
+io.quarkus.vertx.mdc.provider
+```
+
+#### Addition 4: `io.smallrye.common.ref` (package)
+
+**Error without it:**
+```
+An object of type 'io.smallrye.common.ref.PhantomReference' was found in the image heap.
+This type, however, is marked for initialization at image run time by default.
+```
+`org.jboss.logmanager.LoggerNode` uses `io.smallrye.common.ref.PhantomReference` for
+weak logger tracking (field `activeLoggers` is a `ConcurrentHashMap` containing phantom
+references). These are created when loggers are instantiated during LogManager init.
+
+```
+io.smallrye.common.ref
+```
+
+#### Addition 5: `org.jboss.modules` (package)
+
+**Error without it:**
+```
+An object of type 'org.jboss.modules.ModularContentHandlerFactory' was found in the
+image heap. This type, however, is marked for initialization at image run time by default.
+```
+`org.jboss.logmanager.LogManager.<clinit>` triggers loading of `StandardOutputStreams`,
+which (via transitive initialization) causes `org.jboss.modules` to register a
+`ModularContentHandlerFactory` on `java.net.URLConnection.factory`. This static field
+is scanned during image building and the factory object must be build-time initialized.
+
+```
+org.jboss.modules
+```
+
+### Final Build-Time Init List
+
+```bash
+INIT_BUILD=(
+    "jdk.internal.jrtfs"
+    "org.jboss.logging"                # Logger provider discovery
+    "org.jboss.logmanager"             # LogManager, Logger, LogContext, etc.
+    "io.quarkus.bootstrap.logging"     # InitialConfigurator, QuarkusDelayedHandler
+    "io.quarkus.vertx.mdc.provider"    # LateBoundMDCProvider (MDC SPI)
+    "io.smallrye.common.ref"           # PhantomReference (LoggerNode tracking)
+    "org.jboss.modules"                # ModularContentHandlerFactory
+)
+```
+
+Plus the native-image JVM flag:
+```bash
+-J-Djava.util.logging.manager=org.jboss.logmanager.LogManager
+```
+
+### Result
+
+**Build:** `libjvm.so` builds successfully (3m 35s, no errors or warnings about
+LogManager).
+
+**Runtime:** Quarkus starts with full logging output:
+```
+09:31:04,407 INFO  [io.quarkus] getting-started 1.0.0-SNAPSHOT native (powered by Quarkus 999-SNAPSHOT) started in 1.028s. Listening on: http://0.0.0.0:8080
+09:31:04,407 INFO  [io.quarkus] Profile prod activated.
+09:31:04,407 INFO  [io.quarkus] Installed features: [cdi, rest, smallrye-context-propagation, vertx]
+```
+
+`/hello` responds correctly. The `verify-quarkus.sh` script passes with `=== SUCCESS ===`.
+
+### Comparison with Other Approaches
+
+| Approach | Build | Runtime Logging | Extra Build-Time Classes |
+|----------|-------|----------------|-------------------------|
+| `build-libjvm.sh` (full package init) | ✅ | ✅ | 10 packages (broad) |
+| SPI file stripping (`build-libjvm-minimal-build-init.sh`) | ✅ | ❌ Silent | ~4 classes only |
+| **This fix** (`build-libjvm-logmanager-build-init.sh`) | ✅ | ✅ | 7 packages (targeted) |
+
+This approach sits between the full-init and minimal-init scripts: it initializes
+only the packages/classes needed for the logging chain, without pulling in unrelated
+packages like `io.smallrye.common` (broad), `io.quarkus` (broad), `org.crac`,
+`org.apache.log4j`, `org.apache.logging.log4j`, `org.slf4j`, or `jakarta.json`.
