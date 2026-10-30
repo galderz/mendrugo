@@ -144,10 +144,13 @@ INIT_BUILD=(
     "io.quarkus.vertx.mdc.provider"
     "io.smallrye.common.ref"
     "org.jboss.modules"
-    # JAX-RS RuntimeDelegate and related (initialized at build time via ServiceLoader)
-    "org.jboss.resteasy.reactive.common.jaxrs"
-    "org.jboss.resteasy.reactive.server.core.ServerResponseBuilderFactory"
+    # RESTEasy Reactive, threads, marshalling (all need build-time init policy)
+    "org.jboss.resteasy.reactive"
     "org.jboss.resteasy.reactive.common.headers"
+    "org.jboss.threads"
+    "mutiny.zero.flow.adapters"
+    "org.apache.commons.logging"
+    "org.jboss.marshalling"
     # JDK classes needed at build time (from earlier experiments)
     "jdk.nio.zipfs.ZipFileSystemProvider"
     "sun.nio.fs.LinuxFileSystemProvider"
@@ -265,7 +268,7 @@ INIT_RUN=(
     "io.quarkus.runtime.configuration.RuntimeConfigBuilder\$UuidConfigSource\$Holder"
     "io.quarkus.runtime.graal.InetRunTime"
     "io.quarkus.runtime.ExecutorRecorder"
-    # jboss threads
+    # jboss threads (specific run-time init within the build-time package)
     "org.jboss.threads.JDKSpecific\$ThreadAccess"
     # jakarta
     "jakarta.el.ELManager"
@@ -275,7 +278,8 @@ INIT_RUN=(
     "org.eclipse.parsson.JsonMessages"
     # vertx buffer allocator (correct package: io.vertx.core.impl.buffer)
     "io.quarkus.vertx.utils.AppendBuffer"
-    "org.jboss.resteasy.reactive.server.vertx.VertxResteasyReactiveRequestContext"
+    # Removed: VertxResteasyReactiveRequestContext was overriding org.jboss.resteasy.reactive build-time init
+    #"org.jboss.resteasy.reactive.server.vertx.VertxResteasyReactiveRequestContext"
     # Graphics, Fonts, etc (from logmanager build-init experiment)
     "com.sun.imageio"
     "com.sun.java.swing"
