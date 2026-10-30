@@ -412,12 +412,55 @@ init, this creates a conflict.
 TRUST_STORE_DEBUG: System.LoggerFinder = org.jboss.logmanager.JBossLoggerFinder
 ```
 
+### Option 2 Experiment: Stripping SPI Files from Jars
+
+**Approach:** Create modified jars with SPI service files removed so that
+JBoss LogManager / JBossLoggerFinder / ModuleLoggerFinder are never
+auto-discovered during native-image build.
+
+**Files removed:**
+- `jboss-logmanager`: `META-INF/services/java.util.logging.LogManager`,
+  `META-INF/services/java.lang.System$LoggerFinder`
+- `jboss-modules`: `META-INF/services/java.lang.System$LoggerFinder`
+
+**Script:** [`strip-spi-files.sh`](strip-spi-files.sh) — strips the files,
+backs up originals, supports `--restore`.
+
+**Build result:** `libjvm.so` builds successfully with
+[`build-libjvm-minimal-build-init.sh`](build-libjvm-minimal-build-init.sh).
+No build-time init needed for `io.smallrye.common`, `io.quarkus`,
+`org.jboss.logging`, `org.jboss.logmanager`, etc. Only a small set of
+specific classes need init policy, plus `-H:-AssertInitializationSpecifiedForAllClasses`.
+
+**Additional optional dep required:** `osgi.core-5.0.0.jar` — log4j2's
+`OsgiServiceLocator` references `org.osgi.framework.FrameworkUtil`. Added
+as CP-only (not Preserved), deferred to run-time init.
+
+**Runtime result:** Quarkus starts and responds to HTTP requests (`/hello`
+returns `"hello"`), **but produces no log output** — no banner, no startup
+time. The JDK default `LogManager` gets baked into the image heap at build
+time. At runtime, `QuarkusEntryPoint.main()` calls
+`System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")`
+but `LogManager.<clinit>` has already run in the image, so the property
+is ignored and JBoss LogManager is never selected.
+
+Marking `java.util.logging.LogManager` for run-time init does NOT work
+either — the same `TrustStoreManagerFeature` → `EventHelper.securityLogger`
+chain embeds `Logger` objects with `LogManager` references as constants in
+JDK bytecode, causing image heap conflicts.
+
+**Conclusion:** Stripping SPI files solves the build-time problem completely
+but breaks runtime logging. The Quarkus application functions correctly
+(HTTP works) but is silent. A runtime mechanism to re-initialize or replace
+the `LogManager` singleton after image startup is still needed.
+
 ### Awaiting Next Steps
 
 The fix needs to prevent JBossLoggerFinder from being used during
 native-image build. Options:
 1. Temporarily override System.LoggerFinder before TrustStoreManager loads
-2. Filter out jboss-logmanager's System$LoggerFinder service file from CP
+2. ~~Filter out jboss-logmanager's System$LoggerFinder service file from CP~~
+   **Tested** — solves build but breaks runtime logging (see above)
 3. Have native-image ignore non-JDK LoggerFinder implementations during build
 
 ### Detailed Analysis of JBoss LogManager Runtime Init Options
@@ -480,6 +523,12 @@ BEFORE any other feature runs:
 **Problem:** `LogManager.<clinit>` might have already run before our Feature.
 Feature ordering is not guaranteed.
 
+**Tested via SPI file stripping** — see
+[Option 2 Experiment](#option-2-experiment-stripping-spi-files-from-jars)
+above. Build succeeds but runtime logging is broken because the JDK
+default `LogManager` is baked into the image heap and cannot be replaced
+at runtime.
+
 #### Option 3: Exclude jboss-logmanager from libjvm.so
 
 **Tested:** Excluded `jboss-logmanager-3.2.2.Final.jar` from both CP and
@@ -506,9 +555,11 @@ the image heap via cached `Logger` instances.
 
 1. **The root trigger** is `TrustStoreManagerFeature.afterRegistration()` which
    loads trust store certificates, triggering JDK internal logging
-2. **Two SPI mechanisms** are involved:
+2. **Three SPI mechanisms** are involved:
    - `System.LoggerFinder` (via `META-INF/services/java.lang.System$LoggerFinder`)
+     — in both `jboss-logmanager` and `jboss-modules`
    - `java.util.logging.LogManager` (via system property or `META-INF/services`)
+     — in `jboss-logmanager`
 3. **The `ResetLoggerFinderFeature`** successfully handles `System.LoggerFinder`
    but cannot fully handle `java.util.logging.LogManager` because:
    - `Logger` instances are embedded as constants in JDK class bytecode
@@ -516,6 +567,10 @@ the image heap via cached `Logger` instances.
    - Constants embedded in method bytecode cannot be reset via reflection
 4. **Excluding the jar** doesn't help because the build JVM has already cached
    the `LogManager`
+5. **Stripping SPI files** (Option 2 experiment) solves the build completely
+   but bakes the JDK default `LogManager` into the image heap, preventing
+   Quarkus from selecting JBoss LogManager at runtime. Quarkus works (HTTP
+   responds) but produces no log output.
 
 #### Most Promising Approach
 

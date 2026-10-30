@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
 #
-# Build libjvm.so with Quarkus boot jar dependencies pre-compiled.
+# Build libjvm.so with Quarkus boot jar dependencies pre-compiled,
+# using MINIMAL build-time initialization.
 #
-# This script rebuilds $GRAALVM_HOME/lib/svm/libjvm.so with additional
-# Quarkus dependencies included via -cp and -H:Preserve, which should
-# improve Crema startup time by avoiding JIT compilation of those classes.
+# Unlike build-libjvm.sh, this script does NOT build-time initialize
+# io.smallrye.common, io.quarkus, org.jboss.logging, org.jboss.logmanager,
+# etc. Instead it relies on stripped SPI files to prevent JBoss LogManager
+# from being auto-discovered during the build.
+#
+# Prerequisites:
+#   ./strip-spi-files.sh   # must run first to remove SPI files from jars
 #
 # Usage:
-#   ./build-libjvm.sh
+#   ./strip-spi-files.sh
+#   ./build-libjvm-minimal-build-init.sh
 #
 # After building, test with:
 #   ./verify-quarkus.sh
+#
+# NOTE: Quarkus starts and responds to HTTP, but produces no log output.
+# The JDK default LogManager gets baked into the image at build time,
+# and Quarkus's System.setProperty() call at runtime is too late.
 #
 set -ex
 
@@ -39,6 +49,12 @@ if [ ! -f "$OPT_DIR/jboss-modules-2.1.5.Final.jar" ]; then
     echo "Downloading jboss-modules..."
     curl -sL "https://repo1.maven.org/maven2/org/jboss/modules/jboss-modules/2.1.5.Final/jboss-modules-2.1.5.Final.jar" \
         -o "$OPT_DIR/jboss-modules-2.1.5.Final.jar"
+fi
+
+if [ ! -f "$OPT_DIR/osgi.core-5.0.0.jar" ]; then
+    echo "Downloading osgi core..."
+    curl -sL "https://repo1.maven.org/maven2/org/osgi/osgi.core/5.0.0/osgi.core-5.0.0.jar" \
+        -o "$OPT_DIR/osgi.core-5.0.0.jar"
 fi
 
 # Additional optional deps needed when adding main jars (not yet used):
@@ -93,6 +109,7 @@ CP_ONLY_JARS=(
     "$OPT_DIR/log4j-1.2.17.jar"
     "$OPT_DIR/log4j-api-2.24.3.jar"
     "$OPT_DIR/jboss-modules-2.1.5.Final.jar"
+    "$OPT_DIR/osgi.core-5.0.0.jar"
 )
 
 # ──────────────────────────────────────────────────────────────────────
@@ -114,17 +131,12 @@ done
 # Classes that must be initialized at build time
 # ──────────────────────────────────────────────────────────────────────
 INIT_BUILD=(
-#    "io.smallrye.common"
-#    "io.quarkus"
-#    "org.crac"
-#    "org.jboss.logging"
-#    "org.jboss.logmanager"
-#    "org.jboss.modules"
-#    "org.apache.log4j"
-#    "org.apache.logging.log4j"
-#    "org.slf4j"
-#    "jakarta.json"
     "jdk.internal.jrtfs"
+    "org.jboss.logmanager.LogContextInitializer"
+    "org.jboss.logmanager.LogContextInitializer\$1"
+    "io.quarkus.bootstrap.naming.DisabledInitialContextManager"
+    "io.quarkus.bootstrap.naming.DisabledInitialContextManager\$1"
+    "io.quarkus.bootstrap.naming.DisabledInitialContext"
 )
 
 INIT_BUILD_ARG=$(IFS=,; echo "${INIT_BUILD[*]}")
@@ -172,7 +184,11 @@ INIT_RUN=(
     "org.jcp.xml.dsig.internal.dom"
     # Logging
     "java.io.ObjectInputStream\$Logging"
-    "java.util.logging.LogManager"
+    # Quarkus bootstrap logging - must be runtime to avoid QuarkusDelayedHandler in heap
+    "io.quarkus.bootstrap.logging.InitialConfigurator"
+
+    # log4j2: OSGi optional dep not on classpath
+    "org.apache.logging.log4j.util.OsgiServiceLocator"
 )
 
 INIT_RUN_ARG=$(IFS=,; echo "${INIT_RUN[*]}")
@@ -184,19 +200,6 @@ ${GRAALVM_HOME}/bin/native-image --macro:jvm-library \
     -H:Preserve=package=sun.misc \
     -cp "$CP_ARGS" \
     "${PRESERVE_ARGS[@]}" \
-    --trace-object-instantiation=org.jboss.logging.JBossLogManagerLogger \
-    --trace-object-instantiation=sun.awt.SunHints\$LCDContrastKey \
-    --trace-object-instantiation=sun.java2d.HeadlessGraphicsEnvironment \
-    --trace-object-instantiation=sun.awt.HeadlessToolkit \
-    --trace-object-instantiation=java.awt.font.FontRenderContext \
-    --trace-object-instantiation=sun.awt.datatransfer.DesktopDatatransferServiceImpl \
-    --trace-object-instantiation=java.awt.color.ICC_ColorSpace \
-    --trace-object-instantiation=java.util.PropertyResourceBundle \
-    --trace-object-instantiation=jdk.internal.jrtfs.SystemImage\$1 \
-    --trace-object-instantiation=com.sun.tools.javac.parser.Tokens\$TokenKind \
-    --trace-object-instantiation=org.jboss.logmanager.JBossLoggerFinder\$JBossSystemLogger \
-    --trace-object-instantiation=org.jboss.logmanager.Level \
-    --trace-object-instantiation=org.jboss.logmanager.JBossLoggerFinder \
-    --trace-object-instantiation=org.jboss.logmanager.LogManager \
     "--initialize-at-build-time=${INIT_BUILD_ARG}" \
-    "--initialize-at-run-time=${INIT_RUN_ARG}"
+    "--initialize-at-run-time=${INIT_RUN_ARG}" \
+    -H:-AssertInitializationSpecifiedForAllClasses
