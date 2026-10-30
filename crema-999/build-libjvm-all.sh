@@ -39,15 +39,13 @@ declare -A DEPS=(
     # netty compression deps
     ["lz4-java-1.8.0.jar"]="https://repo1.maven.org/maven2/org/lz4/lz4-java/1.8.0/lz4-java-1.8.0.jar"
     ["zstd-jni-1.5.6-8.jar"]="https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.6-8/zstd-jni-1.5.6-8.jar"
-    ["compress-lzf-1.1.2.jar"]="https://repo1.maven.org/maven2/com/ning/compress-lzf/1.1.2/compress-lzf-1.1.2.jar"
+    ["compress-lzf-1.2.1.jar"]="https://repo1.maven.org/maven2/com/ning/compress-lzf/1.2.1/compress-lzf-1.2.1.jar"
     ["lzma-java-1.3.jar"]="https://repo1.maven.org/maven2/com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar"
     ["jzlib-1.1.3.jar"]="https://repo1.maven.org/maven2/com/jcraft/jzlib/1.1.3/jzlib-1.1.3.jar"
     # smallrye-config dep
     ["asm-9.7.1.jar"]="https://repo1.maven.org/maven2/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar"
     # vertx-core Jackson 2.x backward compat
-    ["jackson-core-2.18.3.jar"]="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.18.3/jackson-core-2.18.3.jar"
-    ["jackson-databind-2.18.3.jar"]="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.18.3/jackson-databind-2.18.3.jar"
-    ["jackson-annotations-2.18.3.jar"]="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.18.3/jackson-annotations-2.18.3.jar"
+    # Jackson 2.x jars removed - vertx-core uses Jackson 3.x (tools.jackson.core) via Multi-Release JAR
     # TLS/crypto deps
     ["conscrypt-openjdk-uber-2.5.2.jar"]="https://repo1.maven.org/maven2/org/conscrypt/conscrypt-openjdk-uber/2.5.2/conscrypt-openjdk-uber-2.5.2.jar"
     ["bcpkix-jdk18on-1.80.jar"]="https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-jdk18on/1.80/bcpkix-jdk18on-1.80.jar"
@@ -79,6 +77,9 @@ declare -A DEPS=(
     ["netty-transport-classes-kqueue-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-kqueue/4.2.18.Final/netty-transport-classes-kqueue-4.2.18.Final.jar"
     ["netty-transport-classes-io_uring-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-io_uring/4.2.18.Final/netty-transport-classes-io_uring-4.2.18.Final.jar"
     ["netty-transport-classes-epoll-4.2.18.Final.jar"]="https://repo1.maven.org/maven2/io/netty/netty-transport-classes-epoll/4.2.18.Final/netty-transport-classes-epoll-4.2.18.Final.jar"
+    # Additional optional deps discovered in main jar experiment
+    ["smallrye-fault-tolerance-core-7.0.0.jar"]="https://repo1.maven.org/maven2/io/smallrye/smallrye-fault-tolerance-core/7.0.0/smallrye-fault-tolerance-core-7.0.0.jar"
+    ["commons-codec-1.17.1.jar"]="https://repo1.maven.org/maven2/commons-codec/commons-codec/1.17.1/commons-codec-1.17.1.jar"
     # smallrye-mutiny wrapped vertx auth providers
     ["smallrye-mutiny-vertx-auth-htdigest-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-htdigest/4.0.2/smallrye-mutiny-vertx-auth-htdigest-4.0.2.jar"
     ["smallrye-mutiny-vertx-auth-htpasswd-4.0.2.jar"]="https://repo1.maven.org/maven2/io/smallrye/reactive/smallrye-mutiny-vertx-auth-htpasswd/4.0.2/smallrye-mutiny-vertx-auth-htpasswd-4.0.2.jar"
@@ -150,6 +151,7 @@ INIT_BUILD=(
     "org.jboss.threads"
     "mutiny.zero.flow.adapters"
     "org.apache.commons.logging"
+    "org.apache.commons.codec"
     "org.jboss.marshalling"
     # JDK classes needed at build time (from earlier experiments)
     "jdk.nio.zipfs.ZipFileSystemProvider"
@@ -171,7 +173,7 @@ INIT_BUILD=(
     "jakarta"
     "tools.jackson"
     "com.aayushatharva.brotli4j"
-    "com.fasterxml.jackson"
+    "com.fasterxml.jackson"  # jackson-annotations-2.21 in main (used by Jackson 3.x)
     # Optional dep packages (on CP for linking)
     "org.apache.log4j"
     "org.apache.logging.log4j"
@@ -249,8 +251,8 @@ INIT_RUN=(
     "io.quarkus.netty.runtime.EmptyByteBufStub"
     # vertx (from layers-999/build-layer-base.sh)
     "io.vertx.core.impl.buffer.VertxByteBufAllocator"
-    "io.vertx.core.parsetools.impl.RecordParserImpl"
-    "io.vertx.core.json.Json"
+    "io.vertx.core.parsetools.impl"
+    "io.vertx.core.json"
     "io.vertx.core.internal.tls.SslContextManager"
     "io.vertx.core.http.impl.http2"
     "io.vertx.core.http.impl.http3.Http3Stream"
