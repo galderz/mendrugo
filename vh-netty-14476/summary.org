@@ -1,6 +1,13 @@
 #+STARTUP: overview
 
 * Bookmarks
+netty aot:
+#+begin_src bash
+cd ~/src/netty-varhandle-bench
+nix-shell
+mvn clean package && java -Dnetty.use-new-code=true -jar target/benchmarks.jar -bm thrpt -tu ms -f 1 -p size=256
+#+end_src
+
 ato, vh, perf:
 #+begin_src bash
 mvn clean package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols && java -Dnetty.use-new-code=true -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler:events=cycles:P NettyByteArrays
@@ -19,6 +26,46 @@ mvn clean package && java -jar target/benchmarks.jar NettyByteArrays
 jvm
 #+begin_src bash
 mvn clean package -f jmh.xml && java -jar target/benchmarks.jar NettyByteArrays
+#+end_src
+* 11.11.26
+i had to manually add the following in the pom.xml:
+#+begin_src xml
+<buildArg>--initialize-at-build-time=io.netty.util.internal.VarHandleSupport,io.netty.util.internal.VarHandleFactory</buildArg>
+#+end_src
+why is the native-image configuration not being picked up?
+why doesn't it work when I pass -DbuildArg from the command line?
+
+4.2.18.Final-SNAPSHOT with patch and making sure the initialize at build time ^ is happening:
+#+begin_src bash
+hasVarHandle: true
+hasUnsafe: false
+canUnalignedAccess: true
+Benchmark                   (size)   Mode  Cnt     Score    Error   Units
+VarHandleBenchmark.indexOf     256  thrpt   10  9691.793 ± 25.929  ops/ms
+#+end_src
+
+4.2.18.Final, with unsafe?
+#+begin_src bash
+Benchmark                   (size)   Mode  Cnt     Score    Error   Units
+VarHandleBenchmark.indexOf     256  thrpt   10  3470.171 ± 42.137  ops/ms
+#+end_src
+
+4.2.18.Final-SNAPSHOT, without patch (uses unsafe?)
+#+begin_src bash
+1: hasVarHandle: false
+hasUnsafe: false
+canUnalignedAccess: false
+Benchmark                   (size)   Mode  Cnt     Score    Error   Units
+VarHandleBenchmark.indexOf     256  thrpt   10  3507.239 ± 21.571  ops/ms
+#+end_src
+
+4.2.18.Final-SNAPSHOT with patch:
+#+begin_src bash
+hasVarHandle: true
+hasUnsafe: false
+canUnalignedAccess: true
+Benchmark                   (size)   Mode  Cnt     Score    Error   Units
+VarHandleBenchmark.indexOf     256  thrpt   10  1088.250 ± 15.029  ops/ms
 #+end_src
 * 21.9.26
 ** netty issue draft
