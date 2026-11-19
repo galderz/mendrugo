@@ -346,6 +346,271 @@ The full jar contains classes with native deps (`nt`), external deps (`jms`,
 | **All 16 boot jars + 3 main deps** | **0.984s** | **19** |
 | All boot + all main jars | ❌ build fails (MR-JAR Jackson 2.x) | 119 (attempted) |
 | All boot + all main jars (false success) | 1.066s (broken script) | N/A |
+| **All 16 boot + 97 main jars** | **0.47s (Quarkus) / 950ms (TTFR)** | **113** |
+
+---
+
+## All Framework Jars Experiment (Nov 2026)
+
+See [`build-libjvm.sh`](build-libjvm.sh) for the full script.
+See [`benchmark.sh`](benchmark.sh) for the benchmarking script.
+
+### Context
+
+After GraalVM PR https://github.com/oracle/graal/pull/14901 was integrated,
+`--link-at-build-time` triggered issues were resolved. Previously, when
+`-H:Preserve=path=` was used, `PreserveOptionsSupport.registerPreservedClass()`
+registered every class in the jar for reflection, which triggered
+`Class.getDeclaredMethods()` → `linkType()` → class resolution. With
+`--link-at-build-time` (from the `jvm-library` macro), any unresolvable
+optional dependency class was fatal. This forced us to download and add
+optional dependency jars (log4j, jboss-modules, osgi.core, etc.) to the
+classpath just for linking.
+
+With PR #14901, these optional deps are no longer needed, allowing a much
+cleaner build that includes only the actual Quarkus framework jars.
+
+### Updated Dependency Versions
+
+Quarkus was updated to latest `main` (from the Oct 2026 `topic.crema.oct26`
+branch base). Key version changes:
+- netty: 4.2.18 → 4.2.20
+- vertx: 5.1.8 → 5.2.3
+- smallrye-mutiny-vertx: 4.0.2 → 4.1.1
+- Jackson: `tools.jackson.core:jackson-core:3.1.8` (no Jackson 2.x at all)
+- slf4j: 2.0.19 → 2.0.20
+- Main jar count: 100 → 97 (some jars merged/removed upstream)
+
+### Quarkus Changes
+
+Created new `topic.crema.new` branch (based on latest `main` at `c64e3b71dc4`).
+
+Ported fixes from `topic.crema.oct26`:
+
+1. **resolveJarPath .jar suffix check** — cherry-picked from `8d1ef7795af`.
+   When AOT-compiled into libjvm.so, `getCodeSource().getLocation()` returns
+   the executable path (e.g., `/path/to/java`), not the jar. Added `.jar`
+   suffix check before returning code source path.
+
+2. **InetRunTime no-op setters** — cherry-picked from `7c4ff0ef180`.
+   GraalVM requires both get and set methods for `@InjectAccessors` on
+   non-final `@Alias` fields.
+
+New fix:
+
+3. **sun.java.command fallback for resolveJarPath** — commit `4a28192842f`.
+   When AOT-compiled into libjvm.so, BOTH `getCodeSource().getLocation()` AND
+   `getResource("QuarkusEntryPoint.class")` fail:
+   - `getCodeSource()` returns the `java` binary path (not `.jar` → skipped)
+   - `getResource()` returns `null` because the class bytecode is baked into
+     libjvm.so and is not available as a resource from any jar on the classpath
+
+   The original `resolveJarPathFromClassResource` fallback was designed for
+   JDK-8376576 where `getCodeSource()` returns null but `getResource()` works
+   (finding the class in a jar via `jar:file:///...!/...` URL). In the Crema
+   case, neither works.
+
+   Added a third fallback: `resolveJarPathFromCommand(sun.java.command)` which:
+   - Reads the `sun.java.command` system property (contains the `-jar` arg path)
+   - Extracts the jar path (`getting-started/target/quarkus-app/quarkus-run.jar`)
+   - Since `resolveJarPath` is expected to return a path 3 levels below the app
+     root (like `lib/boot/xxx.jar`), it finds any boot jar in `lib/boot/` under
+     the `quarkus-run.jar` parent directory and returns that path instead
+   - This ensures `jarPath.getParent().getParent().getParent()` correctly
+     computes the `quarkus-app/` app root
+
+### Build Script: `build-libjvm.sh`
+
+**113 Preserved jars** (16 boot + 97 main). No optional/CP-only jars.
+
+**Build-time initialized packages/classes:**
+- JDK: `jdk.internal.jrtfs`, `jdk.nio.zipfs.ZipFileSystemProvider`,
+  `sun.nio.fs.LinuxFileSystemProvider`, `sun.nio.fs.LinuxFileSystem`
+- Logging: `org.jboss.logging`, `org.jboss.logmanager`,
+  `io.quarkus.bootstrap.logging`, `io.quarkus.vertx.mdc.provider`,
+  `io.smallrye.common.ref`
+- Framework: `io.smallrye`, `io.quarkus`, `org.crac`, `io.netty`, `io.vertx`,
+  `org.eclipse.microprofile`, `org.eclipse.parsson`, `org.jctools`, `org.jspecify`,
+  `org.reactivestreams`, `org.wildfly.common`, `org.slf4j`, `jakarta`,
+  `tools.jackson`, `org.jboss.resteasy.reactive`, `org.jboss.threads`,
+  `mutiny.zero.flow.adapters`, `org.apache.commons.logging`
+
+**Run-time initialized classes/packages:** See `build-libjvm.sh` for the full
+list. Key categories:
+- **smallrye**: `Process`, `net.*`, `Files2` — native/host-specific data
+- **logmanager**: `ConsoleHandler$ConsoleHolder`, `SyslogHandler`,
+  `ObjectBuilder$ModuleFinder$Holder`, `JsonFormatter` — native/optional deps
+- **netty** (28 entries): platform-specific transports (kqueue, uring, epoll),
+  native code (unix.Errors, tcnative), compression (Brotli, Zstd),
+  SSL/TLS (handler.ssl), HTTP/2, QUIC, `CleanerJava24Linker$Holder`
+  (native MemorySegment), `PlatformDependent`/`PlatformDependent0`
+- **vertx** (14 entries): buffer allocator, JSON/Jackson, TLS, HTTP/2, HTTP/3,
+  QUIC, clustered event bus, auth/JWT
+- **quarkus runtime**: `InetRunTime`, `ExecutorRecorder`,
+  `RuntimeConfigBuilder$UuidConfigSource$Holder`, `EmptyByteBufStub`,
+  `AppendBuffer`
+- **JDK GUI subsystem**: `java.awt`, `javax.swing`, `sun.awt`, `sun.java2d`,
+  `sun.font`, etc.
+- **Other**: `jdk.jpackage`, `org.jcp.xml.dsig.internal.dom`,
+  `java.io.ObjectInputStream$Logging`
+
+### Build Issues Resolved (new since previous experiments)
+
+#### 1. Brotli4jLoader ClassNotFoundException
+
+**Error:** `ClassNotFoundException: com.aayushatharva.brotli4j.Brotli4jLoader`
+when `io.netty.handler.codec.compression.Brotli.<clinit>` runs at build time.
+
+**Root cause:** `Brotli.<clinit>` calls `Class.forName("com.aayushatharva.brotli4j.Brotli4jLoader")`.
+Brotli4j is not a Quarkus dependency. The build-time init of the `io.netty` package
+triggers this.
+
+**Fix:** Added `io.netty.handler.codec.compression.Brotli` and
+`io.netty.handler.codec.compression.BrotliDecompressor` to run-time init.
+`BrotliDecompressor.<clinit>` also references `Brotli` transitively.
+
+#### 2. CleanerJava24Linker native MemorySegment in image heap
+
+**Error:** `Detected a native MemorySegment in the image heap` from
+`io.netty.util.internal.CleanerJava24Linker$Holder.INVOKE_MALLOC`.
+
+**Root cause:** `CleanerJava24Linker$Holder.<clinit>` uses
+`java.lang.foreign.Linker.downcallHandle()` to create a native function handle
+for `malloc`. The resulting `MethodHandle` contains a `NativeMemorySegmentImpl`
+pointing to unmanaged C memory. This was being initialized at build time because
+`io.netty` was in the build-time init list, and while
+`io.netty.util.internal.CleanerJava24Linker` was already in the run-time list,
+the `$Holder` inner class was not explicitly listed (it's a separate class from
+GraalVM's perspective).
+
+**Fix:** Added `io.netty.util.internal.CleanerJava24Linker$Holder` to run-time init.
+
+#### 3. JacksonCodec constant in image heap
+
+**Error:** `An object of type 'io.vertx.core.json.jackson.v3.JacksonCodec' was
+found in the image heap. This type, however, is marked for initialization at
+image run time.`
+
+**Root cause:** `io.vertx.core.json` was in the run-time init list (from previous
+experiments that used Jackson 2.x multi-release JAR workarounds). With the
+current Quarkus (Jackson 3.x only, no multi-release JAR issue), `JacksonCodec`
+is used as a constant in `JsonObject.encode()` bytecode. Since `io.vertx` is
+build-time initialized but `io.vertx.core.json` overrode that to run-time, the
+constant couldn't be stored in the image heap.
+
+**Fix:** Removed `io.vertx.core.json` from run-time init. It is now build-time
+initialized as part of the `io.vertx` package.
+
+#### 4. ZipFileSystemProvider in image heap
+
+**Error:** `An object of type 'jdk.nio.zipfs.ZipFileSystemProvider' was found
+in the image heap` via `io.smallrye.common.classloader.ClassPathUtils.processAsJarPath`.
+
+**Root cause:** `ClassPathUtils` has a constant `ZipFileSystemProvider` instance
+embedded in bytecode. It gets into the image heap when smallrye classes are
+build-time initialized.
+
+**Fix:** Added `jdk.nio.zipfs.ZipFileSystemProvider`, `sun.nio.fs.LinuxFileSystemProvider`,
+and `sun.nio.fs.LinuxFileSystem` to build-time init.
+
+### Benchmark Results
+
+5 runs each, measured with [`benchmark.sh`](benchmark.sh):
+
+| Configuration | Quarkus Startup | TTFR | RSS | libjvm.so size |
+|--------------|----------------|------|-----|----------------|
+| Custom libjvm.so (113 jars, -svm) | 0.45–0.50s | 920–1020ms | ~375MB | 601MB |
+| Baseline Crema (no custom jars, -svm) | — (no log output) | 1040–1070ms | ~320MB | ~300MB (est.) |
+| Plain OpenJDK 25 (no -svm) | 0.29–0.36s | 390–520ms | ~131MB | — |
+
+**Detailed runs:**
+
+```
+--- Custom libjvm.so (all Quarkus framework jars) ---
+custom-1: quarkus=0.501s ttfr=1024ms rss=376MB
+custom-2: quarkus=0.491s ttfr=968ms  rss=374MB
+custom-3: quarkus=0.474s ttfr=932ms  rss=375MB
+custom-4: quarkus=0.459s ttfr=926ms  rss=373MB
+custom-5: quarkus=0.467s ttfr=919ms  rss=376MB
+
+--- Plain OpenJDK 25 ---
+openjdk-1: quarkus=0.358s ttfr=523ms rss=130MB
+openjdk-2: quarkus=0.310s ttfr=428ms rss=132MB
+openjdk-3: quarkus=0.308s ttfr=406ms rss=130MB
+openjdk-4: quarkus=0.296s ttfr=390ms rss=130MB
+openjdk-5: quarkus=0.305s ttfr=414ms rss=130MB
+
+--- Baseline Crema (no custom jars) ---
+baseline-crema-1: ttfr=1072ms rss=316MB
+baseline-crema-2: ttfr=1058ms rss=323MB
+baseline-crema-3: ttfr=1042ms rss=318MB
+```
+
+### Analysis
+
+**Within Crema:** The custom libjvm.so with all Quarkus framework jars
+improves TTFR by ~10% over baseline Crema (~950ms vs ~1050ms). The Quarkus-
+reported startup time (0.47s) is significantly faster than the previous
+best (0.984s with 19 jars), showing that pre-compiling framework code into
+libjvm.so does reduce Quarkus's internal initialization time.
+
+**vs. Plain OpenJDK 25:** The custom libjvm.so is ~2.3x slower in TTFR
+and uses ~2.9x more RSS. This gap suggests the overhead is in the Crema/SVM
+runtime infrastructure itself, not in our customization.
+
+**Key observations:**
+1. **RSS gap** (375MB vs 131MB): The 601MB `libjvm.so` has a 411MB image heap.
+   Even though only touched pages are resident, the image heap is large enough
+   that startup-related page faults add up significantly.
+2. **TTFR vs Quarkus startup gap**: Custom libjvm.so reports Quarkus startup
+   at ~0.47s but TTFR is ~0.95s, meaning ~0.48s is spent outside Quarkus
+   (JVM bootstrap + libjvm.so loading + first request processing). For plain
+   OpenJDK, the gap is ~0.10s (0.31s Quarkus + 0.10s overhead).
+3. **Baseline Crema has no log output**: The baseline Crema (without custom
+   jars) doesn't output Quarkus logs, so we can't compare Quarkus-internal
+   startup time for that configuration. The TTFR (~1050ms) is the only metric.
+4. **First run is always slower**: Both configurations show the first run being
+   slower (cold filesystem caches, page cache misses for the shared library).
+
+### Learnings
+
+1. **GraalVM PR #14901 eliminates optional dep jars**: The previous need for
+   log4j, jboss-modules, osgi.core, jackson-2.x, and many other optional deps
+   on the classpath was entirely due to `--link-at-build-time` + Preserve
+   reflection registration. With PR #14901, the build script is dramatically
+   simpler (no downloads, no CP-only jars).
+
+2. **Inner classes need separate run-time init entries**: GraalVM treats
+   `Foo` and `Foo$Bar` as separate classes for initialization purposes.
+   Adding `Foo` to run-time init does NOT automatically defer `Foo$Bar`.
+   This was the case for `CleanerJava24Linker$Holder`.
+
+3. **Multi-release JAR issue is gone**: The Jackson 2.x `NoClassDefFoundError`
+   that was the main blocker in the previous experiment no longer occurs.
+   Quarkus main now ships `tools.jackson.core:jackson-core:3.1.8` (Jackson 3.x)
+   and `vertx-core` no longer has Jackson 2.x root-level classes.
+
+4. **AOT-compiled classes are invisible to getResource()**: When a class is
+   compiled into libjvm.so, `Class.getResource("ClassName.class")` returns
+   null. This is because the class bytecode is baked into the native image
+   and is not available as a file resource from any classloader. The previous
+   `resolveJarPath` fix only handled the `getCodeSource()` failure but not
+   the `getResource()` failure.
+
+5. **Build-time init of io.vertx.core.json is now safe**: Previous experiments
+   required `io.vertx.core.json` to be run-time initialized due to Jackson 2.x
+   multi-release JAR issues. With Jackson 3.x only, the `JacksonCodec` constant
+   can safely be build-time initialized as part of the `io.vertx` package.
+
+### Next Steps
+
+Profiling/tracing of the Crema startup is needed to identify where the
+time is spent and find optimization opportunities. Areas to investigate:
+- libjvm.so load time (mmap + relocation of 601MB shared library)
+- Image heap initialization and page fault overhead
+- Interpreter warmup vs JIT compilation latency differences
+- Whether the large image heap size can be reduced
+- Whether build-time init of more framework classes helps or hurts
 
 ---
 
