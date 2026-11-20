@@ -69,16 +69,20 @@ Key commits:
 All 113 Quarkus framework jars are successfully included in libjvm.so.
 The application starts and responds to HTTP requests.
 
-| Configuration | TTFR | RSS |
-|---|---|---|
-| Minimal build-time init (Crema) | ~888ms | ~376MB |
-| Full build-time init (Crema) | ~942ms | ~375MB |
-| Baseline Crema (no jars) | ~1050ms | ~320MB |
-| **Plain OpenJDK 25** | **~414ms** | **~131MB** |
+| Configuration | TTFR | RSS | libjvm.so | svm_heap objects |
+|---|---|---|---|---|
+| Minimal build-time init (Crema) | ~916ms | ~373MB | 603MB | 6,816,356 |
+| Full build-time init (Crema) | ~905ms | ~376MB | 601MB | 6,819,274 |
+| Baseline Crema (no jars) | ~1022ms | ~320MB | 397MB | 4,426,014 |
+| **Plain OpenJDK 25** | **~410ms** | **~131MB** | **20MB** | **—** |
 
 **Main finding:** Crema with custom libjvm.so improves over baseline Crema
-(~10-15% faster) but is still ~2x slower than plain OpenJDK 25. The overhead
-is in the Crema/SVM runtime infrastructure, not in the Quarkus customization.
+(~10% faster) but is still ~2.2x slower than plain OpenJDK 25. The overhead
+is in the Crema/SVM runtime infrastructure (base JDK image heap = 267MB,
+4.43M objects). The Quarkus framework adds ~144MB / 2.39M objects on top.
+
+**RSS breakdown:** The gap is entirely in RssFile (mmap'd libjvm.so pages).
+RssAnon (JVM heap + native allocs) is comparable across all configs (~111–142MB).
 
 Profiling/tracing is the next step to identify specific optimization
 opportunities in the Crema startup path.

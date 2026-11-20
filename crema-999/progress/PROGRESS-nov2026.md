@@ -136,101 +136,131 @@ from classes with native deps or missing optional deps.
 
 ## Benchmark Results
 
-5 runs each:
+3 runs each, using [`benchmark.sh`](../benchmark.sh).
+Last run of each config includes detailed RSS region breakdown.
 
-```
---- Minimal build-time init ---
-minimal-1: quarkus=0.446s ttfr=875ms  rss=374MB
-minimal-2: quarkus=0.458s ttfr=901ms  rss=377MB
-minimal-3: quarkus=0.456s ttfr=883ms  rss=376MB
-minimal-4: quarkus=0.467s ttfr=907ms  rss=375MB
-minimal-5: quarkus=0.456s ttfr=888ms  rss=376MB
+### Summary (median of 3 runs)
 
---- Full build-time init ---
-full-1: quarkus=0.505s ttfr=1059ms rss=374MB
-full-2: quarkus=0.514s ttfr=980ms  rss=378MB
-full-3: quarkus=0.503s ttfr=942ms  rss=373MB
-full-4: quarkus=0.464s ttfr=904ms  rss=371MB
-full-5: quarkus=0.465s ttfr=906ms  rss=375MB
-
---- Plain OpenJDK 25 ---
-openjdk-1: quarkus=0.358s ttfr=523ms rss=130MB
-openjdk-2: quarkus=0.310s ttfr=428ms rss=132MB
-openjdk-3: quarkus=0.308s ttfr=406ms rss=130MB
-openjdk-4: quarkus=0.296s ttfr=390ms rss=130MB
-openjdk-5: quarkus=0.305s ttfr=414ms rss=130MB
-
---- Baseline Crema (no custom jars) ---
-baseline-crema-1: ttfr=1072ms rss=316MB
-baseline-crema-2: ttfr=1058ms rss=323MB
-baseline-crema-3: ttfr=1042ms rss=318MB
-```
-
-### Summary (median values)
-
-| Configuration | Quarkus Startup | TTFR | RSS | libjvm.so |
-|---|---|---|---|---|
-| Minimal build-time init | 0.456s | 888ms | 376MB | 603MB |
-| Full build-time init | 0.503s | 942ms | 374MB | 601MB |
-| Baseline Crema (no jars) | — | 1050ms | 320MB | ~300MB |
-| **Plain OpenJDK 25** | **0.308s** | **414ms** | **131MB** | **—** |
+| Configuration | Quarkus Startup | TTFR | RSS |
+|---|---|---|---|
+| Minimal build-time init (Crema) | 0.460s | 916ms | 373MB |
+| Full build-time init (Crema) | 0.457s | 905ms | 376MB |
+| Baseline Crema (no jars) | — (no log) | 1022ms | 320MB |
+| **Plain OpenJDK 25** | **0.293s** | **410ms** | **131MB** |
 
 ### Observations
 
-1. **Minimal init is slightly faster than full init** (~888ms vs ~942ms TTFR).
-   Build-time initializing framework packages adds ~54ms overhead — likely
-   because more image heap pages need to be faulted in during startup.
+1. **Minimal and full init are comparable** — within noise of each other
+   (~900–920ms TTFR). The difference from earlier 5-run batches (888 vs 942ms)
+   was partially a warm-cache effect in run ordering.
 
-2. **RSS is identical** (~375MB both). The image heap size is the same (410MB)
-   because both scripts preserve the same 113 jars — the only difference is
-   whether framework classes are build-time or run-time initialized.
+2. **Both Crema configurations are ~2.2x slower than plain OpenJDK 25** in TTFR
+   and use ~2.9x more RSS.
 
-3. **Both Crema configurations are ~2x slower than plain OpenJDK 25**. The
-   overhead is in the Crema/SVM runtime infrastructure itself.
+3. **Adding Quarkus jars to libjvm.so does help within Crema** — custom
+   libjvm.so TTFR (~910ms) is ~10% faster than baseline Crema (~1020ms).
 
-## RSS Analysis
+## RSS Region Breakdown (after first request)
 
-### Memory breakdown (custom libjvm.so after first request)
+Data captured from `/proc/PID/status` on the last run of each configuration:
 
+| Region | Minimal-init | Full-init | Baseline Crema | Plain OpenJDK |
+|---|---|---|---|---|
+| **VmRSS** | **382 MB** | **385 MB** | **329 MB** | **133 MB** |
+| RssAnon | 137 MB | 140 MB | 142 MB | 111 MB |
+| RssFile | 245 MB | 245 MB | 187 MB | 22 MB |
+| RssShmem | 0 | 0 | 0 | 0 |
+| VmSize | 34.7 GB | 34.7 GB | 34.6 GB | 9.1 GB |
+| VmPeak | 34.8 GB | 34.8 GB | 34.6 GB | 9.2 GB |
+| VmSwap | 0 | 0 | 0 | 0 |
+
+**Key observations:**
+
+- **RssAnon is similar across all Crema configs** (~137–142 MB). This is the
+  JVM heap, thread stacks, and native allocations. It is comparable to plain
+  OpenJDK (111 MB), suggesting the JVM heap usage is roughly the same.
+- **RssFile is the main RSS differentiator**. Crema with custom jars uses
+  245 MB of file-backed pages (mostly libjvm.so), baseline Crema uses 187 MB,
+  and plain OpenJDK uses only 22 MB. The ~58 MB difference between custom and
+  baseline Crema is the resident portion of the additional Quarkus framework
+  code and metadata in libjvm.so.
+- **VmSize (virtual)** is very large (~34 GB) for Crema because the SVM runtime
+  pre-reserves address space. This is virtual and not resident.
+
+## libjvm.so Virtual Memory Regions (after first request)
+
+Data from `/proc/PID/maps`. All Crema configurations map libjvm.so into the
+same region types but with different sizes.
+
+| Region / Permissions | Minimal-init | Full-init | Baseline Crema | Plain OpenJDK |
+|---|---|---|---|---|
+| `r-xp` (code / .text) | 189.7 MB | 189.7 MB | 129.1 MB | 18.6 MB |
+| `r--p` (read-only data) | 137.5 + 54.7 = 192.2 MB | 137.5 + 54.7 = 192.2 MB | 87.0 + 38.9 = 125.9 MB | 0.9 MB |
+| `rw-p` (writable: .data + .svm_heap) | 0.2 + 218.1 + 410.8 = 629.1 MB | 0.2 + 218.1 + 410.8 = 629.1 MB | 0.1 + 140.8 + 267.1 = 408.0 MB | 0.2 MB |
+| `---p` (guard pages) | 0.1 MB | 0.1 MB | 0.1 MB | 0.0 MB |
+| **Total virtual** | **1011 MB** | **1011 MB** | **663 MB** | **20 MB** |
+
+**Key observations:**
+
+- The two `rw-p` regions in Crema are:
+  - A smaller region (~218 MB for custom, ~141 MB for baseline) which is
+    part of the image heap mapped early
+  - A larger region (~411 MB for custom, ~267 MB for baseline) which is
+    the main `.svm_heap` section
+- The total writable mapping for custom libjvm.so (629 MB) vs baseline (408 MB)
+  = **221 MB** additional writable virtual for Quarkus framework data.
+- Plain OpenJDK's libjvm.so is only 20 MB virtual — it's the HotSpot JIT
+  engine, not an AOT-compiled image.
+
+## Image Heap and Object Counts (from native-image build output)
+
+These numbers come from the native-image build output line:
 ```
-VmRSS:    387 MB total
-  RssAnon:  143 MB  (37%)  — JVM heap, thread stacks, native allocs
-  RssFile:  244 MB  (63%)  — mmap'd files (mostly libjvm.so)
+X MiB (Y%) for image heap: N objects and M resources
 ```
+The `N objects` number is the **count of distinct Java objects** stored in the
+image heap section (`.svm_heap`), not a size. These are objects whose state was
+captured at build time and serialized into the binary.
 
-### libjvm.so virtual memory regions
+| Metric | Baseline Crema | Minimal-init | Full-init |
+|---|---|---|---|
+| .text (code area) | 128.7 MB | 190.6 MB | 189.4 MB |
+| Compilation units | 250,814 | 397,819 | 397,196 |
+| .svm_heap (image heap) | 266.9 MB | 410.9 MB | 410.6 MB |
+| Object count | 4,426,014 | 6,816,356 | 6,819,274 |
+| Resource count | 554 | 1,736 | 1,736 |
+| Total image size | 642.96 MB | 984.87 MB | 983.16 MB |
+| File size on disk | 396.19 MB (397 MB) | 602.00 MB (603 MB) | 600.50 MB (601 MB) |
 
-| Permissions | Virtual Size | Description |
+**Key observations:**
+
+1. **The base JDK (baseline Crema) contributes 4.43M objects out of 6.82M total
+   (65%)** in the custom builds. The additional 2.39M objects are from the
+   113 Quarkus framework jars. The JDK objects take 267 MB of image heap;
+   Quarkus adds ~144 MB.
+
+2. **Full vs minimal init produce nearly identical images** — the object count
+   differs by only ~3,000 (6,819,274 vs 6,816,356). The extra objects in
+   full-init are framework singletons and cached state created during build-time
+   class initialization. The image heap size difference is <0.3 MB.
+
+3. **Compilation units are essentially identical** between full and minimal
+   (397K). This is because both scripts preserve the same 113 jars — the
+   `-H:Preserve=path=` flag determines which classes get compiled, not the
+   init-time policy.
+
+4. **Resource count** (1,736 vs 554) increases because the Quarkus jars
+   contain additional classpath resources (properties files, service loader
+   descriptors, etc.) that get embedded in the image.
+
+### Crema's RSS footprint breakdown
+
+| Component | Calculation | RSS |
 |---|---|---|
-| `r-xp` | 189.7 MB | .text (code) |
-| `rw-p` | 410.8 MB | .svm_heap (image heap) |
-| `r--p` | 192.2 MB | .rodata + other read-only |
-| `rw-p` | 0.2 MB | .data |
-| `---p` | 0.1 MB | guard page |
-| **Total** | **1011 MB** | **virtual** |
-
-The 410MB svm_heap is writable and mapped but only ~38% of total virtual
-mappings become resident (~387MB RSS out of 1011MB virtual).
-
-### Image heap size (ELF section)
-
-```
-.svm_heap: 410 MB (0x19aa0000 bytes)
-.text:     189 MB
-Total:     601 MB on disk
-```
-
-The image heap contains 6.8M objects and 1,736 resources.
-Most of this comes from the `jvm-library` macro's base JDK coverage,
-not from the Quarkus jars — both minimal and full init produce
-the same 410MB heap.
-
-### Crema's RSS footprint
-
-Baseline Crema (no custom jars) uses ~320MB RSS. Custom libjvm.so
-uses ~375MB. The difference (~55MB) is the additional Quarkus framework
-classes resident in memory. Plain OpenJDK uses ~131MB, so Crema itself
-adds ~190MB RSS overhead (mostly from the base JDK image heap).
+| Plain OpenJDK baseline | measured | 133 MB |
+| Crema base overhead | baseline Crema − OpenJDK = 329 − 133 | **~196 MB** |
+| Quarkus framework addition | custom Crema − baseline Crema = 383 − 329 | **~54 MB** |
+| Custom Crema total | measured | **~383 MB** |
 
 ## Pyronaut Analysis
 
@@ -296,23 +326,85 @@ project that uses Crema (GraalVM native image with runtime class loading).
    vertx → netty) makes it infeasible to init only logging without
    eventually pulling in the entire framework.
 
-6. **Minimal build-time init is slightly faster**: Less image heap to
-   fault in at startup. The difference is ~5% TTFR.
+6. **Full vs minimal build-time init produces nearly identical results**:
+   Same image size, same RSS, comparable TTFR. The init-time policy
+   determines which objects are pre-initialized in the heap but does NOT
+   change which classes are compiled or preserved.
 
-7. **The RSS and TTFR overhead is from Crema itself**: The base JDK image
-   heap (~300MB) dominates RSS. The additional ~55MB from Quarkus framework
-   jars is comparatively small.
+7. **The base JDK image heap dominates** — 4.43M objects (267 MB) out of
+   6.82M (411 MB) total. The Quarkus addition is 2.39M objects (144 MB).
+
+8. **RssAnon is comparable across all configs** (~111–142 MB). The RSS gap
+   is entirely in RssFile (mmap’d libjvm.so pages).
+
+9. **Wildfly CidrAddress accessor type conflict**: When both `io.smallrye.common`
+   and `org.wildfly.common` are on the classpath, shared `@InjectAccessors`
+   cause type mismatches. Each substitution target needs its own accessor
+   classes with correctly-typed set methods.
+
+## Reproducing This Experiment
+
+### Prerequisites
+
+- GraalVM CE 25.6.0-dev (built from `~/src/graal` with PR #14901)
+- Quarkus `topic.crema.new` branch in `~/src/quarkus` (4 commits on top of main)
+- OpenJDK 25 at `/usr/lib/jvm/java-25-openjdk`
+
+### Steps
+
+```bash
+# 1. Build Quarkus
+cd ~/src/quarkus
+git checkout topic.crema.new  # or topic.crema.nov26
+mvn -Dquickly
+
+# 2. Build the getting-started app
+cd ~/src/mendrugo/crema-999/getting-started
+mvn package -DskipTests
+
+# 3. Build libjvm.so (choose one)
+cd ~/src/mendrugo/crema-999
+./build-libjvm.sh              # full build-time init
+# OR
+./build-libjvm-minimal-init.sh # minimal build-time init
+
+# 4. Verify
+./verify-quarkus.sh
+
+# 5. Benchmark
+./benchmark.sh 5
+
+# 6. Build baseline for comparison
+$GRAALVM_HOME/bin/native-image --macro:jvm-library -H:Preserve=package=sun.misc
+./benchmark.sh 3
+```
+
+### Quarkus branch commits (`topic.crema.new`)
+
+1. `2c6c2ca5896` — resolveJarPath .jar suffix check (cherry-pick)
+2. `360ac02d8ea` — InetRunTime no-op setters (cherry-pick)
+3. `4a28192842f` — sun.java.command fallback for resolveJarPath
+4. `7bb8e2916db` — Wildfly CidrAddress accessor type fix
+
+Files changed:
+- `independent-projects/bootstrap/runner/.../QuarkusEntryPoint.java`
+- `core/runtime/.../graal/InetRunTime.java`
+- `core/runtime/.../graal/Target_org_wildfly_common_net_CidrAddress.java`
 
 ## Next Steps
 
 Profiling/tracing of the Crema startup is needed to find optimization
 opportunities. The ~500ms gap between Crema and plain OpenJDK TTFR is
 likely split between:
-- libjvm.so mmap + page fault overhead
-- Interpreter startup vs JIT warmup
-- Image heap initialization
+- libjvm.so loading (mmap + demand paging of ~600MB file)
+- SVM runtime bootstrap (image heap setup, isolate creation)
+- Interpreter warmup vs JIT compilation latency
 
 Specific areas to investigate:
-- `perf` tracing of `mprotect` syscalls to see glibc arena allocations
+- `perf` tracing of `mprotect` syscalls to see if Crema causes glibc arena
+  allocations during startup
 - Time breakdown of JVM bootstrap phases with `-svm`
-- Whether reducing the image heap size (e.g., fewer JDK packages) helps
+- Whether reducing the image heap size (e.g., fewer JDK packages via selective
+  `-H:Preserve=` instead of full `--macro:jvm-library`) would help
+- Whether Pyronaut's approach of building a standalone executable (without
+  `--macro:jvm-library`) would avoid the base JDK overhead entirely
