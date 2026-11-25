@@ -11,13 +11,15 @@
 #
 
 print_build_summary() {
+    local tmpfile
+    tmpfile=$(mktemp /tmp/ni-build-XXXXXX.log)
+    # Stream to terminal in real time AND capture for parsing
+    tee "$tmpfile"
     local output
-    output=$(cat)
+    output=$(cat "$tmpfile")
+    rm -f "$tmpfile"
 
-    # Echo the full output first
-    echo "$output"
-
-    # Parse metrics from the output
+    # Parse metrics from the captured output
     local code_area compilation_units image_heap objects resources total_image file_size
     code_area=$(echo "$output" | grep -oP '[\d.]+MiB.*for code area' | grep -oP '[\d.]+' | head -1)
     compilation_units=$(echo "$output" | grep -oP 'code area:\s*[\d,]+' | grep -oP '[\d,]+' | tr -d ',')
