@@ -171,6 +171,8 @@ INIT_RUN_ARG=$(IFS=,; echo "${INIT_RUN[*]}")
 # ──────────────────────────────────────────────────────────────────────
 # Build libjvm.so
 # ──────────────────────────────────────────────────────────────────────
+source "$(dirname "$0")/build-summary.sh"
+
 ${GRAALVM_HOME}/bin/native-image --macro:jvm-library \
     -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
     -H:Preserve=package=sun.misc \
@@ -180,4 +182,5 @@ ${GRAALVM_HOME}/bin/native-image --macro:jvm-library \
     -cp "$CP_ARGS" \
     "${PRESERVE_ARGS[@]}" \
     "--initialize-at-build-time=${INIT_BUILD_ARG}" \
-    "--initialize-at-run-time=${INIT_RUN_ARG}"
+    "--initialize-at-run-time=${INIT_RUN_ARG}" \
+    2>&1 | print_build_summary

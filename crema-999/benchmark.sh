@@ -7,6 +7,8 @@
 #   2. Time to first HTTP request (independent measurement)
 #   3. RSS after first HTTP request (total + per-region breakdown on last run)
 #
+# Computes median values for Quarkus startup, TTFR, and RSS across runs.
+#
 # Usage:
 #   ./benchmark.sh [runs]  # default: 5 runs per configuration
 #
@@ -31,12 +33,30 @@ kill_port() {
     fi
 }
 
-# Collect RSS region breakdown from /proc/PID/status
+# Collect RSS region breakdown from /proc/PID/status (in MB)
 collect_rss_regions() {
     local pid=$1
     local label=$2
     echo "=== RSS regions for $label (PID $pid) ==="
-    grep -E 'VmPeak|VmSize|VmRSS|RssAnon|RssFile|RssShmem|VmSwap' /proc/$pid/status 2>/dev/null || echo "  (unavailable)"
+    if [ -f "/proc/$pid/status" ]; then
+        grep -E 'VmPeak|VmSize|VmRSS|RssAnon|RssFile|RssShmem|VmSwap' /proc/$pid/status 2>/dev/null | \
+            awk '{
+                val_kb = $2;
+                unit = $3;
+                if (unit == "kB") {
+                    val_mb = val_kb / 1024;
+                    if (val_mb >= 1024) {
+                        printf "  %-12s %8.1f GB\n", $1, val_mb / 1024;
+                    } else {
+                        printf "  %-12s %8.0f MB\n", $1, val_mb;
+                    }
+                } else {
+                    printf "  %-12s %s %s\n", $1, $2, $3;
+                }
+            }'
+    else
+        echo "  (unavailable)"
+    fi
 }
 
 # Collect libjvm.so virtual memory regions from /proc/PID/maps
@@ -94,8 +114,16 @@ benchmark_one() {
 
             local QUARKUS_TIME
             QUARKUS_TIME=$(grep -oP 'started in \K[0-9.]+s' "$LOG_FILE" 2>/dev/null | head -1 || echo "N/A")
+            # Strip trailing 's' for numeric collection
+            local QUARKUS_NUM
+            QUARKUS_NUM=$(echo "$QUARKUS_TIME" | sed 's/s$//')
 
             echo "$label: quarkus=${QUARKUS_TIME} ttfr=${ELAPSED_MS}ms rss=${RSS_MB}MB"
+
+            # Record values for median calculation (written to temp files by caller)
+            echo "$QUARKUS_NUM" >> "${QUARKUS_FILE:-/dev/null}"
+            echo "$ELAPSED_MS" >> "${TTFR_FILE:-/dev/null}"
+            echo "$RSS_MB" >> "${RSS_FILE:-/dev/null}"
 
             # On last run, collect detailed memory info before killing
             if [ "$is_last_run" = "true" ]; then
@@ -126,6 +154,11 @@ run_config() {
     local java_bin="$2"
     local extra_args="${3:-}"
 
+    # Create temp files for median collection
+    export QUARKUS_FILE=$(mktemp /tmp/bench-quarkus-XXXXXX)
+    export TTFR_FILE=$(mktemp /tmp/bench-ttfr-XXXXXX)
+    export RSS_FILE=$(mktemp /tmp/bench-rss-XXXXXX)
+
     echo "--- $config_label ---"
     for i in $(seq 1 $RUNS); do
         kill_port
@@ -136,7 +169,17 @@ run_config() {
         fi
         benchmark_one "$java_bin" "${config_label}-${i}" "$extra_args" "$is_last"
     done
+
+    # Compute and display medians
+    local med_quarkus med_ttfr med_rss
+    med_quarkus=$(grep -v 'N/A' "$QUARKUS_FILE" 2>/dev/null | sort -n | awk '{a[NR]=$1} END { if (NR==0) {print "N/A"; exit} if (NR%2==1) {printf "%.3f", a[(NR+1)/2]} else {printf "%.3f", (a[NR/2]+a[NR/2+1])/2}}')
+    med_ttfr=$(sort -n "$TTFR_FILE" 2>/dev/null | awk '{a[NR]=$1} END { if (NR==0) {print "N/A"; exit} if (NR%2==1) {print a[(NR+1)/2]} else {printf "%.0f", (a[NR/2]+a[NR/2+1])/2}}')
+    med_rss=$(sort -n "$RSS_FILE" 2>/dev/null | awk '{a[NR]=$1} END { if (NR==0) {print "N/A"; exit} if (NR%2==1) {print a[(NR+1)/2]} else {printf "%.0f", (a[NR/2]+a[NR/2+1])/2}}')
+
+    echo "  Median ($RUNS runs): quarkus=${med_quarkus}s ttfr=${med_ttfr}ms rss=${med_rss}MB"
     echo ""
+
+    rm -f "$QUARKUS_FILE" "$TTFR_FILE" "$RSS_FILE"
 }
 
 echo "=== Quarkus Startup Benchmark ==="
