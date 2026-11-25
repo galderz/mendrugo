@@ -19,11 +19,13 @@ crema-999/
 │   ├── README.md                  ← this file
 │   ├── PROGRESS-oct2026.md        ← Oct 2026: boot jars, logging, main jars blocker
 │   └── PROGRESS-nov2026.md        ← Nov 2026: all framework jars, benchmarking
-├── build-libjvm.sh                ← current: all 113 jars, full build-time init
-├── build-libjvm-minimal-init.sh   ← variant: all 113 jars, minimal build-time init
-├── benchmark.sh                   ← startup benchmarking (TTFR, RSS, Quarkus time)
+├── build-libjvm.sh                ← all 113 jars, full build-time init
+├── build-libjvm-minimal-init.sh   ← all 113 jars, minimal build-time init
+├── build-libjvm-baseline.sh       ← baseline Crema, no Quarkus jars
+├── build-summary.sh               ← shared: parses native-image output into summary
+├── benchmark.sh                   ← startup benchmarking (medians, RSS regions, maps)
 ├── verify-quarkus.sh              ← functional smoke test
-├── 00-build-jvm.sh                ← reference: baseline libjvm.so
+├── 00-build-jvm.sh                ← reference: Oct baseline libjvm.so
 ├── 01-build-libjvm-minimal-build-init.sh  ← reference: boot jars, stripped SPI
 ├── 02-build-libjvm-logmanager-build-init.sh ← reference: boot jars, logging init
 ├── 03-build-libjvm-all.sh         ← reference: all jars attempt (failed)
