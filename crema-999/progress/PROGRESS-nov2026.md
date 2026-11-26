@@ -164,15 +164,34 @@ Last run of each config includes detailed RSS region breakdown.
 
 Data captured from `/proc/PID/status` on the last run of each configuration:
 
+**Physical memory (RSS):**
+
 | Region | Minimal-init | Full-init | Baseline Crema | Plain OpenJDK |
 |---|---|---|---|---|
 | **VmRSS** | **382 MB** | **385 MB** | **329 MB** | **133 MB** |
 | RssAnon | 137 MB | 140 MB | 142 MB | 111 MB |
 | RssFile | 245 MB | 245 MB | 187 MB | 22 MB |
 | RssShmem | 0 | 0 | 0 | 0 |
+| VmSwap | 0 | 0 | 0 | 0 |
+
+`VmRSS` = `RssAnon` + `RssFile` + `RssShmem` — this is the actual physical
+memory consumed by the process. `RssAnon` is anonymous pages (JVM heap,
+thread stacks, native `malloc` allocations). `RssFile` is file-backed pages
+(mmap’d shared libraries, jars, etc.).
+
+**Virtual address space (not physical memory):**
+
+| Metric | Minimal-init | Full-init | Baseline Crema | Plain OpenJDK |
+|---|---|---|---|---|
 | VmSize | 34.7 GB | 34.7 GB | 34.6 GB | 9.1 GB |
 | VmPeak | 34.8 GB | 34.8 GB | 34.6 GB | 9.2 GB |
-| VmSwap | 0 | 0 | 0 | 0 |
+
+`VmSize` is the total virtual address space reserved, NOT physical memory.
+The kernel marks these address ranges as claimed in the page tables but does
+not back them with physical RAM until they are actually touched. Crema’s SVM
+runtime pre-reserves ~34 GB of contiguous virtual space at startup for the
+image heap, the Java heap, and the code cache. This has no impact on actual
+memory pressure — only VmRSS reflects real consumption.
 
 **Key observations:**
 
@@ -184,8 +203,6 @@ Data captured from `/proc/PID/status` on the last run of each configuration:
   and plain OpenJDK uses only 22 MB. The ~58 MB difference between custom and
   baseline Crema is the resident portion of the additional Quarkus framework
   code and metadata in libjvm.so.
-- **VmSize (virtual)** is very large (~34 GB) for Crema because the SVM runtime
-  pre-reserves address space. This is virtual and not resident.
 
 ## libjvm.so Virtual Memory Regions (after first request)
 
