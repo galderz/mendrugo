@@ -10,12 +10,58 @@ let
     # $ nix-shell -p nix-prefetch-git jq --run "nix hash convert sha256:\$(nix-prefetch-git --url https://github.com/graalvm/mx --quiet --rev 60cbd02fc9c9706c36da730c502e10e981aa5b81 | jq -r '.sha256')"
     hash = "sha256-YEy759CCdnGz3oiguCJZHVYzQwlW2vafaiujaA+V8AY=";
   };
+  jvmci = pkgs.stdenvNoCC.mkDerivation rec {
+    pname = "jvmci";
+    version = "25.4-b23";
+
+    src = pkgs.fetchurl {
+      url = "https://github.com/graalvm/labs-openjdk/releases/download/jvmci-25.4-b23/labsjdk-ce-25.0.4.1.1+1-jvmci-25.4-b23-linux-amd64.tar.gz";
+      # To obtain the hash, set this first
+      # hash = pkgs.lib.fakeHash;
+      hash = "sha256-hxoN4MJMNcvBezZPnD4yLHCahe3VLXrVFDu7MCxBIy8=";
+    };
+
+    dontUnpack = true;
+
+    nativeBuildInputs = [
+      pkgs.autoPatchelfHook
+      pkgs.makeWrapper
+    ];
+
+    buildInputs = with pkgs; [
+      stdenv.cc.cc.lib
+      zlib
+      freetype
+      fontconfig
+      alsa-lib
+      cups
+      nss
+      nspr
+      xorg.libX11
+      xorg.libXext
+      xorg.libXi
+      xorg.libXrender
+      xorg.libXtst
+      xorg.libXrandr
+    ];
+
+    installPhase = ''
+      mkdir -p $out
+      tar -xzf $src --strip-components=1 -C $out
+    '';
+
+    postFixup = ''
+      wrapProgram $out/bin/java \
+        --set-default JAVA_HOME $out
+    '';
+  };
 in
 pkgs.mkShell {
   buildInputs = with pkgs; [
     python3
     git
     gcc
+    jvmci
     clang
     ninja
     zlib
@@ -23,13 +69,15 @@ pkgs.mkShell {
     libcxx
   ];
 
+  JAVA_HOME="${jvmci}";
+
   shellHook = ''
     # Ensure directories are created with write permissions
     umask 0022
 
     # Set JAVA_HOME to the labsjdk path
-    # $ nix-store add ~/.mx/jdks/labsjdk-ce-latest-jvmci-25.1-b16_amd64
-    export JAVA_HOME=/nix/store/vciqd85ml62r6vl7bcz3in9i662y74n1-labsjdk-ce-latest-jvmci-25.1-b16_amd64
+    # $ nix-store add ~/.mx/jdks/labsjdk-ce-latest-jvmci-25.3-b21_aarch64
+    # export JAVA_HOME=/nix/store/fkdlgi8q2zmqsw82x20c9h3gz4d2z2dg-labsjdk-ce-latest-jvmci-25.3-b21_aarch64
 
     # Set MX_PYTHON to python3 binary
     export MX_PYTHON=${pkgs.python3}/bin/python3
@@ -37,15 +85,12 @@ pkgs.mkShell {
     # Bypass JVMCI version check (JDK has b10 but Graal requires b13)
     export JVMCI_VERSION_CHECK=warn
 
-    # Note: XCODE_DIR and SDKROOT are NOT needed - Nix clang wrapper handles SDK paths automatically
-
     # Setup mx in a writable location (mx modifies its own directory during execution)
-    # Use ~/Library/Caches for macOS standard cache location (won't be cleaned during runtime)
-    export MX_HOME="$HOME/Library/Caches/graalvm-mx"
+    export MX_HOME="$HOME/tmp/graalvm-mx"
     if [ ! -d "$MX_HOME" ]; then
       echo "Setting up mx build tool in $MX_HOME..."
       mkdir -p "$MX_HOME"
-      cp -r ${mxSrc}/* "$MX_HOME/"
+      cp -a ${mxSrc}/. "$MX_HOME/"
       chmod -R u+w "$MX_HOME"
 
       # Patch mx_util.py to add write permissions when creating directories from Nix store
@@ -53,39 +98,15 @@ pkgs.mkShell {
       sed -i.bak 's/os.makedirs(path, mode=mode)/os.makedirs(path, mode=mode | 0o200)/' "$MX_HOME/src/mx/_impl/mx_util.py"
     fi
 
-    # Create wrappers that redirect to clang
-    mkdir -p /tmp/graalvm-wrappers
-
-    # xcrun wrapper
-    cat > /tmp/graalvm-wrappers/xcrun << 'XCRUNEOF'
-#!/bin/bash
-exec "$@"
-XCRUNEOF
-    chmod +x /tmp/graalvm-wrappers/xcrun
-
-    # gcc wrapper - redirect to clang
-    cat > /tmp/graalvm-wrappers/gcc << 'GCCEOF'
-#!/bin/bash
-exec clang "$@"
-GCCEOF
-    chmod +x /tmp/graalvm-wrappers/gcc
-
-    # g++ wrapper - redirect to clang++
-    cat > /tmp/graalvm-wrappers/g++ << 'GXXEOF'
-#!/bin/bash
-exec clang++ "$@"
-GXXEOF
-    chmod +x /tmp/graalvm-wrappers/g++
-
-    # Add wrappers and mx to PATH
-    export PATH="/tmp/graalvm-wrappers:$MX_HOME:$PATH"
+    # Add MX_HOME to PATH
+    export PATH="$MX_HOME:$PATH"
 
     # Add JAVA_HOME/bin to PATH
     export PATH="$JAVA_HOME/bin:$PATH"
 
     # Use clang for C++ compilation (g++ doesn't support -ObjC++ flag)
-    export CXX=clang++
-    export CC=clang
+    # export CXX=clang++
+    # export CC=clang
 
     # Add zlib library path for native-image linking
     export NIX_LDFLAGS="-L${pkgs.zlib}/lib $NIX_LDFLAGS"
